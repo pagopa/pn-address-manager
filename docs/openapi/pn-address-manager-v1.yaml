@@ -19,34 +19,19 @@ servers:
 tags:
   - name: NormalizeAddressService
     description: Operazioni di Normalizzazione Indirizzi
-  - name: DedplicatesAddressService
+  - name: DeduplicatesAddressService
     description: Operazioni di Deduplica e Normalizzazione indirizzi
-  - name: HealthCheck
-    description: Metodo heartbeat
 paths: 
-  /:
-    get:
-      summary: healthCheck 
-      description: Servizio di healtCheck
-      tags:
-        - HealthCheck
-      operationId: status
-      responses:
-        '200':
-          description: Ok
-        '400':
-          description: Bad Request
-        '500':
-          description: Internal Server Error
+ 
   /address-private/normalize:
     post: 
-      summary: Normalizza Indirizzo
+      summary: Richiesta di normalizzazione per una lista di indirizzi
       description: Servizio Asincrono per la normalizzazione di un indirizzo. La risposta arriva su una specifica coda da configurare #FIXME: Gestire lista?
       tags:
         - NormalizeAddressService
       operationId: normalize
       parameters: 
-        - $ref: "#/components/parameters/AddressCxId"  
+        - $ref: "#/components/parameters/xPagopaAddrManCxId"
       requestBody:
         content:
           application/json:
@@ -55,11 +40,11 @@ paths:
         required: true
       responses: 
         "202":
-          description: Richiesta di Normalizzazione presa in carico
+          description: Richiesta presa in carico
           content:
             application/json:
               schema:
-                $ref: './schemas-pn-address.yaml#/components/schemas/NormalizeAcceptedResponse'
+                $ref: './schemas-pn-address.yaml#/components/schemas/AcceptedResponse'
         "400":
           description: Bad Request
           content:
@@ -72,22 +57,60 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  /address-private/deduplicates:
+  /address-private/deduplicate-items:
     post: 
-      summary: Deduplica Indirizzo
-      description: Servizio Sincrono per la deduplica di indirizzi. Confronta 2 indirizzi e torna il secondo Normalizzato qualora diverso dal primo 
+      summary: Richiesta di deduplica per una lista di coppie di indirizzi
+      description: |- 
+            Servizio Asincrono per la deduplica di indirizzi. 
+            Ogni coppia di indirizzi in lista viene confrontata e viene restituito il risultato del confronto
+            In caso di disuguaglianza viene restituita anche la versione Normalizzata del secondo
       tags:
-        - DedplicatesAddressService
-      operationId: deduplicates
+        - DeduplicatesAddressService
+      operationId: deduplicateItems
+      parameters: 
+        - $ref: "#/components/parameters/xPagopaAddrManCxId"
       requestBody:
         content:
           application/json:
             schema:
-              type: array
-              minItems: 1
-              #FIXME: maxItems????
-              items:
-                $ref: "./schemas-pn-address.yaml#/components/schemas/DeduplicatesRequest"
+              $ref: "./schemas-pn-address.yaml#/components/schemas/DeduplicateItemsRequest"
+        required: true
+      responses: 
+        "202":
+          description: Richiesta presa in carico
+          content:
+            application/json:
+              schema:
+                $ref: './schemas-pn-address.yaml#/components/schemas/AcceptedResponse'
+        "400":
+          description:  Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+        "500":
+          description: InternalServerError
+          content:
+            application/problem+json:
+              schema:
+                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+  /address-private/deduplicates:
+    post: 
+      summary: Richiesta di deduplica per una coppia di indirizzi
+      description:  |- 
+            Servizio Sincrono per la deduplica di indirizzi. 
+            I due indirizzi vengono confrontatati e viene restituito il risultato del confronto
+            In caso di disuguaglianza viene restituita anche la versione Normalizzata del secondo
+      tags:
+        - DeduplicatesAddressService
+      operationId: deduplicates
+      parameters: 
+        - $ref: "#/components/parameters/xPagopaAddrManCxId"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "./schemas-pn-address.yaml#/components/schemas/DeduplicatesRequest"
         required: true
       responses: 
         "200":
@@ -95,11 +118,7 @@ paths:
           content:
             application/json:
               schema:
-                type: array
-                minItems: 1
-                #FIXME: maxItems????
-                items:
-                  $ref: './schemas-pn-address.yaml#/components/schemas/DeduplicatesResponse'
+                $ref: './schemas-pn-address.yaml#/components/schemas/DeduplicatesResponse'
         "400":
           description:  Bad Request
           content:
@@ -114,20 +133,22 @@ paths:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
         
 
-  #/address/verify/(cap|nation) 
-  #FIXME: Sarebbe utile inserire un servizio sincrono di preverifica CAP Italiano basandoci sulla 
-  # lista statica condivisa con il consolidatore, questo permetterebbe di bloccare la creazione della notifica sul nascere
-  # qualora si usino cap generici
-
 components: 
 
   parameters: 
-    AddressCxId:
+    xPagopaAddrManCxId:
       name: "pn-address-manager-cx-id"
       in: header
       schema:
         type: string
       required: true
+    #xPagopaAddrManApiKey:
+    #  name: x-api-key
+    #  description: Credenziale di accesso
+    #  in: header
+    #  required: true
+    #  schema:
+    #    type: string
   
   securitySchemes:        # ONLY EXTERNAL
     ApiKeyAuth:           # ONLY EXTERNAL
