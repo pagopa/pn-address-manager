@@ -37,7 +37,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./schemas-pn-address.yaml#/components/schemas/NormalizeRequest"  
+              $ref: "./schemas-pn-address.yaml#/components/schemas/NormalizeItemsRequest"  
         required: true
       responses: 
         "202":

@@ -1,7 +1,7 @@
 components:
   schemas:
 
-    NormalizeRequest:
+    NormalizeItemsRequest:
       type: object
       required:
         - requestItems
@@ -11,17 +11,20 @@ components:
           minItems: 1
           maxItems: 100
           items:
-            type: object
-            required:
-              - address
-              - correlationId
-            properties:
-              correlationId:
-                type: string
-              address:
-                $ref: '#/components/schemas/AnalogAddress'
+            $ref: '#/components/schemas/NormalizeRequest'
 
-    NormalizeResult:
+    NormalizeRequest:
+      type: object
+      required:
+        - address
+        - correlationId
+      properties:
+        correlationId:
+          type: string
+        address:
+          $ref: '#/components/schemas/AnalogAddress'
+
+    NormalizeItemsResult:
       type: object
       required:
         - resultItems
@@ -31,19 +34,20 @@ components:
           minItems: 1
           maxItems: 100
           items:
-            type: object
-            required:
-              - correlationId
-            properties:
-              correlationId:
-                type: string
-              normalizedAddress:
-                $ref: '#/components/schemas/AnalogAddress'
-              error:
-                type: string
-                description: Se presente indica che si è verificato un errore durante l'esecuzione dell'operazione richiesta.
-
-
+            $ref: '#/components/schemas/NormalizeResult'
+            
+    NormalizeResult:
+      type: object
+      required:
+        - correlationId
+      properties:
+        correlationId:
+          type: string
+        normalizedAddress:
+          $ref: '#/components/schemas/AnalogAddress'
+        error:
+          type: string
+          description: Se presente indica che si è verificato un errore durante l'esecuzione dell'operazione richiesta.
     DeduplicateItemsRequest:
       type: object
       required:
@@ -108,14 +112,7 @@ components:
       required:
       - addressRow
       - city
-      - nameRow
       properties:
-        nameRow:
-          type: string
-          description: Cognome e nome o ragione sociale del destinatario
-        nameRow2:
-          type: string
-          description: Seconda riga sulla busta.
         addressRow:
           type: string
           description: Indirizzo del destinatario.
