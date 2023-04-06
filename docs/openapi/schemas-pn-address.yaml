@@ -90,7 +90,6 @@ components:
       type: object
       required:
         - correlationId
-        - equalityResult
       properties:
         correlationId:
           type: string
