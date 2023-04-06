@@ -32,6 +32,7 @@ paths:
       operationId: normalize
       parameters: 
         - $ref: "#/components/parameters/xPagopaAddrManCxId"
+        - $ref: "#/components/parameters/xPagopaAddrManApiKey"
       requestBody:
         content:
           application/json:
@@ -69,6 +70,7 @@ paths:
       operationId: deduplicateItems
       parameters: 
         - $ref: "#/components/parameters/xPagopaAddrManCxId"
+        - $ref: "#/components/parameters/xPagopaAddrManApiKey"
       requestBody:
         content:
           application/json:
@@ -106,6 +108,7 @@ paths:
       operationId: deduplicates
       parameters: 
         - $ref: "#/components/parameters/xPagopaAddrManCxId"
+        - $ref: "#/components/parameters/xPagopaAddrManApiKey"
       requestBody:
         content:
           application/json:
@@ -142,13 +145,13 @@ components:
       schema:
         type: string
       required: true
-    #xPagopaAddrManApiKey:
-    #  name: x-api-key
-    #  description: Credenziale di accesso
-    #  in: header
-    #  required: true
-    #  schema:
-    #    type: string
+    xPagopaAddrManApiKey:
+      name: x-api-key
+      description: Credenziale di accesso
+      in: header
+      required: true
+      schema:
+        type: string
   
   securitySchemes:        # ONLY EXTERNAL
     ApiKeyAuth:           # ONLY EXTERNAL
