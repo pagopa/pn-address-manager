@@ -103,8 +103,25 @@ components:
     AcceptedResponse:
       type: object
       properties:
+        responseItems:
+          type: array
+          minItems: 1
+          maxItems: 100
+          items:
+            $ref: "#/components/schemas/TakeInChargeItem"
+
+    TakeInChargeItem:
+      type: object
+      required:
+        - correlationId
+      properties:
         correlationId:
           type: string
+        error:
+          type: string
+          description: Se presente indica che si è verificato un errore durante l'esecuzione dell'operazione richiesta.
+
+
 
     AnalogAddress:
       description: Indirizzo analogico
