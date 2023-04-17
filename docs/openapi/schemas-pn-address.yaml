@@ -20,7 +20,11 @@ components:
       type: object
       required:
         - address
+        - id
       properties:
+        id:
+          type: string
+          description: identificativo oggetto
         address:
           $ref: '#/components/schemas/AnalogAddress'
 
@@ -41,7 +45,12 @@ components:
             
     NormalizeResult:
       type: object
+      required:
+        - id
       properties:
+        id:
+          type: string
+          description: identificativo oggetto
         normalizedAddress:
           $ref: '#/components/schemas/AnalogAddress'
         error:
