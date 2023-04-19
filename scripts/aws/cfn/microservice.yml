@@ -67,6 +67,10 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
+  FlagCsv:
+    Type: String
+    Description: 'Ricerca dei CAP se tramite chiamata esterna o file csv'
+
 Resources:
 
   # PN-TemplateBeMs microservice
@@ -89,3 +93,4 @@ Resources:
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        ContainerEnvEntry2: !Sub 'PN_APIKEY_MANAGER_FLAG_CSV=${FlagCsv}'

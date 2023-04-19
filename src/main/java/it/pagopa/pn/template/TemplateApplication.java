@@ -15,13 +15,4 @@ public class TemplateApplication {
     }
 
 
-    @RestController
-    @RequestMapping("/")
-    public static class RootController {
-
-        @GetMapping("/")
-        public String home() {
-            return "";
-        }
-    }
 }
