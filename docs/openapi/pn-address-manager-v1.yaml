@@ -58,6 +58,20 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
+      callbacks:
+        normalizeResponse:
+          'normalizeResponsePath':
+            put:
+              summary: Send response event
+              requestBody:
+                content:
+                  application/json:
+                    schema:
+                      $ref: './schemas-pn-address.yaml#/components/schemas/NormalizeItemsResult'
+              responses:
+                '204':
+                  description: OK
+                  
   /address-private/deduplicates:
     post: 
       summary: Richiesta di deduplica per una coppia di indirizzi
