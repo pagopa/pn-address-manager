@@ -62,15 +62,14 @@ paths:
         normalizeResponse:
           'normalizeResponsePath':
             put:
-              summary: Send response event
-              requestBody:
-                content:
-                  application/json:
-                    schema:
-                      $ref: './schemas-pn-address.yaml#/components/schemas/NormalizeItemsResult'
+              summary: Evento inoltrato su eventBridge
               responses:
-                '204':
+                '200':
                   description: OK
+                  content:
+                    application/json:
+                      schema:
+                        $ref: './schemas-pn-address.yaml#/components/schemas/NormalizeItemsResult'
                   
   /address-private/deduplicates:
     post: 
