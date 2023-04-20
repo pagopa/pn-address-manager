@@ -91,11 +91,7 @@ components:
         - correlationId
       properties:
         correlationId:
-          type: string
-        error:
-          type: string
-          description: Se presente indica che si è verificato un errore durante l'esecuzione dell'operazione richiesta.
-        
+          type: string        
 
     AnalogAddress:
       description: Indirizzo analogico
