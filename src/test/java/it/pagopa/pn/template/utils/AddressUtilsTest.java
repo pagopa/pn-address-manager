@@ -28,21 +28,21 @@ class AddressUtilsTest {
     @Test
     void compareAddress1(){
         AnalogAddress base = new AnalogAddress();
-        base.setCity("42");
         base.setCity2("42");
         base.setAddressRow("42");
         base.setAddressRow2("42");
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
+        AddressUtils addressUtils = new AddressUtils(true);
+        assertTrue(addressUtils.compareAddress(base,base));
+    }
+
+    @Test
+    void compareAddress2(){
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("42");
         AnalogAddress target = new AnalogAddress();
-        target.setCity("42");
-        target.setCity2("42");
-        target.setAddressRow("42");
-        target.setAddressRow2("42");
-        target.setPr("42");
-        target.setCountry("42");
-        target.setCap("43");
         AddressUtils addressUtils = new AddressUtils(true);
         assertFalse(addressUtils.compareAddress(base,target));
     }

@@ -26,13 +26,11 @@ public class DeduplicatesAddressService {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setCorrelationId(request.getCorrelationId());
         deduplicatesResponse.setEqualityResult(addressUtils.compareAddress(request.getBaseAddress(), request.getTargetAddress()));
-        if(!deduplicatesResponse.getEqualityResult()){
-            AnalogAddress normalizedAddress = addressUtils.normalizeAddress(request.getTargetAddress());
-            if(normalizedAddress!=null){
-                deduplicatesResponse.setNormalizedAddress(normalizedAddress);
-            }else{
-                deduplicatesResponse.setError("Target Address Not Found");
-            }
+        AnalogAddress normalizedAddress = addressUtils.normalizeAddress(request.getTargetAddress());
+        if(normalizedAddress!=null){
+            deduplicatesResponse.setNormalizedAddress(normalizedAddress);
+        }else{
+            deduplicatesResponse.setError("Target Address Not Found");
         }
         return deduplicatesResponse;
     }

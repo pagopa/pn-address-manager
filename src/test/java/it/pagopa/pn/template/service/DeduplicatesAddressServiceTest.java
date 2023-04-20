@@ -25,41 +25,6 @@ class DeduplicatesAddressServiceTest {
     private DeduplicatesAddressService deduplicatesAddressService;
 
     @Test
-    void deduplicates(){
-        DeduplicatesRequest deduplicatesRequest = new DeduplicatesRequest();
-        AnalogAddress base = new AnalogAddress();
-        base.setCity("42");
-        base.setCity2("42");
-        base.setAddressRow("42");
-        base.setAddressRow2("42");
-        base.setPr("42");
-        base.setCountry("42");
-        base.setCap("42");
-        AnalogAddress target = new AnalogAddress();
-        target.setCity("42");
-        target.setCity2("42");
-        target.setAddressRow("42");
-        target.setAddressRow2("42");
-        target.setPr("42");
-        target.setCountry("42");
-        target.setCap("42");
-        deduplicatesRequest.setBaseAddress(base);
-        deduplicatesRequest.setTargetAddress(target);
-        deduplicatesRequest.setCorrelationId("42");
-
-        DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
-        deduplicatesResponse.setEqualityResult(true);
-        deduplicatesResponse.setCorrelationId("42");
-        deduplicatesResponse.setNormalizedAddress(null);
-        deduplicatesResponse.setError(null);
-
-        when(addressUtils.compareAddress(any(),any())).thenReturn(true);
-
-        StepVerifier.create(deduplicatesAddressService.deduplicates("cxid","apikey",Mono.just(deduplicatesRequest)))
-                .expectNext(deduplicatesResponse).verifyComplete();
-    }
-
-    @Test
     void deduplicates1(){
         DeduplicatesRequest deduplicatesRequest = new DeduplicatesRequest();
         AnalogAddress base = new AnalogAddress();

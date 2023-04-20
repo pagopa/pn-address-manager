@@ -31,28 +31,26 @@ public class AddressUtils {
     }
 
     public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress){
-        return compareAddressRow(baseAddress.getAddressRow(), targetAddress.getAddressRow())
-                && compareCap(baseAddress.getCap(), targetAddress.getCap())
-                && compareCity(baseAddress.getCity(), targetAddress.getCity())
-                && comparePr(baseAddress.getPr(), targetAddress.getPr())
-                && compareCountry(baseAddress.getCountry(), targetAddress.getCountry());
+        return compare(baseAddress.getAddressRow(), targetAddress.getAddressRow())
+                && compare(baseAddress.getAddressRow2(), targetAddress.getAddressRow2())
+                && compare(baseAddress.getCap(), targetAddress.getCap())
+                && compare(baseAddress.getCity(), targetAddress.getCity())
+                && compare(baseAddress.getCity2(), targetAddress.getCity2())
+                && compare(baseAddress.getPr(), targetAddress.getPr())
+                && compare(baseAddress.getCountry(), targetAddress.getCountry());
     }
 
-    private boolean compareAddressRow(String baseAddressRow, String targetAddressRow){ return baseAddressRow.equalsIgnoreCase(targetAddressRow); }
-
-    private boolean compareCap(String baseCap, String targetCap){
-        return baseCap.equalsIgnoreCase(targetCap);
+    private boolean compare(String base, String target){
+        if(base==null && target==null){
+            return true;
+        }
+        else if(base == null || target == null){
+            return false;
+        }
+        else{
+            return base.trim().equalsIgnoreCase(target.trim());
+        }
     }
-
-    private boolean compareCity(String baseCity, String targetCity){
-        return baseCity.equalsIgnoreCase(targetCity);
-    }
-
-    private boolean comparePr(String basePr, String targetPr){
-        return basePr.equalsIgnoreCase(targetPr);
-    }
-
-    private boolean compareCountry(String baseCountry, String targetCountry){ return baseCountry.equalsIgnoreCase(targetCountry); }
 
     public AnalogAddress normalizeAddress(AnalogAddress analogAddress){
         if(verifyAddress(analogAddress)) {
@@ -65,6 +63,9 @@ public class AddressUtils {
     private AnalogAddress copyAndUpperCase(AnalogAddress analogAddress){
         if(analogAddress.getCountry()!=null){
             analogAddress.setCountry(analogAddress.getCountry().toUpperCase());
+        }
+        if(analogAddress.getCap()!=null){
+            analogAddress.setCap(analogAddress.getCap().toUpperCase());
         }
         if(analogAddress.getPr()!=null){
             analogAddress.setPr(analogAddress.getPr().toUpperCase());
@@ -97,8 +98,8 @@ public class AddressUtils {
     }
 
     private boolean verifyAddressInCsv(AnalogAddress analogAddress){
-        return ((analogAddress.getCountry()==null || analogAddress.getCountry().contains("ITAL")) && searchStringInColumnInCsv(analogAddress.getCap(), INDEX_COLUMN_CAP, PATH_CSV_CAP))
-                || searchStringInColumnInCsv(analogAddress.getCountry(), INDEX_COLUMN_NAZIONALITY, PATH_CSV_NAZIONI);
+        return ((analogAddress.getCountry()==null || analogAddress.getCountry().trim().toUpperCase().contains("ITAL")) && searchStringInColumnInCsv(analogAddress.getCap().trim().toUpperCase(), INDEX_COLUMN_CAP, PATH_CSV_CAP))
+                || (analogAddress.getCountry()!=null && searchStringInColumnInCsv(analogAddress.getCountry().trim().toUpperCase(), INDEX_COLUMN_NAZIONALITY, PATH_CSV_NAZIONI));
     }
 
     private boolean searchStringInColumnInCsv(String string, int columnIndex, String filePath){
