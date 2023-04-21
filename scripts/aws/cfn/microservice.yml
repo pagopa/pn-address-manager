@@ -171,18 +171,18 @@ Resources:
         EcsLogGroup: !Ref EcsLogGroup
 
   # CloudWatch dashboard
-  AddressManagerMicroserviceCloudWatchDashboard:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
-      Parameters:
-        DashboardName: !Sub "${ProjectName}-address-manager"
-        AlarmArns: !Join
-          - ','
-          - - !GetAtt AddressManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
-        LogGroupsNames: !Join
-          - ','
-          - - !Ref EcsLogGroup
+#  AddressManagerMicroserviceCloudWatchDashboard:
+#    Type: AWS::CloudFormation::Stack
+#    Properties:
+#      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+#      Parameters:
+#        DashboardName: !Sub "${ProjectName}-address-manager"
+#        AlarmArns: !Join
+#          - ','
+#          - - !GetAtt AddressManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
+#        LogGroupsNames: !Join
+#          - ','
+#          - - !Ref EcsLogGroup
 
   AddressManagerMicroserviceTaskManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
