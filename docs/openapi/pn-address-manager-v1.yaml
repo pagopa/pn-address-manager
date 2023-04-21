@@ -58,44 +58,19 @@ paths:
             application/problem+json:
               schema:
                 $ref: 'remote-refs.yaml#/components/schemas/Problem'
-  /address-private/deduplicate-items:
-    post: 
-      summary: Richiesta di deduplica per una lista di coppie di indirizzi
-      description: |- 
-            Servizio Asincrono per la deduplica di indirizzi. 
-            Ogni coppia di indirizzi in lista viene confrontata e viene restituito il risultato del confronto
-            In caso di disuguaglianza viene restituita anche la versione Normalizzata del secondo
-      tags:
-        - DeduplicatesAddressService
-      operationId: deduplicateItems
-      parameters: 
-        - $ref: "#/components/parameters/xPagopaAddrManCxId"
-        - $ref: "#/components/parameters/xPagopaAddrManApiKey"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: "./schemas-pn-address.yaml#/components/schemas/DeduplicateItemsRequest"
-        required: true
-      responses: 
-        "202":
-          description: Richiesta presa in carico
-          content:
-            application/json:
-              schema:
-                $ref: './schemas-pn-address.yaml#/components/schemas/AcceptedResponse'
-        "400":
-          description:  Bad Request
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'remote-refs.yaml#/components/schemas/Problem'
-        "500":
-          description: InternalServerError
-          content:
-            application/problem+json:
-              schema:
-                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+      callbacks:
+        normalizeResponse:
+          'normalizeResponsePath':
+            put:
+              summary: Evento inoltrato su eventBridge
+              responses:
+                '200':
+                  description: OK
+                  content:
+                    application/json:
+                      schema:
+                        $ref: './schemas-pn-address.yaml#/components/schemas/NormalizeItemsResult'
+                  
   /address-private/deduplicates:
     post: 
       summary: Richiesta di deduplica per una coppia di indirizzi
