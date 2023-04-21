@@ -194,7 +194,7 @@ Resources:
             Action:
               - events:PutEvents
             Resource:
-              - !Ref PnAddressManagerEventBus
+              - !GetAtt PnAddressManagerEventBus.Arn
 
   ###################
   ### EventBridge ###
