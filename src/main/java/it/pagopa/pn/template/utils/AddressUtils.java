@@ -1,10 +1,7 @@
 package it.pagopa.pn.template.utils;
 
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvValidationException;
 import it.pagopa.pn.template.exception.PnAddressManagerException;
+import it.pagopa.pn.template.model.NormalizedAddressResponse;
 import it.pagopa.pn.template.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.template.rest.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.template.rest.v1.dto.NormalizeRequest;
@@ -16,9 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.*;
 
 @Component
@@ -26,26 +20,17 @@ import java.util.*;
 public class AddressUtils {
 
     private final boolean flagCsv;
-    private static final String PATH_CSV_CAP = "/PagoPA-ListaCAP.csv";
-    private static final String PATH_CSV_NAZIONI = "/PagoPA-Lista-Nazioni.csv";
-    private static final int INDEX_COLUMN_CAP = 0;
-    private static final int INDEX_COLUMN_NAZIONALITY = 0;
-    private  Map<String, Object> capMap;
-    private Map<String, String> countryMap;
-    private CsvService csvService;
-
-
-
+    private final Map<String, Object> capMap;
+    private final Map<String, String> countryMap;
 
     public AddressUtils(
-            @Value("${pn.address.manager.flag.csv}") boolean flagCsv, CsvService csvService){
+            @Value("${pn.address.manager.flag.csv}") boolean flagCsv, CsvService csvService) {
         this.flagCsv = flagCsv;
-        this.capMap= csvService.capMap();
-        this.countryMap=csvService.countryMap();
+        this.capMap = csvService.capMap();
+        this.countryMap = csvService.countryMap();
     }
 
-    public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress){
-
+    public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress) {
         return compare(baseAddress.getAddressRow(), targetAddress.getAddressRow())
                 && compare(baseAddress.getAddressRow2(), targetAddress.getAddressRow2())
                 && compare(baseAddress.getCap(), targetAddress.getCap())
@@ -55,84 +40,81 @@ public class AddressUtils {
                 && compare(baseAddress.getCountry(), targetAddress.getCountry());
     }
 
-    private boolean compare(String base, String target){
+    private boolean compare(String base, String target) {
         String trimmedBase = Optional.ofNullable(base).orElse("").trim();
         String trimmedTarget = Optional.ofNullable(target).orElse("").trim();
         return trimmedBase.equalsIgnoreCase(trimmedTarget);
     }
 
-    public AnalogAddress normalizeAddress(AnalogAddress analogAddress){
-        if(verifyAddress(analogAddress)) {
-            return toUpperCase(analogAddress);
-        }else{
-           throw new PnAddressManagerException("Cannot verify address", HttpStatus.BAD_REQUEST);
-        }
+    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress) {
+        NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress);
+        normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
+        return normalizedAddressResponse;
     }
 
     private AnalogAddress toUpperCase(AnalogAddress analogAddress) {
-        analogAddress.setAddressRow(analogAddress.getAddressRow().toUpperCase());
-        analogAddress.setCity(analogAddress.getCity().toUpperCase());
+        analogAddress.setAddressRow(Optional.ofNullable(analogAddress.getAddressRow()).map(String::toUpperCase).orElse(null));
+        analogAddress.setCity(Optional.ofNullable(analogAddress.getCity()).map(String::toUpperCase).orElse(null));
         analogAddress.setCap(Optional.ofNullable(analogAddress.getCap()).map(String::toUpperCase).orElse(null));
         analogAddress.setPr(Optional.ofNullable(analogAddress.getPr()).map(String::toUpperCase).orElse(null));
-        analogAddress.setCountry(Optional.ofNullable(analogAddress.getCountry()).map(String::toUpperCase).orElse(null));
         analogAddress.setAddressRow2(Optional.ofNullable(analogAddress.getAddressRow2()).map(String::toUpperCase).orElse(null));
         analogAddress.setCity2(Optional.ofNullable(analogAddress.getCity2()).map(String::toUpperCase).orElse(null));
+        if (analogAddress.getCountry() != null && countryMap.containsKey(analogAddress.getCountry())) {
+            analogAddress.setCountry(countryMap.get(analogAddress.getCountry()).toUpperCase());
+        }
         return analogAddress;
     }
 
 
-    public boolean verifyAddress(AnalogAddress analogAddress) {
+    public NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
+        NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         if (flagCsv) {
-            return verifyAddressInCsv(analogAddress);
+            try {
+                verifyAddressInCsv(analogAddress);
+            } catch (PnAddressManagerException e) {
+                log.error("Error in verifyAddressInCsv", e);
+                normalizedAddressResponse.setError(e.getMessage());
+            }
         } else {
-            //TODO verify with postel
-            return true;
+            //TODO: verify with postel
+            normalizedAddressResponse.setError("TODO: verify with postel");
+        }
+        return normalizedAddressResponse;
+    }
+
+    private void verifyAddressInCsv(AnalogAddress analogAddress) {
+        if (!StringUtils.hasText(analogAddress.getCountry())
+                || analogAddress.getCountry().toUpperCase().trim().startsWith("ITAL")) {
+            searchCap(analogAddress.getCap(), capMap);
+        } else {
+            searchCountry(analogAddress.getCountry(), countryMap);
         }
     }
 
-    private boolean verifyAddressInCsv(AnalogAddress analogAddress){
-        return ((StringUtils.hasText(analogAddress.getCountry())
-                || analogAddress.getCountry().contains("ITAL"))
-                && searchStringInColumnInCsv(analogAddress.getCap(), INDEX_COLUMN_CAP, PATH_CSV_CAP))
-                || searchStringInColumnInCsv(analogAddress.getCountry(), INDEX_COLUMN_NAZIONALITY, PATH_CSV_NAZIONI);
+    private void searchCountry(String country, Map<String, String> countryMap) {
+        if (!countryMap.containsKey(country)) {
+            throw new PnAddressManagerException("Country not found", HttpStatus.BAD_REQUEST);
+        }
     }
 
-    private boolean searchStringInColumnInCsv(String string, int columnIndex, String filePath){
-        String[] nextLine;
-        try {
-            InputStream inputStream = AddressUtils.class.getResourceAsStream(filePath);
-            assert inputStream != null;
-            CSVReader csvReader = new CSVReaderBuilder(new InputStreamReader(inputStream, "Windows-1252"))
-                    .withCSVParser(new CSVParserBuilder().withSeparator(';').build())
-                    .withSkipLines(1)
-                    .build();
-            while ((nextLine = csvReader.readNext()) != null) {
-                if (nextLine.length > columnIndex && nextLine[columnIndex].equalsIgnoreCase(string)) {
-                    csvReader.close();
-                    inputStream.close();
-                    return true;
-                }
-            }
-            csvReader.close();
-            inputStream.close();
-            return false; //TODO: MESSAGGIO PARLANTE PER CAP NOT FOUND O COUNTRY NOT FOUND (NON BASTA SOLO IL BOOLEAN)
-        } catch (IOException | CsvValidationException e) {
-            throw new PnAddressManagerException("Error during verify address with csv file", HttpStatus.INTERNAL_SERVER_ERROR);
+    private void searchCap(String cap, Map<String, Object> capMap) {
+        if (!capMap.containsKey(cap)) {
+            throw new PnAddressManagerException("Cap not found", HttpStatus.BAD_REQUEST);
         }
     }
 
     public NormalizeItemsResult normalizeAddresses(String correlationId, List<NormalizeRequest> requestItems) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         normalizeItemsResult.setCorrelationId(correlationId);
-
         List<NormalizeResult> normalizeResultList = new ArrayList<>();
         for (NormalizeRequest n : requestItems) {
             NormalizeResult normalizeResult = new NormalizeResult();
             normalizeResult.setId(n.getId());
-            normalizeResult.setNormalizedAddress(normalizeAddress(n.getAddress()));
+            NormalizedAddressResponse normalizedAddressResponse = normalizeAddress(n.getAddress());
+            normalizeResult.setError(normalizedAddressResponse.getError());
+            normalizeResult.setNormalizedAddress(normalizedAddressResponse.getNormalizedAddress());
             normalizeResultList.add(normalizeResult);
         }
-
         normalizeItemsResult.setResultItems(normalizeResultList);
         return normalizeItemsResult;
     }

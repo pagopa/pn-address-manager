@@ -19,12 +19,15 @@ public class EventService {
     private final AmazonEventBridgeAsync amazonEventBridge;
     private final String eventBusName;
     private final String eventBusDetailType;
+    private final String eventBusSource;
 
     public EventService(AmazonEventBridgeAsync amazonEventBridge,
                         @Value("${pn.address.manager.eventbus.name}") String eventBusName,
+                        @Value("${pn.address.manager.eventbus.source}") String eventBusSource,
                         @Value("${pn.address.manager.eventbus.detail.type}") String eventBusDetailType) {
         this.amazonEventBridge = amazonEventBridge;
         this.eventBusName = eventBusName;
+        this.eventBusSource = eventBusSource;
         this.eventBusDetailType = eventBusDetailType;
     }
 
@@ -51,7 +54,7 @@ public class EventService {
         entryObj.setDetail(message);
         entryObj.setEventBusName(eventBusName);
         entryObj.setDetailType(eventBusDetailType);
-        entryObj.setSource("pn-address-manager");
+        entryObj.setSource(eventBusSource);
         entries.add(entryObj);
         putEventsRequest.setEntries(entries);
         return putEventsRequest;

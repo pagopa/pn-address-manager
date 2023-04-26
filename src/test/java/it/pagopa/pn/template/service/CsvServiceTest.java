@@ -19,45 +19,27 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CsvServiceTest {
-
-    @InjectMocks
-    CsvService csvService;
-
-
-    @Mock
-    InputStream inputStreamMock;
-
-    @Mock
-    BufferedReader br;
+class CsvServiceTest {
 
     @Test
-    public void testCountryMap() throws Exception {
-        String csvData = "IT, Italy\n"
-                + "FR, France\n"
-                + "DE, Germany\n";
-
-
+    void testCountryMap() {
+        CsvService csvService = new CsvService("/Mock-Lista-Nazioni.csv", "/Mock-ListaCAP.csv");
         Map<String, String> expectedCountryMap = new HashMap<>();
-        expectedCountryMap.put("IT", "Italy");
-        expectedCountryMap.put("FR", "France");
-        expectedCountryMap.put("DE", "Germany");
+        expectedCountryMap.put("AFGHANISTAN","AFGHANISTAN");
+        expectedCountryMap.put("AFRICA DEL SUD","SUDAFRICA");
+        expectedCountryMap.put("AFRIQUE DU SUD","SUDAFRICA");
 
         Map<String, String> actualCountryMap = csvService.countryMap();
-
         assertEquals(expectedCountryMap, actualCountryMap);
     }
 
     @Test
-    public void testCapMap() throws Exception {
-        String csvData = "00010, Lazio, Roma\n"
-                + "00011, Lazio, Roma\n"
-                + "00012, Lazio, Roma\n";
-
+    void testCapMap(){
+        CsvService csvService = new CsvService("/Mock-Lista-Nazioni.csv", "/Mock-ListaCAP.csv");
 
         Map<String, Object> expectedCapMap = new HashMap<>();
         expectedCapMap.put("00010", new Cap("00010", "Lazio", "Roma"));
-        expectedCapMap.put("00011", new Cap("00011", "Lazio", "Roma"));
+        expectedCapMap.put("00013", new Cap("00013", "Lazio", "Roma"));
         expectedCapMap.put("00012", new Cap("00012", "Lazio", "Roma"));
 
         Map<String, Object> actualCapMap = csvService.capMap();

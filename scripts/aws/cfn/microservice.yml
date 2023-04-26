@@ -134,6 +134,11 @@ Parameters:
     Type: Number
     Description: maximum autoscaling number of tasks
 
+  flagCsv:
+    Default: true
+    Type: String
+    Description: flag to enable csv file check
+
 Resources:
 
   # PN-address-manager microservice
@@ -159,6 +164,8 @@ Resources:
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
+        ContainerEnvEntry2: !Sub 'PN_ADDRESS_MANAGER_EVENTBUS_NAME=${PnAddressManagerEventBus.Name}'
+        ContainerEnvEntry3: !Sub 'PN_ADDRESS_MANAGER_FLAG_CSV=${flagCsv}'
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

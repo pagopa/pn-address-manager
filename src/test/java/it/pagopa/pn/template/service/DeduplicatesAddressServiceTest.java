@@ -1,5 +1,6 @@
 package it.pagopa.pn.template.service;
 
+import it.pagopa.pn.template.model.NormalizedAddressResponse;
 import it.pagopa.pn.template.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.template.rest.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.template.rest.v1.dto.DeduplicatesResponse;
@@ -35,6 +36,7 @@ class DeduplicatesAddressServiceTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
+        NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         AnalogAddress target = new AnalogAddress();
         target.setCity("42");
         target.setCity2("42");
@@ -43,6 +45,7 @@ class DeduplicatesAddressServiceTest {
         target.setPr("42");
         target.setCountry("42");
         target.setCap("42");
+        normalizedAddressResponse.setNormalizedAddress(target);
         deduplicatesRequest.setBaseAddress(base);
         deduplicatesRequest.setTargetAddress(target);
         deduplicatesRequest.setCorrelationId("42");
@@ -54,7 +57,7 @@ class DeduplicatesAddressServiceTest {
         deduplicatesResponse.setError(null);
 
         when(addressUtils.compareAddress(any(),any())).thenReturn(false);
-        when(addressUtils.normalizeAddress(any())).thenReturn(target);
+        when(addressUtils.normalizeAddress(any())).thenReturn(normalizedAddressResponse);
 
         StepVerifier.create(deduplicatesAddressService.deduplicates(Mono.just(deduplicatesRequest)))
                 .expectNext(deduplicatesResponse).verifyComplete();
@@ -87,10 +90,9 @@ class DeduplicatesAddressServiceTest {
         deduplicatesResponse.setEqualityResult(false);
         deduplicatesResponse.setCorrelationId("42");
         deduplicatesResponse.setNormalizedAddress(null);
-        deduplicatesResponse.setError("Target Address Not Found");
-
+        NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         when(addressUtils.compareAddress(any(),any())).thenReturn(false);
-        when(addressUtils.normalizeAddress(any())).thenReturn(null);
+        when(addressUtils.normalizeAddress(any())).thenReturn(normalizedAddressResponse);
 
         StepVerifier.create(deduplicatesAddressService.deduplicates(Mono.just(deduplicatesRequest)))
                 .expectNext(deduplicatesResponse).verifyComplete();

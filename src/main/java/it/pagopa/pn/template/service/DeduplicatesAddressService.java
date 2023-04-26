@@ -1,5 +1,6 @@
 package it.pagopa.pn.template.service;
 
+import it.pagopa.pn.template.model.NormalizedAddressResponse;
 import it.pagopa.pn.template.rest.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.template.rest.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.template.utils.AddressUtils;
@@ -25,7 +26,9 @@ public class DeduplicatesAddressService {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setCorrelationId(request.getCorrelationId());
         deduplicatesResponse.setEqualityResult(addressUtils.compareAddress(request.getBaseAddress(), request.getTargetAddress()));
-        deduplicatesResponse.setNormalizedAddress(addressUtils.normalizeAddress(request.getTargetAddress()));
+        NormalizedAddressResponse normalizeAddressResponse = addressUtils.normalizeAddress(request.getTargetAddress());
+        deduplicatesResponse.setError(normalizeAddressResponse.getError());
+        deduplicatesResponse.setNormalizedAddress(normalizeAddressResponse.getNormalizedAddress());
         return deduplicatesResponse;
     }
 
