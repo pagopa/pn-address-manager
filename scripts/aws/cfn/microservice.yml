@@ -171,18 +171,18 @@ Resources:
         EcsLogGroup: !Ref EcsLogGroup
 
   # CloudWatch dashboard
-#  AddressManagerMicroserviceCloudWatchDashboard:
-#    Type: AWS::CloudFormation::Stack
-#    Properties:
-#      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
-#      Parameters:
-#        DashboardName: !Sub "${ProjectName}-address-manager"
-#        AlarmArns: !Join
-#          - ','
-#          - - !GetAtt AddressManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
-#        LogGroupsNames: !Join
-#          - ','
-#          - - !Ref EcsLogGroup
+  AddressManagerMicroserviceCloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-address-manager"
+        AlarmArns: !Join
+          - ','
+          - - !GetAtt AddressManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
+        LogGroupsNames: !Join
+          - ','
+          - - !Ref EcsLogGroup
 
   AddressManagerMicroserviceTaskManagedPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -214,43 +214,43 @@ Resources:
       RetentionInDays: 3
 
   # Address Manager test queue
-#  PnAddressManagerTestQueue:
-#    Type: AWS::CloudFormation::Stack
+  PnAddressManagerTestQueue:
+    Type: AWS::CloudFormation::Stack
 #    UpdateReplacePolicy: Retain
 #    DeletionPolicy: Retain
-#    Properties:
-#      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
-#      Parameters:
-#        QueueName: !Sub '${ProjectName}-address_manager_test'
-#        DelaySeconds: 1
-#        HasDLQ: 'false'
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-address_manager'
+        DelaySeconds: 1
+        HasDLQ: 'false'
 
   # IAM role that allow to send message to queue
-#  PnAddressManagerEventBusQueueRole:
-#    Type: AWS::IAM::Role
-#    Properties:
-#      AssumeRolePolicyDocument:
-#        Statement:
-#          - Action: sts:AssumeRole
-#            Effect: Allow
-#            Principal:
-#              Service: events.amazonaws.com
-#        Version: "2012-10-17"
-#      Policies:
-#        - PolicyName: putEventIntoQueue
-#          PolicyDocument:
-#            Statement:
-#              - Sid: putEvents
-#                Action:
-#                  - sqs:ChangeMessageVisibility
-#                  - sqs:ChangeMessageVisibilityBatch
-#                  - sqs:GetQueueAttributes
-#                  - sqs:GetQueueUrl
-#                  - sqs:SendMessage
-#                  - sqs:SendMessageBatch
-#                Effect: Allow
-#                Resource:
-#                  - !GetAtt PnAddressManagerTestQueue.Outputs.QueueARN
+  PnAddressManagerEventBusQueueRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: putEventIntoQueue
+          PolicyDocument:
+            Statement:
+              - Sid: putEvents
+                Action:
+                  - sqs:ChangeMessageVisibility
+                  - sqs:ChangeMessageVisibilityBatch
+                  - sqs:GetQueueAttributes
+                  - sqs:GetQueueUrl
+                  - sqs:SendMessage
+                  - sqs:SendMessageBatch
+                Effect: Allow
+                Resource:
+                  - !GetAtt PnAddressManagerTestQueue.Outputs.QueueARN
 
   # IAM role that allow to send message to a log group
   PnAddressManagerEventBusLogRole:
@@ -301,18 +301,18 @@ Resources:
               }
 
   # Event Bus rule that direct event to queue
-#  PnAddressManagerEventBusToQueue:
-#    Type: AWS::Events::Rule
-#    Properties:
-#      Description: Route Address Manager Events to queue
-#      RoleArn: !GetAtt PnAddressManagerEventBusQueueRole.Arn
-#      EventBusName: !Ref PnAddressManagerEventBus
-#      EventPattern:
-#        detail-type: [ "AddressManagerOutcomeEvent" ]
-#        detail:
-#          source: [ "pn-address-manager" ]
-#          cxId: [ "test-1" ]
-#      Targets:
-#        - Id: !Sub '${ProjectName}-AddressManagerBus-TestQueue'
-#          Arn: !GetAtt PnAddressManagerTestQueue.Outputs.QueueARN
-#          InputPath: $.detail.body
+  PnAddressManagerEventBusToQueue:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route Address Manager Events to queue
+      RoleArn: !GetAtt PnAddressManagerEventBusQueueRole.Arn
+      EventBusName: !Ref PnAddressManagerEventBus
+      EventPattern:
+        detail-type: [ "AddressManagerOutcomeEvent" ]
+        detail:
+          source: [ "pn-address-manager" ]
+          cxId: [ "test-1" ]
+      Targets:
+        - Id: !Sub '${ProjectName}-AddressManagerBus-TestQueue'
+          Arn: !GetAtt PnAddressManagerTestQueue.Outputs.QueueARN
+          InputPath: $.detail.body
