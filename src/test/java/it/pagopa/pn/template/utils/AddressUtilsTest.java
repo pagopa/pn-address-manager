@@ -9,8 +9,10 @@ import it.pagopa.pn.template.rest.v1.dto.NormalizeResult;
 import java.util.ArrayList;
 import java.util.List;
 
+import it.pagopa.pn.template.service.CsvService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -28,6 +30,8 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 class AddressUtilsTest {
+    @InjectMocks
+    private CsvService csvService;
 
     @Test
     void compareAddress() {
@@ -39,7 +43,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true, csvService);
         assertTrue(addressUtils.compareAddress(base, base));
     }
 
@@ -52,7 +56,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
         assertTrue(addressUtils.compareAddress(base, base));
     }
 
@@ -61,7 +65,7 @@ class AddressUtilsTest {
         AnalogAddress base = new AnalogAddress();
         base.setCity("42");
         AnalogAddress target = new AnalogAddress();
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
         assertFalse(addressUtils.compareAddress(base, target));
     }
 
@@ -74,7 +78,7 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("42");
         base.setCap("00010");
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
         assertNotNull(addressUtils.normalizeAddress(base));
     }
 
@@ -88,7 +92,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCap("ARUBA");
         base.setCountry("ARUBA");
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
         assertNotNull(addressUtils.normalizeAddress(base));
     }
 
@@ -103,7 +107,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCap("ARUBAA");
         base.setCountry("ARUBAA");
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
         assertNull(addressUtils.normalizeAddress(base));
     }
 
@@ -112,7 +116,7 @@ class AddressUtilsTest {
      */
     @Test
     void testNormalizeAddresses() {
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         NormalizeItemsResult actualNormalizeAddressesResult = addressUtils.normalizeAddresses("42", normalizeRequestList);
         assertEquals("42", actualNormalizeAddressesResult.getCorrelationId());
@@ -123,7 +127,7 @@ class AddressUtilsTest {
      */
     @Test
     void testNormalizeAddresses3() {
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
 
         NormalizeRequest normalizeRequest = new NormalizeRequest();
         normalizeRequest.address(new AnalogAddress());
@@ -152,7 +156,7 @@ class AddressUtilsTest {
         //       it.pagopa.pn.template.utils.AddressUtils
         //   See https://diff.blue/R027 to resolve this issue.
 
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
         NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
         when(normalizeRequest.getAddress()).thenReturn(new AnalogAddress());
         when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
@@ -178,7 +182,7 @@ class AddressUtilsTest {
      */
     @Test
     void testNormalizeAddresses6() {
-        AddressUtils addressUtils = new AddressUtils(true);
+        AddressUtils addressUtils = new AddressUtils(true,csvService);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("Cap");
         when(analogAddress.getCountry()).thenReturn("GB");
@@ -216,7 +220,7 @@ class AddressUtilsTest {
         //       it.pagopa.pn.template.utils.AddressUtils
         //   See https://diff.blue/R027 to resolve this issue.
 
-        AddressUtils addressUtils = new AddressUtils(false);
+        AddressUtils addressUtils = new AddressUtils(false,csvService);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         doNothing().when(analogAddress).setAddressRow2(any());
         doNothing().when(analogAddress).setCap(any());
@@ -277,7 +281,7 @@ class AddressUtilsTest {
         //       it.pagopa.pn.template.utils.AddressUtils
         //   See https://diff.blue/R027 to resolve this issue.
 
-        AddressUtils addressUtils = new AddressUtils(false);
+        AddressUtils addressUtils = new AddressUtils(false,csvService);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         doThrow(new PnAddressManagerException("An error occurred", HttpStatus.CONTINUE)).when(analogAddress)
                 .setAddressRow2(any());
@@ -323,7 +327,7 @@ class AddressUtilsTest {
      */
     @Test
     void testNormalizeAddresses9() {
-        AddressUtils addressUtils = new AddressUtils(false);
+        AddressUtils addressUtils = new AddressUtils(false,csvService);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getAddressRow2())
                 .thenThrow(new PnAddressManagerException("An error occurred", HttpStatus.CONTINUE));
