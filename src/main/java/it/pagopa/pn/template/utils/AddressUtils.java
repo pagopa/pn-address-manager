@@ -9,6 +9,7 @@ import it.pagopa.pn.template.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.template.rest.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.template.rest.v1.dto.NormalizeRequest;
 import it.pagopa.pn.template.rest.v1.dto.NormalizeResult;
+import it.pagopa.pn.template.service.CsvService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -18,9 +19,7 @@ import org.springframework.util.StringUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @Slf4j
@@ -28,16 +27,25 @@ public class AddressUtils {
 
     private final boolean flagCsv;
     private static final String PATH_CSV_CAP = "/PagoPA-ListaCAP.csv";
-    private static final String PATH_CSV_NAZIONI = "/PagoPA-ListaNazioni.csv";
+    private static final String PATH_CSV_NAZIONI = "/PagoPA-Lista-Nazioni.csv";
     private static final int INDEX_COLUMN_CAP = 0;
     private static final int INDEX_COLUMN_NAZIONALITY = 0;
+    private  Map<String, Object> capMap;
+    private Map<String, String> countryMap;
+    private CsvService csvService;
+
+
+
 
     public AddressUtils(
-            @Value("${pn.address.manager.flag.csv}") boolean flagCsv){
+            @Value("${pn.address.manager.flag.csv}") boolean flagCsv, CsvService csvService){
         this.flagCsv = flagCsv;
+        this.capMap= csvService.capMap();
+        this.countryMap=csvService.countryMap();
     }
 
     public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress){
+
         return compare(baseAddress.getAddressRow(), targetAddress.getAddressRow())
                 && compare(baseAddress.getAddressRow2(), targetAddress.getAddressRow2())
                 && compare(baseAddress.getCap(), targetAddress.getCap())
