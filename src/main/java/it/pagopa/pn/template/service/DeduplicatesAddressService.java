@@ -1,6 +1,5 @@
 package it.pagopa.pn.template.service;
 
-import it.pagopa.pn.template.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.template.rest.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.template.rest.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.template.utils.AddressUtils;
@@ -18,7 +17,7 @@ public class DeduplicatesAddressService {
         this.addressUtils = addressUtils;
     }
 
-    public Mono<DeduplicatesResponse> deduplicates(String pnAddressManagerCxId, String xApiKey, Mono<DeduplicatesRequest> request){
+    public Mono<DeduplicatesResponse> deduplicates(Mono<DeduplicatesRequest> request){
         return request.map(this::createDeduplicatesResponseByDeduplicatesRequest);
     }
 
@@ -26,12 +25,7 @@ public class DeduplicatesAddressService {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setCorrelationId(request.getCorrelationId());
         deduplicatesResponse.setEqualityResult(addressUtils.compareAddress(request.getBaseAddress(), request.getTargetAddress()));
-        AnalogAddress normalizedAddress = addressUtils.normalizeAddress(request.getTargetAddress());
-        if(normalizedAddress!=null){
-            deduplicatesResponse.setNormalizedAddress(normalizedAddress);
-        }else{
-            deduplicatesResponse.setError("Target Address Not Found");
-        }
+        deduplicatesResponse.setNormalizedAddress(addressUtils.normalizeAddress(request.getTargetAddress()));
         return deduplicatesResponse;
     }
 

@@ -56,7 +56,7 @@ class DeduplicatesAddressServiceTest {
         when(addressUtils.compareAddress(any(),any())).thenReturn(false);
         when(addressUtils.normalizeAddress(any())).thenReturn(target);
 
-        StepVerifier.create(deduplicatesAddressService.deduplicates("cxid","apikey",Mono.just(deduplicatesRequest)))
+        StepVerifier.create(deduplicatesAddressService.deduplicates(Mono.just(deduplicatesRequest)))
                 .expectNext(deduplicatesResponse).verifyComplete();
     }
 
@@ -92,7 +92,7 @@ class DeduplicatesAddressServiceTest {
         when(addressUtils.compareAddress(any(),any())).thenReturn(false);
         when(addressUtils.normalizeAddress(any())).thenReturn(null);
 
-        StepVerifier.create(deduplicatesAddressService.deduplicates("cxid","apikey",Mono.just(deduplicatesRequest)))
+        StepVerifier.create(deduplicatesAddressService.deduplicates(Mono.just(deduplicatesRequest)))
                 .expectNext(deduplicatesResponse).verifyComplete();
     }
 }

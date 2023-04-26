@@ -17,12 +17,11 @@ class DeduplicatesAddressControllerTest {
     @Test
     void testDeduplicates4() {
         DeduplicatesAddressService deduplicatesAddressService = mock(DeduplicatesAddressService.class);
-        when(deduplicatesAddressService.deduplicates(any(), any(), any()))
+        when(deduplicatesAddressService.deduplicates(any()))
                 .thenReturn((Mono<DeduplicatesResponse>) mock(Mono.class));
         (new DeduplicatesAddressController(VirtualTimeScheduler.create(true), deduplicatesAddressService))
                 .deduplicates("42 Main St", "X Api Key", null, null);
-        verify(deduplicatesAddressService).deduplicates(any(), any(),
-                any());
+        verify(deduplicatesAddressService).deduplicates(any());
     }
 }
 
