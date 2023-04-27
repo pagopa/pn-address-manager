@@ -36,6 +36,29 @@ Resources:
         LogGroupName: !Sub "${ProjectName}-address-manager"
         LogGroupPrefix: '/aws/ecs'
 
+  # Event Bus
+  AddressManagerEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub '${ProjectName}-AddressManagerBus'
+
+  # Event Bus Dead Letter Queue
+  AddressManagerEventBusDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      QueueName: !Sub '${ProjectName}-AddressManagerBus-DLQ'
+
 Outputs:
   EcsLogGroup:
     Value: !GetAtt PnAddressManagerLogGroup.Outputs.LogGroupName
+  AddressManagerEventBusArn:
+    Value: !GetAtt AddressManagerEventBus.Arn
+  AddressManagerEventBusName:
+    Value: !GetAtt AddressManagerEventBus.Name
+  AddressManagerEventBusDLQArn:
+    Value: !GetAtt AddressManagerEventBusDLQ.Arn
+  AddressManagerEventBusDLQName:
+    Value: !GetAtt AddressManagerEventBusDLQ.QueueName
+  AddressManagerEventBusDLQUrl:
+    Value: !GetAtt AddressManagerEventBusDLQ.QueueUrl
