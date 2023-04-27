@@ -1,15 +1,15 @@
 package it.pagopa.pn.template.exception;
 
+import it.pagopa.pn.commons.exceptions.PnRuntimeException;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
-public class PnAddressManagerException extends RuntimeException {
+public class PnAddressManagerException extends PnRuntimeException {
 
     @Getter
-    private final HttpStatus status;
+    private final String description;
 
-    public PnAddressManagerException(String message, HttpStatus status){
-        super(message);
-        this.status = status;
+    public PnAddressManagerException(String message, String description, int status, String errorCode){
+        super(message, description, status, errorCode, null, null);
+        this.description = description;
     }
 }

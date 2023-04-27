@@ -22,6 +22,9 @@ import static org.mockito.Mockito.when;
 
 class AwsClientLoggerInterceptorTest {
 
+    /**
+     * Method under test: {@link AwsClientLoggerInterceptor#beforeExecution(Context.BeforeExecution, ExecutionAttributes)}
+     */
     @Test
     void testBeforeExecution() {
         AwsClientLoggerInterceptor awsClientLoggerInterceptor = new AwsClientLoggerInterceptor();
@@ -32,6 +35,9 @@ class AwsClientLoggerInterceptorTest {
         assertDoesNotThrow(() -> awsClientLoggerInterceptor.beforeExecution(context, executionAttributes));
     }
 
+    /**
+     * Method under test: {@link AwsClientLoggerInterceptor#afterExecution(Context.AfterExecution, ExecutionAttributes)}
+     */
     @Test
     void testAfterExecution() {
         AwsClientLoggerInterceptor awsClientLoggerInterceptor = new AwsClientLoggerInterceptor();
@@ -53,6 +59,9 @@ class AwsClientLoggerInterceptorTest {
         assertDoesNotThrow(() -> awsClientLoggerInterceptor.afterExecution(contextBatchWrite, executionAttributes));
     }
 
+    /**
+     * Method under test: {@link AwsClientLoggerInterceptor#onExecutionFailure(Context.FailedExecution, ExecutionAttributes)}
+     */
     @Test
     void testOnExecutionFailure() {
         AwsClientLoggerInterceptor awsClientLoggerInterceptor = new AwsClientLoggerInterceptor();

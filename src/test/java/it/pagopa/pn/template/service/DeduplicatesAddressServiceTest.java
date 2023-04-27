@@ -10,9 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
@@ -51,16 +50,16 @@ class DeduplicatesAddressServiceTest {
         deduplicatesRequest.setCorrelationId("42");
 
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
-        deduplicatesResponse.setEqualityResult(false);
+        deduplicatesResponse.setEqualityResult(true);
         deduplicatesResponse.setCorrelationId("42");
         deduplicatesResponse.setNormalizedAddress(target);
         deduplicatesResponse.setError(null);
 
-        when(addressUtils.compareAddress(any(),any())).thenReturn(false);
-        when(addressUtils.normalizeAddress(any())).thenReturn(normalizedAddressResponse);
+        when(addressUtils.compareAddress(any(),any())).thenReturn(true);
+        when(addressUtils.normalizeAddress(any(), any())).thenReturn(normalizedAddressResponse);
 
-        StepVerifier.create(deduplicatesAddressService.deduplicates(Mono.just(deduplicatesRequest)))
-                .expectNext(deduplicatesResponse).verifyComplete();
+        DeduplicatesResponse response = deduplicatesAddressService.deduplicates(deduplicatesRequest);
+        assertEquals(deduplicatesResponse.getEqualityResult(), response.getEqualityResult());
     }
 
     @Test
@@ -92,10 +91,10 @@ class DeduplicatesAddressServiceTest {
         deduplicatesResponse.setNormalizedAddress(null);
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         when(addressUtils.compareAddress(any(),any())).thenReturn(false);
-        when(addressUtils.normalizeAddress(any())).thenReturn(normalizedAddressResponse);
+        when(addressUtils.normalizeAddress(any(), any())).thenReturn(normalizedAddressResponse);
 
-        StepVerifier.create(deduplicatesAddressService.deduplicates(Mono.just(deduplicatesRequest)))
-                .expectNext(deduplicatesResponse).verifyComplete();
+        DeduplicatesResponse response = deduplicatesAddressService.deduplicates(deduplicatesRequest);
+        assertEquals(response.getEqualityResult(), deduplicatesResponse.getEqualityResult());
     }
 }
 

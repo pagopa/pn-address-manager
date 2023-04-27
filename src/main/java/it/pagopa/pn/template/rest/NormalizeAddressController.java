@@ -37,12 +37,11 @@ public class NormalizeAddressController implements NormalizeAddressServiceApi {
      * or Bad Request (status code 400)
      * or InternalServerError (status code 500)
      */
-
-
     @Override
     public Mono<ResponseEntity<AcceptedResponse>> normalize(String pnAddressManagerCxId, String xApiKey, Mono<NormalizeItemsRequest> normalizeItemsRequest, final ServerWebExchange exchange) {
-        return normalizeAddressService.normalizeAddressAsync(pnAddressManagerCxId, normalizeItemsRequest)
-                .map(s -> ResponseEntity.ok().body(s))
+        return normalizeItemsRequest
+                .flatMap(request -> normalizeAddressService.normalizeAddressAsync(pnAddressManagerCxId, request))
+                .map(acceptedResponse -> ResponseEntity.ok().body(acceptedResponse))
                 .publishOn(scheduler);
     }
 }

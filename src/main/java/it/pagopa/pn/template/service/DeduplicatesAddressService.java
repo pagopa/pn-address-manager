@@ -6,7 +6,6 @@ import it.pagopa.pn.template.rest.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.template.utils.AddressUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Mono;
 
 @Service
 @Slf4j
@@ -18,15 +17,15 @@ public class DeduplicatesAddressService {
         this.addressUtils = addressUtils;
     }
 
-    public Mono<DeduplicatesResponse> deduplicates(Mono<DeduplicatesRequest> request){
-        return request.map(this::createDeduplicatesResponseByDeduplicatesRequest);
+    public DeduplicatesResponse deduplicates(DeduplicatesRequest request){
+        return createDeduplicatesResponseByDeduplicatesRequest(request);
     }
 
     private DeduplicatesResponse createDeduplicatesResponseByDeduplicatesRequest(DeduplicatesRequest request){
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setCorrelationId(request.getCorrelationId());
         deduplicatesResponse.setEqualityResult(addressUtils.compareAddress(request.getBaseAddress(), request.getTargetAddress()));
-        NormalizedAddressResponse normalizeAddressResponse = addressUtils.normalizeAddress(request.getTargetAddress());
+        NormalizedAddressResponse normalizeAddressResponse = addressUtils.normalizeAddress(request.getTargetAddress(), null);
         deduplicatesResponse.setError(normalizeAddressResponse.getError());
         deduplicatesResponse.setNormalizedAddress(normalizeAddressResponse.getNormalizedAddress());
         return deduplicatesResponse;

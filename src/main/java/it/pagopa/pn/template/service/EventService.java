@@ -31,18 +31,18 @@ public class EventService {
         this.eventBusDetailType = eventBusDetailType;
     }
 
-    public void sendEvent(String message) {
+    public void sendEvent(String message, String correlationId) {
         amazonEventBridge.putEventsAsync(putEventsRequestBuilder(message),
                 new AsyncHandler<>() {
                     @Override
                     public void onError(Exception e) {
-                        log.error("error");
+                        log.error("Send event with correlationId {} failed", correlationId, e);
                     }
 
                     @Override
                     public void onSuccess(PutEventsRequest request, PutEventsResult putEventsResult) {
-                        log.info("success");
-                        log.debug(putEventsResult.getEntries().toString());
+                        log.info("Event with correlationId {} sent successfully", correlationId);
+                        log.debug("Sent event result: {}", putEventsResult.getEntries());
                     }
                 });
     }
@@ -57,6 +57,7 @@ public class EventService {
         entryObj.setSource(eventBusSource);
         entries.add(entryObj);
         putEventsRequest.setEntries(entries);
+        log.debug("PutEventsRequest: {}", putEventsRequest);
         return putEventsRequest;
     }
 }

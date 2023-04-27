@@ -15,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 @Component
 public class ResponseExchangeFilter implements ExchangeFilterFunction {
 
+    private static final int MAX_LOGGED_BODY_SIZE = 400;
+
     @Override
     public @NotNull Mono<ClientResponse> filter(@NotNull ClientRequest request, ExchangeFunction next) {
         long start = System.currentTimeMillis();
@@ -38,7 +40,7 @@ public class ResponseExchangeFilter implements ExchangeFilterFunction {
                 request.url(),
                 response.statusCode().value(),
                 response.statusCode().name(),
-                body,
+                String.format("%1."+MAX_LOGGED_BODY_SIZE+"s", body),
                 duration);
     }
 
@@ -55,8 +57,7 @@ public class ResponseExchangeFilter implements ExchangeFilterFunction {
     private ClientRequest interceptBody(ClientRequest request) {
         return ClientRequest.from(request)
                 .body((outputMessage, context) -> request.body().insert(new ClientHttpRequestDecorator(outputMessage) {
-                    @Override
-                    public @NotNull Mono<Void> writeWith(@NotNull Publisher<? extends DataBuffer> body) {
+                    @Override public @NotNull Mono<Void> writeWith(@NotNull Publisher<? extends DataBuffer> body) {
                         return super.writeWith(Mono.from(body)
                                 .doOnNext(dataBuffer -> logRequestBody(dataBuffer, request)));
                     }

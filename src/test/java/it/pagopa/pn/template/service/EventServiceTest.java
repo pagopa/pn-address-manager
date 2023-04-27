@@ -26,6 +26,6 @@ class EventServiceTest {
     void sendEvent(){
         CompletableFuture<PutEventsResult> future = new CompletableFuture<>();
         when(eventBridgeAsync.putEventsAsync(any(),any())).thenReturn(future);
-        Assertions.assertDoesNotThrow(() -> eventService.sendEvent("json"));
+        Assertions.assertDoesNotThrow(() -> eventService.sendEvent("json","correlationId"));
     }
 }

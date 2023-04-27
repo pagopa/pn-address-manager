@@ -3,7 +3,6 @@ package it.pagopa.pn.template.utils;
 import it.pagopa.pn.template.exception.PnAddressManagerException;
 import it.pagopa.pn.template.model.NormalizedAddressResponse;
 import it.pagopa.pn.template.rest.v1.dto.AnalogAddress;
-import it.pagopa.pn.template.rest.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.template.rest.v1.dto.NormalizeRequest;
 import it.pagopa.pn.template.rest.v1.dto.NormalizeResult;
 import it.pagopa.pn.template.service.CsvService;
@@ -15,6 +14,9 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 
+import static it.pagopa.pn.template.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND;
+import static it.pagopa.pn.template.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND;
+
 @Component
 @Slf4j
 public class AddressUtils {
@@ -23,8 +25,8 @@ public class AddressUtils {
     private final Map<String, Object> capMap;
     private final Map<String, String> countryMap;
 
-    public AddressUtils(
-            @Value("${pn.address.manager.flag.csv}") boolean flagCsv, CsvService csvService) {
+    public AddressUtils(@Value("${pn.address.manager.flag.csv}") boolean flagCsv,
+                        CsvService csvService) {
         this.flagCsv = flagCsv;
         this.capMap = csvService.capMap();
         this.countryMap = csvService.countryMap();
@@ -46,9 +48,12 @@ public class AddressUtils {
         return trimmedBase.equalsIgnoreCase(trimmedTarget);
     }
 
-    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress) {
+    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id) {
         NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress);
-        normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
+        normalizedAddressResponse.setId(id);
+        if (!StringUtils.hasText(normalizedAddressResponse.getError())) {
+            normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
+        }
         return normalizedAddressResponse;
     }
 
@@ -59,9 +64,7 @@ public class AddressUtils {
         analogAddress.setPr(Optional.ofNullable(analogAddress.getPr()).map(String::toUpperCase).orElse(null));
         analogAddress.setAddressRow2(Optional.ofNullable(analogAddress.getAddressRow2()).map(String::toUpperCase).orElse(null));
         analogAddress.setCity2(Optional.ofNullable(analogAddress.getCity2()).map(String::toUpperCase).orElse(null));
-        if (analogAddress.getCountry() != null && countryMap.containsKey(analogAddress.getCountry())) {
-            analogAddress.setCountry(countryMap.get(analogAddress.getCountry()).toUpperCase());
-        }
+        analogAddress.setCountry(Optional.ofNullable(analogAddress.getCountry()).map(String::toUpperCase).orElse(null));
         return analogAddress;
     }
 
@@ -72,8 +75,8 @@ public class AddressUtils {
             try {
                 verifyAddressInCsv(analogAddress);
             } catch (PnAddressManagerException e) {
-                log.error("Error in verifyAddressInCsv", e);
-                normalizedAddressResponse.setError(e.getMessage());
+                log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
+                normalizedAddressResponse.setError(e.getDescription());
             }
         } else {
             //TODO: verify with postel
@@ -93,29 +96,28 @@ public class AddressUtils {
 
     private void searchCountry(String country, Map<String, String> countryMap) {
         if (!countryMap.containsKey(country)) {
-            throw new PnAddressManagerException("Country not found", HttpStatus.BAD_REQUEST);
+            throw new PnAddressManagerException("Error during verify CSV", String.format("Country %s not found", country), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
         }
     }
 
     private void searchCap(String cap, Map<String, Object> capMap) {
         if (!capMap.containsKey(cap)) {
-            throw new PnAddressManagerException("Cap not found", HttpStatus.BAD_REQUEST);
+            throw new PnAddressManagerException("Error during verify CSV", String.format("Cap %s not found", cap), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         }
     }
 
-    public NormalizeItemsResult normalizeAddresses(String correlationId, List<NormalizeRequest> requestItems) {
-        NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
-        normalizeItemsResult.setCorrelationId(correlationId);
-        List<NormalizeResult> normalizeResultList = new ArrayList<>();
-        for (NormalizeRequest n : requestItems) {
-            NormalizeResult normalizeResult = new NormalizeResult();
-            normalizeResult.setId(n.getId());
-            NormalizedAddressResponse normalizedAddressResponse = normalizeAddress(n.getAddress());
-            normalizeResult.setError(normalizedAddressResponse.getError());
-            normalizeResult.setNormalizedAddress(normalizedAddressResponse.getNormalizedAddress());
-            normalizeResultList.add(normalizeResult);
-        }
-        normalizeItemsResult.setResultItems(normalizeResultList);
-        return normalizeItemsResult;
+    public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
+        return requestItems.stream()
+                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId()))
+                .map(this::toNormalizeResult)
+                .toList();
+    }
+
+    private NormalizeResult toNormalizeResult(NormalizedAddressResponse response) {
+        NormalizeResult normalizeResult = new NormalizeResult();
+        normalizeResult.setId(response.getId());
+        normalizeResult.setError(response.getError());
+        normalizeResult.setNormalizedAddress(response.getNormalizedAddress());
+        return normalizeResult;
     }
 }

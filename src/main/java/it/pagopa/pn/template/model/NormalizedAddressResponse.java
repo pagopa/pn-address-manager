@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class NormalizedAddressResponse {
+    private String id;
     private String error;
     private AnalogAddress normalizedAddress;
 }

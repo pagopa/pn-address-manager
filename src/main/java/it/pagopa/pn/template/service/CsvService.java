@@ -1,21 +1,24 @@
 package it.pagopa.pn.template.service;
 
-import com.opencsv.CSVParserBuilder;
-import com.opencsv.CSVReader;
-import com.opencsv.CSVReaderBuilder;
-import com.opencsv.exceptions.CsvValidationException;
+import com.opencsv.bean.CsvToBeanBuilder;
 import it.pagopa.pn.template.exception.PnAddressManagerException;
-import it.pagopa.pn.template.model.Cap;
+import it.pagopa.pn.template.model.CapModel;
+import it.pagopa.pn.template.model.CountryModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ResourceUtils;
 
 import java.io.*;
-import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+
+import static it.pagopa.pn.template.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_CSVERROR;
 
 @Component
 public class CsvService {
+
+    private static final String VERIFY_CSV_ERROR = "Error during verify CSV";
 
     private final String countryPath;
     private final String capPath;
@@ -27,51 +30,26 @@ public class CsvService {
     }
 
     public Map<String, String> countryMap() {
-        String[] nextLine;
-        Map<String, String> countryMap = new HashMap<>();
-        InputStream inputStream = getClass().getResourceAsStream(countryPath);
-        if (inputStream == null)
-            throw new PnAddressManagerException("File not found: " + countryPath, HttpStatus.NOT_FOUND);
-        try {
-            CSVReader csvReader = new CSVReaderBuilder(new InputStreamReader(inputStream, "Windows-1252"))
-                    .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
-                    .withSkipLines(1)
-                    .build();
-            while ((nextLine = csvReader.readNext()) != null) {
-                countryMap.put(nextLine[0], nextLine[1]);
-            }
-            csvReader.close();
-            inputStream.close();
-            return countryMap;
-        } catch (IOException | CsvValidationException e) {
-            throw new PnAddressManagerException("Error while reading file: " + countryPath, HttpStatus.INTERNAL_SERVER_ERROR);
+        try(FileReader fileReader = new FileReader(ResourceUtils.getFile("classpath:" + countryPath))) {
+            CsvToBeanBuilder<CountryModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
+            csvToBeanBuilder.withSkipLines(1);
+            csvToBeanBuilder.withType(CountryModel.class);
+            return csvToBeanBuilder.build().parse()
+                    .stream().collect(Collectors.toMap(CountryModel::getName, CountryModel::getIsocode, (o, o2) -> o));
+        } catch (IOException e) {
+            throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + countryPath, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
     }
 
-
     public Map<String, Object> capMap() {
-        String[] nextLine;
-        Map<String, Object> capMap = new HashMap<>();
-        InputStream inputStream = getClass().getResourceAsStream(capPath);
-        if (inputStream == null)
-            throw new PnAddressManagerException("File not found: " + capPath, HttpStatus.NOT_FOUND);
-        try {
-            CSVReader csvReader = new CSVReaderBuilder(new InputStreamReader(inputStream, "Windows-1252"))
-                    .withCSVParser(new CSVParserBuilder().withSeparator(',').build())
-                    .withSkipLines(1)
-                    .build();
-            while ((nextLine = csvReader.readNext()) != null) {
-                Cap cap = new Cap();
-                cap.setCap(nextLine[0]);
-                cap.setRegione(nextLine[1]);
-                cap.setProvincia(nextLine[2]);
-                capMap.put(nextLine[0], cap);
-            }
-            csvReader.close();
-            inputStream.close();
-            return capMap;
-        } catch (IOException | CsvValidationException e) {
-            throw new PnAddressManagerException("Error while reading file: " + countryPath, HttpStatus.INTERNAL_SERVER_ERROR);
+        try(FileReader fileReader = new FileReader(ResourceUtils.getFile("classpath:" + capPath))) {
+            CsvToBeanBuilder<CapModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
+            csvToBeanBuilder.withSkipLines(1);
+            csvToBeanBuilder.withType(CapModel.class);
+            return csvToBeanBuilder.build().parse()
+                    .stream().collect(Collectors.toMap(CapModel::getCap, o -> o, (o, o2) -> o));
+        } catch (IOException e) {
+            throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + capPath, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
     }
 }
