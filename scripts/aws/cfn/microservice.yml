@@ -205,7 +205,7 @@ Resources:
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
-        TaskRoleManagedPolicyArn: !Ref AddressManagerMicroserviceTaskManagedPolicy
+#        TaskRoleManagedPolicyArn: !Ref AddressManagerMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
 
   # CloudWatch dashboard
@@ -222,39 +222,39 @@ Resources:
           - ','
           - - !Ref EcsLogGroup
 
-  AddressManagerMicroserviceTaskManagedPolicy:
-    Type: AWS::IAM::ManagedPolicy
-    Properties:
-      PolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          - Effect: Allow
-            Action:
-              - events:PutEvents
-            Resource:
-              - !Ref AddressManagerEventBusArn
+#  AddressManagerMicroserviceTaskManagedPolicy:
+#    Type: AWS::IAM::ManagedPolicy
+#    Properties:
+#      PolicyDocument:
+#        Version: 2012-10-17
+#        Statement:
+#          - Effect: Allow
+#            Action:
+#              - events:PutEvents
+#            Resource:
+#              - !Ref AddressManagerEventBusArn
 
   ###################
   ### EventBridge ###
   ###################
 
   # Dead Letter Queue policy
-  EventBusDeadLetterQueuePolicy:
-    Type: AWS::SQS::QueuePolicy
-    Properties:
-      Queues:
-        - !Ref AddressManagerEventBusDLQUrl
-      PolicyDocument:
-        Statement:
-          - Sid: "SendEventsToDLQ"
-            Effect: "Allow"
-            Principal:
-              Service:
-                - "events.amazonaws.com"
-            Action:
-              - "SQS:SendMessage"
-            Resource:
-              - !Ref AddressManagerEventBusDLQArn
+#  EventBusDeadLetterQueuePolicy:
+#    Type: AWS::SQS::QueuePolicy
+#    Properties:
+#      Queues:
+#        - !Ref AddressManagerEventBusDLQUrl
+#      PolicyDocument:
+#        Statement:
+#          - Sid: "SendEventsToDLQ"
+#            Effect: "Allow"
+#            Principal:
+#              Service:
+#                - "events.amazonaws.com"
+#            Action:
+#              - "SQS:SendMessage"
+#            Resource:
+#              - !Ref AddressManagerEventBusDLQArn
 
 #  DLQHasMessagesAlarm:
 #    Type: AWS::CloudWatch::Alarm
@@ -280,41 +280,41 @@ Resources:
 #        - !Sub 'arn:aws:sns:${AWS::Region}:${AWS::AccountId}:${AlarmSNSTopicName}'
 
   # Event Bus to target bus role
-  AddressManagerEventBusTargetRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Statement:
-          - Action: sts:AssumeRole
-            Effect: Allow
-            Principal:
-              Service: events.amazonaws.com
-        Version: "2012-10-17"
-      Policies:
-        - PolicyName: putEventIntoTargetBus
-          PolicyDocument:
-            Statement:
-              - Sid: putEvents
-                Action:
-                  - events:PutEvents
-                Effect: Allow
-                Resource:
-                  - !Ref PnCoreTargetEventBus
+#  AddressManagerEventBusTargetRole:
+#    Type: AWS::IAM::Role
+#    Properties:
+#      AssumeRolePolicyDocument:
+#        Statement:
+#          - Action: sts:AssumeRole
+#            Effect: Allow
+#            Principal:
+#              Service: events.amazonaws.com
+#        Version: "2012-10-17"
+#      Policies:
+#        - PolicyName: putEventIntoTargetBus
+#          PolicyDocument:
+#            Statement:
+#              - Sid: putEvents
+#                Action:
+#                  - events:PutEvents
+#                Effect: Allow
+#                Resource:
+#                  - !Ref PnCoreTargetEventBus
 
   # Event Bus rule that direct event to target event bus
-  AddressManagerEventBusToTarget:
-    Type: AWS::Events::Rule
-    Properties:
-      Description: Route Address Manager Events to target event bus
-      RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
-      EventBusName: !Ref AddressManagerEventBusName
-      EventPattern:
-        detail-type: [ "AddressManagerOutcomeEvent" ]
-        detail:
-          source: [ "pn-address-manager" ]
-      Targets:
-        - Id: !Sub '${ProjectName}-AddressManagerBus-PnCoreTargetEventBus'
-          Arn: !Ref PnCoreTargetEventBus
-          InputPath: $.detail.body
-          DeadLetterConfig:
-            Arn: !Ref AddressManagerEventBusDLQArn
+#  AddressManagerEventBusToTarget:
+#    Type: AWS::Events::Rule
+#    Properties:
+#      Description: Route Address Manager Events to target event bus
+#      RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
+#      EventBusName: !Ref AddressManagerEventBusName
+#      EventPattern:
+#        detail-type: [ "AddressManagerOutcomeEvent" ]
+#        detail:
+#          source: [ "pn-address-manager" ]
+#      Targets:
+#        - Id: !Sub '${ProjectName}-AddressManagerBus-PnCoreTargetEventBus'
+#          Arn: !Ref PnCoreTargetEventBus
+#          InputPath: $.detail.body
+#          DeadLetterConfig:
+#            Arn: !Ref AddressManagerEventBusDLQArn
