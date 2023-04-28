@@ -58,13 +58,13 @@ public class AddressUtils {
     }
 
     private AnalogAddress toUpperCase(AnalogAddress analogAddress) {
-        analogAddress.setAddressRow(Optional.ofNullable(analogAddress.getAddressRow()).map(String::toUpperCase).orElse(null));
-        analogAddress.setCity(Optional.ofNullable(analogAddress.getCity()).map(String::toUpperCase).orElse(null));
-        analogAddress.setCap(Optional.ofNullable(analogAddress.getCap()).map(String::toUpperCase).orElse(null));
-        analogAddress.setPr(Optional.ofNullable(analogAddress.getPr()).map(String::toUpperCase).orElse(null));
-        analogAddress.setAddressRow2(Optional.ofNullable(analogAddress.getAddressRow2()).map(String::toUpperCase).orElse(null));
-        analogAddress.setCity2(Optional.ofNullable(analogAddress.getCity2()).map(String::toUpperCase).orElse(null));
-        analogAddress.setCountry(Optional.ofNullable(analogAddress.getCountry()).map(String::toUpperCase).orElse(null));
+        analogAddress.setAddressRow(Optional.ofNullable(analogAddress.getAddressRow()).map(s -> s.trim().toUpperCase()).orElse(null));
+        analogAddress.setCity(Optional.ofNullable(analogAddress.getCity()).map(s -> s.trim().toUpperCase()).orElse(null));
+        analogAddress.setCap(Optional.ofNullable(analogAddress.getCap()).map(s -> s.trim().toUpperCase()).orElse(null));
+        analogAddress.setPr(Optional.ofNullable(analogAddress.getPr()).map(s -> s.trim().toUpperCase()).orElse(null));
+        analogAddress.setAddressRow2(Optional.ofNullable(analogAddress.getAddressRow2()).map(s -> s.trim().toUpperCase()).orElse(null));
+        analogAddress.setCity2(Optional.ofNullable(analogAddress.getCity2()).map(s -> s.trim().toUpperCase()).orElse(null));
+        analogAddress.setCountry(Optional.ofNullable(analogAddress.getCountry()).map(s -> s.trim().toUpperCase()).orElse(null));
         return analogAddress;
     }
 
@@ -87,7 +87,7 @@ public class AddressUtils {
 
     private void verifyAddressInCsv(AnalogAddress analogAddress) {
         if (!StringUtils.hasText(analogAddress.getCountry())
-                || analogAddress.getCountry().toUpperCase().trim().startsWith("ITAL")) {
+                || analogAddress.getCountry().toUpperCase().trim().startsWith("ITAL")){
             searchCap(analogAddress.getCap(), capMap);
         } else {
             searchCountry(analogAddress.getCountry(), countryMap);
@@ -101,9 +101,10 @@ public class AddressUtils {
     }
 
     private void searchCap(String cap, Map<String, Object> capMap) {
-        if (!capMap.containsKey(cap)) {
+        if (StringUtils.hasText(cap) && !capMap.containsKey(cap)) {
             throw new PnAddressManagerException("Error during verify CSV", String.format("Cap %s not found", cap), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         }
+        //TODO: cap null?
     }
 
     public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
