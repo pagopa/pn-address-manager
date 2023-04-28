@@ -315,5 +315,6 @@ Resources:
       Targets:
         - Id: !Sub '${ProjectName}-AddressManagerBus-PnCoreTargetEventBus'
           Arn: !Ref PnCoreTargetEventBus
+          RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
           DeadLetterConfig:
             Arn: !Ref AddressManagerEventBusDLQArn
