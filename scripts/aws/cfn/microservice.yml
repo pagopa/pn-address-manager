@@ -315,6 +315,5 @@ Resources:
       Targets:
         - Id: !Sub '${ProjectName}-AddressManagerBus-PnCoreTargetEventBus'
           Arn: !Ref PnCoreTargetEventBus
-          InputPath: $.detail.body
           DeadLetterConfig:
             Arn: !Ref AddressManagerEventBusDLQArn
