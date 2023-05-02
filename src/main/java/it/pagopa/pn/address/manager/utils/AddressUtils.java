@@ -95,7 +95,7 @@ public class AddressUtils {
     }
 
     private void searchCountry(String country, Map<String, String> countryMap) {
-        if (!countryMap.containsKey(country)) {
+        if (!countryMap.containsKey(country.trim().toUpperCase())) {
             throw new PnAddressManagerException("Error during verify CSV", String.format("Country %s not found", country), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
         }
     }

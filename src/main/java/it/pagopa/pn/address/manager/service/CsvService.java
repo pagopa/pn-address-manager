@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
+import org.springframework.util.StringUtils;
 
 import java.io.*;
 import java.util.Map;
@@ -35,7 +36,9 @@ public class CsvService {
             csvToBeanBuilder.withSkipLines(1);
             csvToBeanBuilder.withType(CountryModel.class);
             return csvToBeanBuilder.build().parse()
-                    .stream().collect(Collectors.toMap(CountryModel::getName, CountryModel::getIsocode, (o, o2) -> o));
+                    .stream()
+                    .filter(countryModel -> StringUtils.hasText(countryModel.getName()))
+                    .collect(Collectors.toMap(model -> model.getName().trim().toUpperCase(), CountryModel::getIsocode, (o, o2) -> o));
         } catch (IOException e) {
             throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + countryPath, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
