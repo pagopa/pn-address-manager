@@ -316,7 +316,7 @@ Resources:
       RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
       EventBusName: !Ref AddressManagerEventBusName
       EventPattern:
-        detail-type: [ "AddressManagerOutcomeEvent" ]
+#        detail-type: [ "AddressManagerOutcomeEvent" ]
         source: [ "pn-address-manager" ]
       Targets:
         - Id: !Sub '${ProjectName}-AddressManagerBus-PnCoreTargetEventBus'
