@@ -317,8 +317,7 @@ Resources:
       EventBusName: !Ref AddressManagerEventBusName
       EventPattern:
         detail-type: [ "AddressManagerOutcomeEvent" ]
-        detail:
-          source: [ "pn-address-manager" ]
+        source: [ "pn-address-manager" ]
       Targets:
         - Id: !Sub '${ProjectName}-AddressManagerBus-PnCoreTargetEventBus'
           Arn: !Ref PnCoreTargetEventBus
