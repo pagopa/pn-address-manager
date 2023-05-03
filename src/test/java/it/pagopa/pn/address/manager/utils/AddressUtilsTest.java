@@ -38,7 +38,7 @@ class AddressUtilsTest {
         base.setCountry("42");
         base.setCap("42");
         AddressUtils addressUtils = new AddressUtils(true, csvService);
-        assertTrue(addressUtils.compareAddress(base, base));
+        assertTrue(addressUtils.compareAddress(base, base, true));
     }
 
     @Test
@@ -51,7 +51,7 @@ class AddressUtilsTest {
         base.setCountry("42");
         base.setCap("42");
         AddressUtils addressUtils = new AddressUtils(true, csvService);
-        assertTrue(addressUtils.compareAddress(base, base));
+        assertTrue(addressUtils.compareAddress(base, base, false));
     }
 
     @Test
@@ -60,7 +60,7 @@ class AddressUtilsTest {
         base.setCity("42");
         AnalogAddress target = new AnalogAddress();
         AddressUtils addressUtils = new AddressUtils(true, csvService);
-        assertFalse(addressUtils.compareAddress(base, target));
+        assertFalse(addressUtils.compareAddress(base, target, true));
     }
 
     @Test

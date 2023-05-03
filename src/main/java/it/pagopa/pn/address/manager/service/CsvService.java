@@ -4,6 +4,7 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.CountryModel;
 import it.pagopa.pn.address.manager.model.CapModel;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,10 @@ public class CsvService {
             csvToBeanBuilder.withSkipLines(1);
             csvToBeanBuilder.withType(CountryModel.class);
             return csvToBeanBuilder.build().parse()
-                    .stream().collect(Collectors.toMap(CountryModel::getName, CountryModel::getIsocode, (o, o2) -> o));
+                    .stream()
+                    .filter(countryModel -> !StringUtils.isBlank(countryModel.getName()))
+                    .collect(Collectors.toMap(model ->
+                            StringUtils.normalizeSpace(model.getName()).toUpperCase(), CountryModel::getIsocode, (o, o2) -> o));
         } catch (IOException e) {
             throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + countryPath, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
@@ -47,7 +51,9 @@ public class CsvService {
             csvToBeanBuilder.withSkipLines(1);
             csvToBeanBuilder.withType(CapModel.class);
             return csvToBeanBuilder.build().parse()
-                    .stream().collect(Collectors.toMap(CapModel::getCap, o -> o, (o, o2) -> o));
+                    .stream()
+                    .filter(capModel -> !StringUtils.isBlank(capModel.getCap()))
+                    .collect(Collectors.toMap(model -> model.getCap().trim(), o -> o, (o, o2) -> o));
         } catch (IOException e) {
             throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + capPath, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
