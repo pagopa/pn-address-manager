@@ -37,7 +37,7 @@ public class CsvService {
             csvToBeanBuilder.withType(CountryModel.class);
             return csvToBeanBuilder.build().parse()
                     .stream()
-                    .filter(countryModel -> !StringUtils.isEmpty(countryModel.getName()))
+                    .filter(countryModel -> !StringUtils.isBlank(countryModel.getName()))
                     .collect(Collectors.toMap(model ->
                             StringUtils.normalizeSpace(model.getName()).toUpperCase(), CountryModel::getIsocode, (o, o2) -> o));
         } catch (IOException e) {
@@ -51,7 +51,9 @@ public class CsvService {
             csvToBeanBuilder.withSkipLines(1);
             csvToBeanBuilder.withType(CapModel.class);
             return csvToBeanBuilder.build().parse()
-                    .stream().collect(Collectors.toMap(CapModel::getCap, o -> o, (o, o2) -> o));
+                    .stream()
+                    .filter(capModel -> !StringUtils.isBlank(capModel.getCap()))
+                    .collect(Collectors.toMap(model -> model.getCap().trim(), o -> o, (o, o2) -> o));
         } catch (IOException e) {
             throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + capPath, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }

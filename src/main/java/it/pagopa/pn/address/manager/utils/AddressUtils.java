@@ -21,6 +21,7 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 @Slf4j
 public class AddressUtils {
 
+    private static final String ERROR_DURING_VERIFY_CSV = "Error during verify csv";
     private final boolean flagCsv;
     private final Map<String, Object> capMap;
     private final Map<String, String> countryMap;
@@ -98,15 +99,16 @@ public class AddressUtils {
     private void searchCountry(String country, Map<String, String> countryMap) {
         String normalizedCountry = StringUtils.normalizeSpace(country.toUpperCase());
         if (!countryMap.containsKey(normalizedCountry)){
-            throw new PnAddressManagerException("Error during verify CSV", String.format("Country %s not found", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
+            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Country %s not found", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
         }
     }
 
     private void searchCap(String cap, Map<String, Object> capMap) {
-        if (!StringUtils.isBlank(cap) && !capMap.containsKey(cap)) {
-            throw new PnAddressManagerException("Error during verify CSV", String.format("Cap %s not found", cap), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
+        if(StringUtils.isBlank(cap)){
+            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Cap is mandatory", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
+        }else if(!capMap.containsKey(cap.trim())) {
+            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Cap %s not found", cap), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         }
-        //TODO: cap null?
     }
 
     public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
