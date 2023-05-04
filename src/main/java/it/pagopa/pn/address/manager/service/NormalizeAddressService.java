@@ -35,7 +35,7 @@ public class NormalizeAddressService {
 
     public Mono<AcceptedResponse> normalizeAddressAsync(String cxId, NormalizeItemsRequest normalizeItemsRequest) {
         Mono.fromCallable(() -> {
-            NormalizeItemsResult normalizeItemsResult = normalizeRequestToResult(normalizeItemsRequest);
+            NormalizeItemsResult normalizeItemsResult = normalizeRequestToResult(normalizeItemsRequest,cxId);
             sendEvents(normalizeItemsResult, cxId);
             return normalizeItemsResult;
         }).subscribeOn(scheduler).subscribe(normalizeItemsResult -> log.info("normalizeAddressAsync response: {}", normalizeItemsResult),
@@ -44,14 +44,14 @@ public class NormalizeAddressService {
         return Mono.just(mapToAcceptedResponse(normalizeItemsRequest));
     }
 
-    private NormalizeItemsResult normalizeRequestToResult(NormalizeItemsRequest normalizeItemsRequest) {
+    private NormalizeItemsResult normalizeRequestToResult(NormalizeItemsRequest normalizeItemsRequest, String cxId) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         normalizeItemsResult.setCorrelationId(normalizeItemsRequest.getCorrelationId());
-        normalizeItemsResult.setResultItems(addressUtils.normalizeAddresses(normalizeItemsRequest.getRequestItems()));
+        normalizeItemsResult.setResultItems(addressUtils.normalizeAddresses(normalizeItemsRequest.getRequestItems(),normalizeItemsResult.getCorrelationId(),cxId));
         return normalizeItemsResult;
     }
 
-    private void sendEvents(NormalizeItemsResult normalizeItemsResult, String cxId) throws JsonProcessingException {
+    public void sendEvents(NormalizeItemsResult normalizeItemsResult, String cxId) throws JsonProcessingException {
         EventDetail eventDetail = new EventDetail(normalizeItemsResult, cxId);
         String message = objectMapper.writeValueAsString(eventDetail);
         eventService.sendEvent(message, normalizeItemsResult.getCorrelationId());

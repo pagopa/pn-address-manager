@@ -25,7 +25,7 @@ public class DeduplicatesAddressService {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setCorrelationId(request.getCorrelationId());
         deduplicatesResponse.setEqualityResult(addressUtils.compareAddress(request.getBaseAddress(), request.getTargetAddress()));
-        NormalizedAddressResponse normalizeAddressResponse = addressUtils.normalizeAddress(request.getTargetAddress(), null);
+        NormalizedAddressResponse normalizeAddressResponse = addressUtils.normalizeAddress(request.getTargetAddress());
         deduplicatesResponse.setError(normalizeAddressResponse.getError());
         deduplicatesResponse.setNormalizedAddress(normalizeAddressResponse.getNormalizedAddress());
         return deduplicatesResponse;

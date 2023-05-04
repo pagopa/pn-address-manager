@@ -1,7 +1,11 @@
 package it.pagopa.pn.address.manager.utils;
 
+import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.entity.BatchAddress;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.model.AnalogAddressModel;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
+import it.pagopa.pn.address.manager.repository.BatchAddressRepository;
 import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeResult;
@@ -12,7 +16,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND;
@@ -24,12 +33,18 @@ public class AddressUtils {
     private final boolean flagCsv;
     private final Map<String, Object> capMap;
     private final Map<String, String> countryMap;
+    private final long ttl;
+    private final BatchAddressRepository batchAddressRepository;
 
     public AddressUtils(@Value("${pn.address.manager.flag.csv}") boolean flagCsv,
-                        CsvService csvService) {
+                        CsvService csvService,
+                        @Value("${pn.address.manager.ttl}") long ttl,
+                        BatchAddressRepository batchAddressRepository) {
         this.flagCsv = flagCsv;
         this.capMap = csvService.capMap();
         this.countryMap = csvService.countryMap();
+        this.ttl = ttl;
+        this.batchAddressRepository = batchAddressRepository;
     }
 
     public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress) {
@@ -48,8 +63,16 @@ public class AddressUtils {
         return trimmedBase.equalsIgnoreCase(trimmedTarget);
     }
 
-    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id) {
+    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress) {
         NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress);
+        if (!StringUtils.hasText(normalizedAddressResponse.getError())) {
+            normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
+        }
+        return normalizedAddressResponse;
+    }
+
+    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id, String correlationId, String cxId) {
+        NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress,correlationId,id,cxId);
         normalizedAddressResponse.setId(id);
         if (!StringUtils.hasText(normalizedAddressResponse.getError())) {
             normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
@@ -68,7 +91,6 @@ public class AddressUtils {
         return analogAddress;
     }
 
-
     public NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         if (flagCsv) {
@@ -77,12 +99,57 @@ public class AddressUtils {
             } catch (PnAddressManagerException e) {
                 log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
                 normalizedAddressResponse.setError(e.getDescription());
-            }
-        } else {
-            //TODO: verify with postel
+            }        }
+        return normalizedAddressResponse;
+    }
+
+    public NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress, String correlationId, String id, String cxId) {
+        NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
+        if (flagCsv) {
+            try {
+                verifyAddressInCsv(analogAddress);
+            } catch (PnAddressManagerException e) {
+                log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
+                normalizedAddressResponse.setError(e.getDescription());
+            }        } else {
+            createBatchAddress(analogAddress,correlationId,id,cxId);
             normalizedAddressResponse.setError("TODO: verify with postel");
         }
         return normalizedAddressResponse;
+    }
+
+
+    private void createBatchAddress(AnalogAddress analogAddress, String correlationId, String id, String cxId){
+        BatchAddress batchAddress = createNewStartBatchAddress();
+        setAddressToBatchAddress(analogAddress,batchAddress);
+        batchAddress.setCorrelationId(correlationId);
+        batchAddress.setAddressId(id);
+        batchAddress.setCxId(cxId);
+        batchAddressRepository.create(batchAddress);
+    }
+
+    private BatchAddress createNewStartBatchAddress() {
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        BatchAddress batchAddress = new BatchAddress();
+        batchAddress.setBatchId(BatchStatus.NO_BATCH_ID.getValue());
+        batchAddress.setStatus(BatchStatus.NOT_WORKED.getValue());
+        batchAddress.setRetry(0);
+        batchAddress.setLastReserved(now);
+        batchAddress.setCreatedAt(now);
+        batchAddress.setTtl(now.plusSeconds(ttl).toEpochSecond(ZoneOffset.UTC));
+        log.trace("New Batch Address: {}", batchAddress);
+        return batchAddress;
+    }
+
+    private void setAddressToBatchAddress(AnalogAddress analogAddress, BatchAddress batchAddress){
+        batchAddress.setAddressRow(analogAddress.getAddressRow());
+        batchAddress.setAddressRow2(analogAddress.getAddressRow2());
+        batchAddress.setCity(analogAddress.getCity());
+        batchAddress.setCity2(analogAddress.getCity2());
+        batchAddress.setPr(analogAddress.getPr());
+        batchAddress.setCap(analogAddress.getCap());
+        batchAddress.setCountry(analogAddress.getCountry());
+        batchAddress.setId(UUID.randomUUID().toString());
     }
 
     private void verifyAddressInCsv(AnalogAddress analogAddress) {
@@ -107,9 +174,9 @@ public class AddressUtils {
         //TODO: cap null?
     }
 
-    public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
+    public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems, String correlationId, String cxId) {
         return requestItems.stream()
-                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId()))
+                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId(), correlationId, cxId))
                 .map(this::toNormalizeResult)
                 .toList();
     }
@@ -120,5 +187,17 @@ public class AddressUtils {
         normalizeResult.setError(response.getError());
         normalizeResult.setNormalizedAddress(response.getNormalizedAddress());
         return normalizeResult;
+    }
+
+    public AnalogAddress createAnalogAddressByModel(AnalogAddressModel analogAddressModel){
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow(analogAddressModel.getAddressRow());
+        analogAddress.setAddressRow(analogAddressModel.getAddressRow2());
+        analogAddress.setCap(analogAddressModel.getCap());
+        analogAddress.setCity(analogAddressModel.getCity());
+        analogAddress.setCity2(analogAddressModel.getCity2());
+        analogAddress.setCountry(analogAddressModel.getCountry());
+        analogAddress.setPr(analogAddressModel.getPr());
+        return analogAddress;
     }
 }
