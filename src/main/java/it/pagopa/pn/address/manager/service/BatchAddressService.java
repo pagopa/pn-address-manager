@@ -136,6 +136,9 @@ public class BatchAddressService {
                 .doOnNext(r -> {
                     int nextRetry = r.getRetry() != null ? r.getRetry() + 1 : 1;
                     r.setRetry(nextRetry);
+                    if(nextRetry>3){
+                        r.setStatus(BatchStatus.ERROR.getValue());
+                    }
                 })
                 .flatMap(batchAddressRepository::update)
                 .doOnNext(r -> log.debug("AddressManager - batchId {} - retry incremented for batchId: {}", batchId, r.getCorrelationId()))
@@ -152,6 +155,7 @@ public class BatchAddressService {
         results.forEach((cxId, normalizeItemsResult) -> {
             try {
                 normalizeAddressService.sendEvents(normalizeItemsResult, cxId);
+                //TO-DO update status to worked
             } catch (JsonProcessingException e) {
                 throw new PnAddressManagerException("Error during send event", "Error during send event", HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_BATCH_ADDRESS);
             }

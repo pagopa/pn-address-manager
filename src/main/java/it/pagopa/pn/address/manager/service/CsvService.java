@@ -8,7 +8,6 @@ import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.AddressModel;
-import it.pagopa.pn.address.manager.model.AnalogAddressModel;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.CountryModel;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeItemsResult;
@@ -81,27 +80,27 @@ public class CsvService {
         Map<String, NormalizeItemsResult> cxIdNormalizeItemResult = new HashMap<>();
         for (File file : files) {
             try(FileReader fileReader = new FileReader(ResourceUtils.getFile("classpath:" + file.getName()))) {
-                CsvToBeanBuilder<AnalogAddressModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
+                CsvToBeanBuilder<AddressModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
                 csvToBeanBuilder.withSkipLines(1);
-                csvToBeanBuilder.withType(AnalogAddressModel.class);
+                csvToBeanBuilder.withType(AddressModel.class);
 
-                List<AnalogAddressModel> addressModels = csvToBeanBuilder.build().parse();
+                List<AddressModel> addressModels = csvToBeanBuilder.build().parse();
 
-                Map<String, Map<String, List<AnalogAddressModel>>> addressModelsForCxIdAndCorrelationId = addressModels.stream()
-                        .collect(Collectors.groupingBy(AnalogAddressModel::getCxid,
-                                Collectors.groupingBy(AnalogAddressModel::getCorrelationId)));
+                Map<String, Map<String, List<AddressModel>>> addressModelsForCxIdAndCorrelationId = addressModels.stream()
+                        .collect(Collectors.groupingBy(AddressModel::getCxid,
+                                Collectors.groupingBy(AddressModel::getCorrelationId)));
 
-                for (Map.Entry<String, Map<String, List<AnalogAddressModel>>> entry : addressModelsForCxIdAndCorrelationId.entrySet()) {
+                for (Map.Entry<String, Map<String, List<AddressModel>>> entry : addressModelsForCxIdAndCorrelationId.entrySet()) {
                     String cxId = entry.getKey();
 
                     NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
-                    Map<String, List<AnalogAddressModel>> addressModelsForCorrelationId = entry.getValue();
+                    Map<String, List<AddressModel>> addressModelsForCorrelationId = entry.getValue();
 
-                    for (Map.Entry<String, List<AnalogAddressModel>> innerEntry : addressModelsForCorrelationId.entrySet()) {
-                        List<AnalogAddressModel> analogAddressModels = innerEntry.getValue();
+                    for (Map.Entry<String, List<AddressModel>> innerEntry : addressModelsForCorrelationId.entrySet()) {
+                        List<AddressModel> analogAddressModels = innerEntry.getValue();
                         List<NormalizeResult> list = analogAddressModels.stream().map(analogAddressModel -> {
                             NormalizeResult normalizeResult = new NormalizeResult();
-                            normalizeResult.setId(analogAddressModel.getId());
+                            normalizeResult.setId(analogAddressModel.getAddressId());
                             normalizeResult.setNormalizedAddress(addressUtils.createAnalogAddressByModel(analogAddressModel));
                             return normalizeResult;
                         }).toList();

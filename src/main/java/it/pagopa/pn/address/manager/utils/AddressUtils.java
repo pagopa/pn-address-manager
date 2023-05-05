@@ -3,7 +3,7 @@ package it.pagopa.pn.address.manager.utils;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchAddress;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import it.pagopa.pn.address.manager.model.AnalogAddressModel;
+import it.pagopa.pn.address.manager.model.AddressModel;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.repository.BatchAddressRepository;
 import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
@@ -99,7 +99,8 @@ public class AddressUtils {
             } catch (PnAddressManagerException e) {
                 log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
                 normalizedAddressResponse.setError(e.getDescription());
-            }        }
+            }
+        }
         return normalizedAddressResponse;
     }
 
@@ -111,7 +112,8 @@ public class AddressUtils {
             } catch (PnAddressManagerException e) {
                 log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
                 normalizedAddressResponse.setError(e.getDescription());
-            }        } else {
+            }        }
+        else {
             createBatchAddress(analogAddress,correlationId,id,cxId);
             normalizedAddressResponse.setError("TODO: verify with postel");
         }
@@ -189,7 +191,7 @@ public class AddressUtils {
         return normalizeResult;
     }
 
-    public AnalogAddress createAnalogAddressByModel(AnalogAddressModel analogAddressModel){
+    public AnalogAddress createAnalogAddressByModel(AddressModel analogAddressModel){
         AnalogAddress analogAddress = new AnalogAddress();
         analogAddress.setAddressRow(analogAddressModel.getAddressRow());
         analogAddress.setAddressRow(analogAddressModel.getAddressRow2());

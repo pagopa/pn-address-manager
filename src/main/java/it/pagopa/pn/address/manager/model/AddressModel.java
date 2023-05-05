@@ -11,15 +11,15 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class AddressModel {
 
-    @CsvBindByName(column = "correlationId")
-    @CsvBindByPosition(position = 0)
-    private String correlationId;
-
     @CsvBindByName(column = "pn-address-manager-cx-id")
-    @CsvBindByPosition(position = 1)
+    @CsvBindByPosition(position = 0)
     private String cxid;
 
-    @CsvBindByName(column = "addressRow")
+    @CsvBindByName(column = "correlationId")
+    @CsvBindByPosition(position = 1)
+    private String correlationId;
+
+    @CsvBindByName(column = "addressId")
     @CsvBindByPosition(position = 2)
     private String addressId;
 
@@ -39,7 +39,7 @@ public class AddressModel {
     @CsvBindByPosition(position = 6)
     private String city;
 
-    @CsvBindByName(column = "city")
+    @CsvBindByName(column = "city2")
     @CsvBindByPosition(position = 7)
     private String city2;
 
