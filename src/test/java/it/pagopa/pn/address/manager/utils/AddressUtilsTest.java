@@ -1,31 +1,29 @@
 package it.pagopa.pn.address.manager.utils;
 
+import it.pagopa.pn.address.manager.repository.BatchAddressRepository;
 import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeResult;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import it.pagopa.pn.address.manager.service.CsvService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 class AddressUtilsTest {
 
     @Mock
     private CsvService csvService;
+
+    @Mock
+    private BatchAddressRepository batchAddressRepository;
 
     @Test
     void compareAddress() {
@@ -37,7 +35,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(true, csvService, 1209600, batchAddressRepository);;
         assertTrue(addressUtils.compareAddress(base, base));
     }
 
@@ -50,7 +48,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(true, csvService, 1209600, batchAddressRepository);;
         assertTrue(addressUtils.compareAddress(base, base));
     }
 
@@ -59,7 +57,7 @@ class AddressUtilsTest {
         AnalogAddress base = new AnalogAddress();
         base.setCity("42");
         AnalogAddress target = new AnalogAddress();
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(true, csvService, 1209600, batchAddressRepository);;
         assertFalse(addressUtils.compareAddress(base, target));
     }
 
@@ -72,8 +70,8 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("42");
         base.setCap("00010");
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
-        assertNotNull(addressUtils.normalizeAddress(base,"1"));
+        AddressUtils addressUtils = new AddressUtils(true, csvService, 1209600, batchAddressRepository);;
+        assertNotNull(addressUtils.normalizeAddress(base));
     }
 
     @Test
@@ -86,33 +84,29 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCap("ARUBA");
         base.setCountry("ARUBA");
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
-        assertNotNull(addressUtils.normalizeAddress(base, "1"));
+        AddressUtils addressUtils = new AddressUtils(true, csvService, 1209600, batchAddressRepository);
+        assertNotNull(addressUtils.normalizeAddress(base));
     }
 
-    /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
-     */
+
     @Test
     void testNormalizeAddresses3() {
-        AddressUtils addressUtils = new AddressUtils(true,csvService);
+        AddressUtils addressUtils = new AddressUtils(true, csvService, 1209600, batchAddressRepository);
 
         NormalizeRequest normalizeRequest = new NormalizeRequest();
         normalizeRequest.address(new AnalogAddress());
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList,"1","1");
         assertEquals(1, resultItems.size());
     }
 
-    /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
-     */
+  
     @Test
     void testNormalizeAddresses4() {
 
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(true, csvService, 1209600, batchAddressRepository);;
         NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
         when(normalizeRequest.getAddress()).thenReturn(new AnalogAddress());
         when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
@@ -121,7 +115,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList,"1","1");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -130,12 +124,10 @@ class AddressUtilsTest {
         verify(normalizeRequest).getId();
     }
 
-    /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
-     */
+
     @Test
     void testNormalizeAddresses6() {
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(true, csvService, 1209600, batchAddressRepository);;
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("Cap");
         when(analogAddress.getCountry()).thenReturn("GB");
@@ -147,7 +139,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList,"1","1");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -157,13 +149,10 @@ class AddressUtilsTest {
         verify(analogAddress, atLeast(1)).getCountry();
     }
 
-    /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
-     */
     @Test
     void testNormalizeAddresses7() {
 
-        AddressUtils addressUtils = new AddressUtils(false, csvService);
+        AddressUtils addressUtils = new AddressUtils(false, csvService,1209600,batchAddressRepository);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getAddressRow2()).thenReturn("42 Main St");
         when(analogAddress.getCap()).thenReturn("Cap");
@@ -180,7 +169,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList,"1","1");
         assertEquals(1, resultItems.size());
         assertEquals("42", resultItems.get(0).getId());
     }

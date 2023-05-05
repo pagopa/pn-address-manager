@@ -146,7 +146,7 @@ public class BatchAddressService {
     }
 
 
-    @Scheduled(fixedDelayString = "${pn.address.manager.batch.polling.delay}")
+    //@Scheduled(fixedDelayString = "${pn.address.manager.batch.polling.delay}")
     public void batchPolling(){
         log.trace("AddressManager - batchPolling start");
 

@@ -10,9 +10,9 @@ import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.AddressModel;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.CountryModel;
+import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeResult;
-import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpStatus;
@@ -39,14 +39,11 @@ public class CsvService {
     private static final String VERIFY_CSV_ERROR = "Error during verify CSV";
     private static final String WRITING_CSV_ERROR = "Error during writing CSV";
 
-    private final AddressUtils addressUtils;
     private final String countryPath;
     private final String capPath;
 
-    public CsvService(AddressUtils addressUtils,
-                      @Value("${pn.address.manager.csv.path.country}") String countryPath,
+    public CsvService(@Value("${pn.address.manager.csv.path.country}") String countryPath,
                       @Value("${pn.address.manager.csv.path.cap}") String capPath) {
-        this.addressUtils = addressUtils;
         this.countryPath = countryPath;
         this.capPath = capPath;
     }
@@ -101,7 +98,7 @@ public class CsvService {
                         List<NormalizeResult> list = analogAddressModels.stream().map(analogAddressModel -> {
                             NormalizeResult normalizeResult = new NormalizeResult();
                             normalizeResult.setId(analogAddressModel.getAddressId());
-                            normalizeResult.setNormalizedAddress(addressUtils.createAnalogAddressByModel(analogAddressModel));
+                            normalizeResult.setNormalizedAddress(createAnalogAddressByModel(analogAddressModel));
                             return normalizeResult;
                         }).toList();
                         normalizeItemsResult.setCorrelationId(innerEntry.getKey());
@@ -116,6 +113,18 @@ public class CsvService {
             }
         }
         return cxIdNormalizeItemResult;
+    }
+
+    private AnalogAddress createAnalogAddressByModel(AddressModel analogAddressModel){
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow(analogAddressModel.getAddressRow());
+        analogAddress.setAddressRow(analogAddressModel.getAddressRow2());
+        analogAddress.setCap(analogAddressModel.getCap());
+        analogAddress.setCity(analogAddressModel.getCity());
+        analogAddress.setCity2(analogAddressModel.getCity2());
+        analogAddress.setCountry(analogAddressModel.getCountry());
+        analogAddress.setPr(analogAddressModel.getPr());
+        return analogAddress;
     }
 
     public Map<String, String> countryMap() {

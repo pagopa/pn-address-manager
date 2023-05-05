@@ -3,10 +3,10 @@ package it.pagopa.pn.address.manager.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.address.manager.config.SchedulerConfig;
-import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.address.manager.rest.v1.dto.AcceptedResponse;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeResult;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {NormalizeAddressService.class, SchedulerConfig.class})
@@ -42,7 +42,7 @@ class NormalizeAddressServiceTest {
         acceptedResponse.setCorrelationId("correlationId");
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenReturn("json");
-        when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
+        when(addressUtils.normalizeAddresses(any(),any(),any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         StepVerifier.create(normalizeAddressService.normalizeAddressAsync("cxId", normalizeItemsRequest))
@@ -55,7 +55,7 @@ class NormalizeAddressServiceTest {
         acceptedResponse.setCorrelationId("correlationId");
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
-        when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
+        when(addressUtils.normalizeAddresses(any(),any(),any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         StepVerifier.create(normalizeAddressService.normalizeAddressAsync("cxId", normalizeItemsRequest))
