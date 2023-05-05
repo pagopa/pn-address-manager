@@ -10,6 +10,7 @@ import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.AddressModel;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.CountryModel;
+import it.pagopa.pn.address.manager.model.NormalizeItemsResultModel;
 import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeResult;
@@ -25,8 +26,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -70,49 +71,41 @@ public class CsvService {
         }
     }
 
-    public Map<String, NormalizeItemsResult> readNormalizeItemsResultFromCsv(){
-        String folderPath = "path/to/folder";
-        File folder = new File(folderPath);
-        File[] files = folder.listFiles();
-        Map<String, NormalizeItemsResult> cxIdNormalizeItemResult = new HashMap<>();
-        for (File file : files) {
-            try(FileReader fileReader = new FileReader(ResourceUtils.getFile("classpath:" + file.getName()))) {
+    public List<NormalizeItemsResultModel> readNormalizeItemsResultFromCsv(){
+        List<NormalizeItemsResultModel> normalizeItemsResultModels = new ArrayList<>();
+        try {
+            File folder = ResourceUtils.getFile("classpath:").getParentFile();
+            File[] filesCsv = folder.listFiles((dir, name) -> name.endsWith(".csv"));
+            for (File file : filesCsv) {
+                FileReader fileReader = new FileReader(file);
                 CsvToBeanBuilder<AddressModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
-                csvToBeanBuilder.withSkipLines(1);
                 csvToBeanBuilder.withType(AddressModel.class);
 
                 List<AddressModel> addressModels = csvToBeanBuilder.build().parse();
 
-                Map<String, Map<String, List<AddressModel>>> addressModelsForCxIdAndCorrelationId = addressModels.stream()
-                        .collect(Collectors.groupingBy(AddressModel::getCxid,
-                                Collectors.groupingBy(AddressModel::getCorrelationId)));
+                addressModels.stream()
+                        .collect(Collectors.groupingBy(AddressModel::getCorrelationId))
+                        .forEach((correlationId, address) -> address.stream()
+                                .collect(Collectors.groupingBy(AddressModel::getCxid))
+                                .forEach((cxId, addressWithCxId) -> {
+                                    NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
+                                    List<NormalizeResult> list = addressWithCxId.stream().map(analogAddressModel -> {
+                                        NormalizeResult normalizeResult = new NormalizeResult();
+                                        normalizeResult.setId(analogAddressModel.getAddressId());
+                                        normalizeResult.setNormalizedAddress(createAnalogAddressByModel(analogAddressModel));
+                                        return normalizeResult;
+                                    }).toList();
+                                    normalizeItemsResult.setCorrelationId(correlationId);
+                                    normalizeItemsResult.setResultItems(list);
+                                    normalizeItemsResultModels.add(new NormalizeItemsResultModel(cxId,normalizeItemsResult));
+                                }));
 
-                for (Map.Entry<String, Map<String, List<AddressModel>>> entry : addressModelsForCxIdAndCorrelationId.entrySet()) {
-                    String cxId = entry.getKey();
-
-                    NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
-                    Map<String, List<AddressModel>> addressModelsForCorrelationId = entry.getValue();
-
-                    for (Map.Entry<String, List<AddressModel>> innerEntry : addressModelsForCorrelationId.entrySet()) {
-                        List<AddressModel> analogAddressModels = innerEntry.getValue();
-                        List<NormalizeResult> list = analogAddressModels.stream().map(analogAddressModel -> {
-                            NormalizeResult normalizeResult = new NormalizeResult();
-                            normalizeResult.setId(analogAddressModel.getAddressId());
-                            normalizeResult.setNormalizedAddress(createAnalogAddressByModel(analogAddressModel));
-                            return normalizeResult;
-                        }).toList();
-                        normalizeItemsResult.setCorrelationId(innerEntry.getKey());
-                        normalizeItemsResult.setResultItems(list);
-                    }
-
-                    cxIdNormalizeItemResult.put(cxId,normalizeItemsResult);
-                }
-
-            } catch (IOException e) {
-                throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + file.getName(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
             }
         }
-        return cxIdNormalizeItemResult;
+        catch (IOException e) {
+            throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + capPath, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
+        }
+        return normalizeItemsResultModels;
     }
 
     private AnalogAddress createAnalogAddressByModel(AddressModel analogAddressModel){

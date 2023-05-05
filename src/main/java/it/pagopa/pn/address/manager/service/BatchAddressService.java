@@ -5,8 +5,8 @@ import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchAddress;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.AddressModel;
+import it.pagopa.pn.address.manager.model.NormalizeItemsResultModel;
 import it.pagopa.pn.address.manager.repository.BatchAddressRepository;
-import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeItemsResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -51,7 +51,7 @@ public class BatchAddressService {
         this.maxRetry = maxRetry;
     }
 
-    @Scheduled(fixedDelayString = "${pn.address.manager.batch.delay}")
+    //@Scheduled(fixedDelayString = "${pn.address.manager.batch.delay}")
     public void batchAddress() {
         log.trace("AddressManager - batchAddress start");
         Page<BatchAddress> page;
@@ -146,15 +146,15 @@ public class BatchAddressService {
     }
 
 
-    //@Scheduled(fixedDelayString = "${pn.address.manager.batch.polling.delay}")
+    @Scheduled(fixedDelayString = "${pn.address.manager.batch.polling.delay}")
     public void batchPolling(){
         log.trace("AddressManager - batchPolling start");
 
-        Map<String, NormalizeItemsResult> results = csvService.readNormalizeItemsResultFromCsv();
+        List<NormalizeItemsResultModel> results = csvService.readNormalizeItemsResultFromCsv();
 
-        results.forEach((cxId, normalizeItemsResult) -> {
+        results.forEach(normalizeItemsResultModel -> {
             try {
-                normalizeAddressService.sendEvents(normalizeItemsResult, cxId);
+                normalizeAddressService.sendEvents(normalizeItemsResultModel.getNormalizeItemsResult(),normalizeItemsResultModel.getCxId());
                 //TO-DO update status to worked
             } catch (JsonProcessingException e) {
                 throw new PnAddressManagerException("Error during send event", "Error during send event", HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_BATCH_ADDRESS);
