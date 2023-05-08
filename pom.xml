@@ -80,7 +80,7 @@
 		<dependency>
 			<groupId>com.amazonaws</groupId>
 			<artifactId>aws-java-sdk-eventbridge</artifactId>
-			<version>1.12.450</version>
+			<version>1.12.464</version>
 		</dependency>
         <dependency>
             <groupId>junit</groupId>
