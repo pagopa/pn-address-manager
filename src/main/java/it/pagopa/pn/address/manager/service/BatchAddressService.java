@@ -51,7 +51,7 @@ public class BatchAddressService {
         this.maxRetry = maxRetry;
     }
 
-    //@Scheduled(fixedDelayString = "${pn.address.manager.batch.delay}")
+    @Scheduled(fixedDelayString = "${pn.address.manager.batch.delay}")
     public void batchAddress() {
         log.trace("AddressManager - batchAddress start");
         Page<BatchAddress> page;
@@ -109,7 +109,10 @@ public class BatchAddressService {
 
     private Mono<Void> createExcel(List<BatchAddress> requests) {
         List<AddressModel> addressModels = createAddressModelList(requests);
-        csvService.createAddressCsv(addressModels);
+        Map<String , List<AddressModel>> addressModelsByCorrelationId = addressModels
+                .stream()
+                .collect(Collectors.groupingBy(AddressModel::getCorrelationId));
+        addressModelsByCorrelationId.forEach((correlationId, addressModels1) -> csvService.createAddressCsvByCorrelationId(addressModels, correlationId));
         return Mono.empty();
     }
 
@@ -126,7 +129,7 @@ public class BatchAddressService {
             addressModel.setCity2(batchAddress.getCity2());
             addressModel.setCap(batchAddress.getCap());
             addressModel.setCountry(batchAddress.getCountry());
-            addressModel.setCxid(batchAddress.getCxId());
+            addressModel.setCxId(batchAddress.getCxId());
             return addressModel;
         }).collect(Collectors.toList());
     }

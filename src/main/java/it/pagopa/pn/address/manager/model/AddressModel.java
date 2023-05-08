@@ -13,7 +13,7 @@ public class AddressModel {
 
     @CsvBindByName(column = "pn-address-manager-cx-id")
     @CsvBindByPosition(position = 0)
-    private String cxid;
+    private String cxId;
 
     @CsvBindByName(column = "correlationId")
     @CsvBindByPosition(position = 1)

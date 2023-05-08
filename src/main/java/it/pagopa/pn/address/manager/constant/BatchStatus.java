@@ -12,9 +12,7 @@ public enum BatchStatus {
     NOT_WORKED("NOT_WORKED"),
     WORKING("WORKING"),
     WORKED("WORKED"),
-    ERROR("ERROR"),
-    SENT("SENT"),
-    NOT_SENT("NOT_SENT");
+    ERROR("ERROR");
 
     private final String value;
 

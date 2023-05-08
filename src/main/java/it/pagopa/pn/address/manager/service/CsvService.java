@@ -49,10 +49,10 @@ public class CsvService {
         this.capPath = capPath;
     }
 
-    public void createAddressCsv(List<AddressModel> addressModels){
+    public void createAddressCsvByCorrelationId(List<AddressModel> addressModels, String correlationId){
         DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd_HHmm");
         String currentDateTime = dateFormat.format(new Date());
-        String fileName = currentDateTime+".csv";
+        String fileName = correlationId+"_"+currentDateTime+".csv";
         try (FileWriter writer = new FileWriter(new ClassPathResource("/").getFile().getAbsolutePath()+fileName)) {
             ColumnPositionMappingStrategy<AddressModel> strategy = new ColumnPositionMappingStrategy<>();
             strategy.setType(AddressModel.class);
@@ -86,7 +86,7 @@ public class CsvService {
                 addressModels.stream()
                         .collect(Collectors.groupingBy(AddressModel::getCorrelationId))
                         .forEach((correlationId, address) -> address.stream()
-                                .collect(Collectors.groupingBy(AddressModel::getCxid))
+                                .collect(Collectors.groupingBy(AddressModel::getCxId))
                                 .forEach((cxId, addressWithCxId) -> {
                                     NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
                                     List<NormalizeResult> list = addressWithCxId.stream().map(analogAddressModel -> {

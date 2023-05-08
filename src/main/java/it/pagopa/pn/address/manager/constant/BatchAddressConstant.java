@@ -25,10 +25,7 @@ public final class BatchAddressConstant {
     public static final String COL_TTL = "ttl";
     public static final String COL_STATUS = "status";
     public static final String COL_LAST_RESERVED = "lastReserved";
-    public static final String COL_RESERVATION_ID = "reservationId";
     public static final String COL_TIMESTAMP = "timeStamp";
-    public static final String COL_SEND_STATUS = "sendStatus";
-    public static final String COL_MESSAGE = "message";
 
     //CONSTANT INDEX
     public static final String GSI_BL = "batchId-lastReserved-index";

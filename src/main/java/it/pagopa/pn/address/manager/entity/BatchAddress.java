@@ -1,6 +1,5 @@
 package it.pagopa.pn.address.manager.entity;
 
-import it.pagopa.pn.address.manager.constant.BatchAddressConstant;
 import lombok.Data;
 import lombok.Getter;
 import lombok.ToString;
@@ -89,7 +88,7 @@ public class BatchAddress {
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_STATUS),
-            @DynamoDbSecondaryPartitionKey(indexNames = BatchAddressConstant.GSI_S)
+            @DynamoDbSecondaryPartitionKey(indexNames = GSI_S)
     }))
     private String status;
 
@@ -100,23 +99,7 @@ public class BatchAddress {
     private LocalDateTime lastReserved;
 
     @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_RESERVATION_ID)
-    }))
-    private String reservationId;
-
-    @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_TIMESTAMP)
     }))
     private LocalDateTime createdAt;
-
-    @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_SEND_STATUS),
-            @DynamoDbSecondaryPartitionKey(indexNames = GSI_SSL)
-    }))
-    private String sendStatus;
-
-    @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_MESSAGE)
-    }))
-    private String message;
 }
