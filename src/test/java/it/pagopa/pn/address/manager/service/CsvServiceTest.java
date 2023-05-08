@@ -36,7 +36,7 @@ class CsvServiceTest {
         addressModel.setPr("pr");
         addressModel.setCity("city");
         addressModel.setCity2("city2");
-        addressModel.setCxid("cxId");
+        addressModel.setCxId("cxId");
         addressModel.setCountry("country");
         addressModel.setCap("cap");
         AddressModel addressModel1 = new AddressModel();
@@ -47,7 +47,7 @@ class CsvServiceTest {
         addressModel1.setPr("pr");
         addressModel1.setCity("city");
         addressModel1.setCity2("city2");
-        addressModel1.setCxid("cxId1");
+        addressModel1.setCxId("cxId1");
         addressModel1.setCountry("country");
         addressModel1.setCap("cap");
         AddressModel addressModel2 = new AddressModel();
@@ -58,7 +58,7 @@ class CsvServiceTest {
         addressModel2.setPr("pr");
         addressModel2.setCity("city");
         addressModel2.setCity2("city2");
-        addressModel2.setCxid("cxId2");
+        addressModel2.setCxId("cxId2");
         addressModel2.setCountry("country");
         addressModel2.setCap("cap");
         addressModels.add(addressModel);
