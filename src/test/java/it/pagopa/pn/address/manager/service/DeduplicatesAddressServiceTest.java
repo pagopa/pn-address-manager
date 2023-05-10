@@ -13,6 +13,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -55,8 +56,8 @@ class DeduplicatesAddressServiceTest {
         deduplicatesResponse.setNormalizedAddress(target);
         deduplicatesResponse.setError(null);
 
-        when(addressUtils.compareAddress(any(),any())).thenReturn(true);
-        when(addressUtils.normalizeAddress(any())).thenReturn(normalizedAddressResponse);
+        when(addressUtils.compareAddress(any(),any(), anyBoolean())).thenReturn(true);
+        when(addressUtils.normalizeAddress(any(), any())).thenReturn(normalizedAddressResponse);
 
         DeduplicatesResponse response = deduplicatesAddressService.deduplicates(deduplicatesRequest);
         assertEquals(deduplicatesResponse.getEqualityResult(), response.getEqualityResult());
@@ -90,8 +91,8 @@ class DeduplicatesAddressServiceTest {
         deduplicatesResponse.setCorrelationId("42");
         deduplicatesResponse.setNormalizedAddress(null);
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
-        when(addressUtils.compareAddress(any(),any())).thenReturn(false);
-        when(addressUtils.normalizeAddress(any())).thenReturn(normalizedAddressResponse);
+        when(addressUtils.compareAddress(any(),any(), anyBoolean())).thenReturn(false);
+        when(addressUtils.normalizeAddress(any(), any())).thenReturn(normalizedAddressResponse);
 
         DeduplicatesResponse response = deduplicatesAddressService.deduplicates(deduplicatesRequest);
         assertEquals(response.getEqualityResult(), deduplicatesResponse.getEqualityResult());
