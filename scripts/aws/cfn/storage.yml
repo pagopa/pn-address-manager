@@ -24,6 +24,10 @@ Parameters:
     Type: String
     Description: 'Where to send CDC'
 
+  LogRetention:
+    Type: Number
+    Default: 14
+
 Resources:
   # Log group
   PnAddressManagerLogGroup:
@@ -34,6 +38,7 @@ Resources:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
       Parameters:
         LogGroupName: !Sub "${ProjectName}-address-manager"
+        LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/ecs'
 
   # Event Bus
