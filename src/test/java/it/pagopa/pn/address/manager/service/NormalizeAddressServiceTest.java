@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.test.StepVerifier;
 
@@ -23,6 +24,9 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {NormalizeAddressService.class, SchedulerConfig.class})
+@TestPropertySource(properties = {
+        "pn.address.manager.flag.csv=true"
+})
 class NormalizeAddressServiceTest {
 
     @Autowired
@@ -42,7 +46,7 @@ class NormalizeAddressServiceTest {
         acceptedResponse.setCorrelationId("correlationId");
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenReturn("json");
-        when(addressUtils.normalizeAddresses(any(),any(),any())).thenReturn(normalize);
+        when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         StepVerifier.create(normalizeAddressService.normalizeAddressAsync("cxId", normalizeItemsRequest))
@@ -55,7 +59,7 @@ class NormalizeAddressServiceTest {
         acceptedResponse.setCorrelationId("correlationId");
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
-        when(addressUtils.normalizeAddresses(any(),any(),any())).thenReturn(normalize);
+        when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         StepVerifier.create(normalizeAddressService.normalizeAddressAsync("cxId", normalizeItemsRequest))

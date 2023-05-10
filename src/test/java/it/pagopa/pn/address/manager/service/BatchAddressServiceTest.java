@@ -32,7 +32,7 @@ class BatchAddressServiceTest {
 
     @Test
     void testBatchPecRequest() {
-        BatchAddressService batchAddressService = new BatchAddressService(batchAddressRepository,csvService, normalizeAddressService,3);
+        BatchAddressService batchAddressService = new BatchAddressService(batchAddressRepository,csvService, normalizeAddressService);
         BatchAddress batchAddress1 = new BatchAddress();
         batchAddress1.setAddressId("address1");
         batchAddress1.setId("id1");

@@ -1,7 +1,6 @@
 package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.entity.BatchAddress;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Mono;
@@ -23,16 +22,9 @@ public class BatchAddressRepositoryImpl implements BatchAddressRepository {
 
     private final DynamoDbAsyncTable<BatchAddress> table;
 
-    private final int maxRetry;
-    private final int retryAfter;
 
-
-    public BatchAddressRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                                      @Value("${pn.address.manager.batch.max-retry}") int maxRetry,
-                                      @Value("${pn.address.manager.batch.recovery.after}") int retryAfter) {
+    public BatchAddressRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient) {
         this.table = dynamoDbEnhancedAsyncClient.table("pn-batchAddress", TableSchema.fromClass(BatchAddress.class));
-        this.maxRetry = maxRetry;
-        this.retryAfter = retryAfter;
     }
 
     @Override

@@ -9,6 +9,7 @@ import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
@@ -21,33 +22,41 @@ public class NormalizeAddressService {
     private final EventService eventService;
     private final ObjectMapper objectMapper;
     private final AddressUtils addressUtils;
+    private final boolean flagCsv;
     private final Scheduler scheduler;
 
     public NormalizeAddressService(ObjectMapper objectMapper,
                                    AddressUtils addressUtils,
                                    EventService eventService,
+                                   @Value("${pn.address.manager.flag.csv}") boolean flagCsv,
                                    @Qualifier("addressManagerScheduler") Scheduler scheduler) {
         this.eventService = eventService;
         this.objectMapper = objectMapper;
         this.addressUtils = addressUtils;
+        this.flagCsv = flagCsv;
         this.scheduler = scheduler;
     }
 
     public Mono<AcceptedResponse> normalizeAddressAsync(String cxId, NormalizeItemsRequest normalizeItemsRequest) {
-        Mono.fromCallable(() -> {
-            NormalizeItemsResult normalizeItemsResult = normalizeRequestToResult(normalizeItemsRequest,cxId);
-            sendEvents(normalizeItemsResult, cxId);
-            return normalizeItemsResult;
-        }).subscribeOn(scheduler).subscribe(normalizeItemsResult -> log.info("normalizeAddressAsync response: {}", normalizeItemsResult),
-                throwable -> log.error("normalizeAddressAsync error: {}", throwable.getMessage(), throwable));
+        if (flagCsv) {
+            Mono.fromCallable(() -> {
+                NormalizeItemsResult normalizeItemsResult = normalizeRequestToResult(normalizeItemsRequest);
+                sendEvents(normalizeItemsResult, cxId);
+                return normalizeItemsResult;
+            }).subscribeOn(scheduler).subscribe(normalizeItemsResult -> log.info("normalizeAddressAsync response: {}", normalizeItemsResult),
+                    throwable -> log.error("normalizeAddressAsync error: {}", throwable.getMessage(), throwable));
+        }
+        else{
+            addressUtils.createBatchAddressByNormalizeItemsRequest(normalizeItemsRequest,cxId);
+        }
 
         return Mono.just(mapToAcceptedResponse(normalizeItemsRequest));
     }
 
-    private NormalizeItemsResult normalizeRequestToResult(NormalizeItemsRequest normalizeItemsRequest, String cxId) {
+    private NormalizeItemsResult normalizeRequestToResult(NormalizeItemsRequest normalizeItemsRequest) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         normalizeItemsResult.setCorrelationId(normalizeItemsRequest.getCorrelationId());
-        normalizeItemsResult.setResultItems(addressUtils.normalizeAddresses(normalizeItemsRequest.getRequestItems(),normalizeItemsResult.getCorrelationId(),cxId));
+        normalizeItemsResult.setResultItems(addressUtils.normalizeAddresses(normalizeItemsRequest.getRequestItems()));
         return normalizeItemsResult;
     }
 

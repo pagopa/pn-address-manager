@@ -32,14 +32,11 @@ class BatchAddressRepositoryImplTest {
     @Mock
     private DynamoDbAsyncTable<Object> dynamoDbAsyncTable;
 
-    private static final int RETRY = 3;
-    private static final int AFTER = 60;
-
     @Test
     void testUpdate() {
         when(dynamoDbEnhancedAsyncClient.table(any(), any()))
                 .thenReturn(dynamoDbAsyncTable);
-        BatchAddressRepository batchAddressRepository = new BatchAddressRepositoryImpl(dynamoDbEnhancedAsyncClient, RETRY, AFTER);
+        BatchAddressRepository batchAddressRepository = new BatchAddressRepositoryImpl(dynamoDbEnhancedAsyncClient);
 
         BatchAddress batchAddress = new BatchAddress();
 
@@ -55,7 +52,7 @@ class BatchAddressRepositoryImplTest {
     void testCreate() {
         when(dynamoDbEnhancedAsyncClient.table(any(), any()))
                 .thenReturn(dynamoDbAsyncTable);
-        BatchAddressRepository batchAddressRepository = new BatchAddressRepositoryImpl(dynamoDbEnhancedAsyncClient, RETRY, AFTER);
+        BatchAddressRepository batchAddressRepository = new BatchAddressRepositoryImpl(dynamoDbEnhancedAsyncClient);
 
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> null);
@@ -72,7 +69,7 @@ class BatchAddressRepositoryImplTest {
     void testGetBatchAddressByNotBatchId() {
         when(dynamoDbEnhancedAsyncClient.table(any(), any()))
                 .thenReturn(dynamoDbAsyncTable);
-        BatchAddressRepository batchAddressRepository = new BatchAddressRepositoryImpl(dynamoDbEnhancedAsyncClient, RETRY, AFTER);
+        BatchAddressRepository batchAddressRepository = new BatchAddressRepositoryImpl(dynamoDbEnhancedAsyncClient);
 
         Map<String, AttributeValue> lastKey = new HashMap<>();
         lastKey.put("chiave", AttributeValue.builder().s("valore").build());
@@ -93,7 +90,7 @@ class BatchAddressRepositoryImplTest {
     void testSetNewBatchIdToBatchRequests() {
         when(dynamoDbEnhancedAsyncClient.table(any(), any()))
                 .thenReturn(dynamoDbAsyncTable);
-        BatchAddressRepository batchAddressRepository = new BatchAddressRepositoryImpl(dynamoDbEnhancedAsyncClient, RETRY, AFTER);
+        BatchAddressRepository batchAddressRepository = new BatchAddressRepositoryImpl(dynamoDbEnhancedAsyncClient);
 
         BatchAddress batchRequest = new BatchAddress();
 

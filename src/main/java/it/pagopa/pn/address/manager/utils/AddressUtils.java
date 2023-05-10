@@ -1,18 +1,27 @@
 package it.pagopa.pn.address.manager.utils;
 
+import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.entity.BatchAddress;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
+import it.pagopa.pn.address.manager.repository.BatchAddressRepository;
 import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
+import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.service.CsvService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND;
@@ -22,15 +31,53 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 public class AddressUtils {
 
     private static final String ERROR_DURING_VERIFY_CSV = "Error during verify csv";
-    private final boolean flagCsv;
+    private final long ttl;
     private final Map<String, Object> capMap;
     private final Map<String, String> countryMap;
+    private final BatchAddressRepository batchAddressRepository;
 
-    public AddressUtils(@Value("${pn.address.manager.flag.csv}") boolean flagCsv,
-                        CsvService csvService) {
-        this.flagCsv = flagCsv;
+    public AddressUtils(@Value("${pn.address.manager.batch.ttl}") long ttl,
+                        CsvService csvService,
+                        BatchAddressRepository batchAddressRepository) {
+        this.ttl = ttl;
         this.capMap = csvService.capMap();
         this.countryMap = csvService.countryMap();
+        this.batchAddressRepository = batchAddressRepository;
+    }
+
+    public void createBatchAddressByNormalizeItemsRequest(NormalizeItemsRequest normalizeItemsRequest, String cxId){
+        normalizeItemsRequest.getRequestItems().forEach(normalizeRequest -> {
+            BatchAddress batchAddress = createNewStartBatchAddress();
+            setAddressToBatchAddress(normalizeRequest.getAddress(),batchAddress);
+            batchAddress.setCorrelationId(normalizeItemsRequest.getCorrelationId());
+            batchAddress.setAddressId(normalizeRequest.getId());
+            batchAddress.setCxId(cxId);
+            batchAddressRepository.create(batchAddress);
+        });
+    }
+
+    private BatchAddress createNewStartBatchAddress() {
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        BatchAddress batchAddress = new BatchAddress();
+        batchAddress.setId(UUID.randomUUID().toString());
+        batchAddress.setBatchId(BatchStatus.NO_BATCH_ID.getValue());
+        batchAddress.setStatus(BatchStatus.NOT_WORKED.getValue());
+        batchAddress.setRetry(0);
+        batchAddress.setLastReserved(now);
+        batchAddress.setCreatedAt(now);
+        batchAddress.setTtl(now.plusSeconds(ttl).toEpochSecond(ZoneOffset.UTC));
+        log.trace("New Batch Address: {}", batchAddress);
+        return batchAddress;
+    }
+
+    private void setAddressToBatchAddress(AnalogAddress analogAddress, BatchAddress batchAddress){
+        batchAddress.setAddressRow(analogAddress.getAddressRow());
+        batchAddress.setAddressRow2(analogAddress.getAddressRow2());
+        batchAddress.setCity(analogAddress.getCity());
+        batchAddress.setCity2(analogAddress.getCity2());
+        batchAddress.setPr(analogAddress.getPr());
+        batchAddress.setCap(analogAddress.getCap());
+        batchAddress.setCountry(analogAddress.getCountry());
     }
 
     public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress, boolean isItalian) {
@@ -72,16 +119,11 @@ public class AddressUtils {
 
     public NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
-        if (flagCsv) {
-            try {
-                verifyAddressInCsv(analogAddress, normalizedAddressResponse);
-            } catch (PnAddressManagerException e) {
-                log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
-                normalizedAddressResponse.setError(e.getDescription());
-            }
-        } else {
-            //TODO: verify with postel
-            normalizedAddressResponse.setError("TODO: verify with postel");
+        try {
+            verifyAddressInCsv(analogAddress, normalizedAddressResponse);
+        } catch (PnAddressManagerException e) {
+            log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
+            normalizedAddressResponse.setError(e.getDescription());
         }
         return normalizedAddressResponse;
     }

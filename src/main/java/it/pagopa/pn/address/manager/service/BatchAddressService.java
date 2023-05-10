@@ -8,7 +8,6 @@ import it.pagopa.pn.address.manager.model.AddressModel;
 import it.pagopa.pn.address.manager.model.NormalizeItemsResultModel;
 import it.pagopa.pn.address.manager.repository.BatchAddressRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -37,18 +36,14 @@ public class BatchAddressService {
     private final BatchAddressRepository batchAddressRepository;
     private final CsvService csvService;
     private final NormalizeAddressService normalizeAddressService;
-    private final int maxRetry;
-
     private static final int MAX_BATCH_REQUEST_SIZE = 100;
 
     public BatchAddressService(BatchAddressRepository batchAddressRepository,
                                CsvService csvService,
-                               NormalizeAddressService normalizeAddressService,
-                               @Value("${pn.address.manager.batch.max-retry}") int maxRetry) {
+                               NormalizeAddressService normalizeAddressService) {
         this.batchAddressRepository = batchAddressRepository;
         this.csvService = csvService;
         this.normalizeAddressService = normalizeAddressService;
-        this.maxRetry = maxRetry;
     }
 
     @Scheduled(fixedDelayString = "${pn.address.manager.batch.delay}")
