@@ -1,5 +1,8 @@
 {
   "Parameters" : {
-    "flagCsv": "true"
+    "flagCsv": "true",
+    "CpuValue": "2048",
+    "MemoryAmount": "4GB",
+    "MaxTasksNumber": "1"
   }
 }
