@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.model;
 
-import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
+import it.pagopa.pn.address.manager.server.v1.dto.AnalogAddress;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
