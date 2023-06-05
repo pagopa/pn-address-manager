@@ -6,19 +6,21 @@ import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.service.CsvService;
-import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.apache.commons.lang3.StringUtils;
 
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
+import static it.pagopa.pn.address.manager.config.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND;
 
 @Component
-@Slf4j
+@lombok.CustomLog
 public class AddressUtils {
 
     private static final String ERROR_DURING_VERIFY_CSV = "Error during verify csv";
@@ -72,10 +74,12 @@ public class AddressUtils {
 
     public NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
+        log.logChecking(PROCESS_VERIFY_ADDRESS);
         if (flagCsv) {
             try {
                 verifyAddressInCsv(analogAddress, normalizedAddressResponse);
             } catch (PnAddressManagerException e) {
+                log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, e.getDescription());
                 log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
                 normalizedAddressResponse.setError(e.getDescription());
             }
@@ -83,6 +87,7 @@ public class AddressUtils {
             //TODO: verify with postel
             normalizedAddressResponse.setError("TODO: verify with postel");
         }
+        log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS,true);
         return normalizedAddressResponse;
     }
 
