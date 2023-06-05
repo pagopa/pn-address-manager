@@ -11,7 +11,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
-import static it.pagopa.pn.address.manager.config.ProcessStatus.*;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.*;
 
 @RestController
 @lombok.CustomLog

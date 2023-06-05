@@ -1,4 +1,4 @@
-package it.pagopa.pn.address.manager.config;
+package it.pagopa.pn.address.manager.constant;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

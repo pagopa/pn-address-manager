@@ -11,7 +11,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
-import static it.pagopa.pn.address.manager.config.ProcessStatus.PROCESS_NAME_DEDUPLICATES_ADDRESS_DEDUPLICATES;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_NAME_DEDUPLICATES_ADDRESS_DEDUPLICATES;
 
 @RestController
 @lombok.CustomLog
