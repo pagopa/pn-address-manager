@@ -1,8 +1,8 @@
 package it.pagopa.pn.address.manager.rest;
 
 import it.pagopa.pn.address.manager.config.SchedulerConfig;
-import it.pagopa.pn.address.manager.rest.v1.dto.DeduplicatesRequest;
-import it.pagopa.pn.address.manager.rest.v1.dto.DeduplicatesResponse;
+import it.pagopa.pn.address.manager.server.v1.dto.DeduplicatesRequest;
+import it.pagopa.pn.address.manager.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.address.manager.service.DeduplicatesAddressService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,7 +15,8 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {DeduplicatesAddressController.class, SchedulerConfig.class})
@@ -27,9 +28,7 @@ class DeduplicatesAddressControllerTest {
     @MockBean
     private DeduplicatesAddressService deduplicatesAddressService;
 
-    /**
-     * Method under test: {@link DeduplicatesAddressController#deduplicates(String, String, Mono, ServerWebExchange)}
-     */
+
     @Test
     void testDeduplicates() {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();

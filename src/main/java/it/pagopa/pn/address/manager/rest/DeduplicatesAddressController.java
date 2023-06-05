@@ -1,10 +1,9 @@
 package it.pagopa.pn.address.manager.rest;
 
+import it.pagopa.pn.address.manager.server.v1.api.DeduplicatesAddressServiceApi;
+import it.pagopa.pn.address.manager.server.v1.dto.DeduplicatesRequest;
+import it.pagopa.pn.address.manager.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.address.manager.service.DeduplicatesAddressService;
-import it.pagopa.pn.address.manager.rest.v1.api.DeduplicatesAddressServiceApi;
-import it.pagopa.pn.address.manager.rest.v1.dto.DeduplicatesRequest;
-import it.pagopa.pn.address.manager.rest.v1.dto.DeduplicatesResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -12,8 +11,10 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_NAME_DEDUPLICATES_ADDRESS_DEDUPLICATES;
+
 @RestController
-@Slf4j
+@lombok.CustomLog
 public class DeduplicatesAddressController implements DeduplicatesAddressServiceApi {
 
     private final Scheduler scheduler;
@@ -39,8 +40,11 @@ public class DeduplicatesAddressController implements DeduplicatesAddressService
      */
     @Override
     public Mono<ResponseEntity<DeduplicatesResponse>> deduplicates(String pnAddressManagerCxId, String xApiKey, Mono<DeduplicatesRequest> deduplicatesRequest, ServerWebExchange exchange) {
+        log.logStartingProcess(PROCESS_NAME_DEDUPLICATES_ADDRESS_DEDUPLICATES);
         return deduplicatesRequest
                 .map(deduplicatesAddressService::deduplicates)
+                .doOnNext(deduplicatesResponse -> log.logEndingProcess(PROCESS_NAME_DEDUPLICATES_ADDRESS_DEDUPLICATES))
+                .doOnError(throwable -> log.logEndingProcess(PROCESS_NAME_DEDUPLICATES_ADDRESS_DEDUPLICATES,false,throwable.getMessage()))
                 .map(deduplicateResponse -> ResponseEntity.ok().body(deduplicateResponse))
                 .publishOn(scheduler);
     }
