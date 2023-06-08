@@ -168,6 +168,10 @@ Parameters:
     Type: String
     Description: flag to enable csv file check
 
+  LogAlarmStrategy:
+    Type: String
+    Default: 'FATAL'
+    
 Resources:
 
   # PN-address-manager microservice
@@ -207,6 +211,7 @@ Resources:
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
         TaskRoleManagedPolicyArn: !Ref AddressManagerMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
   # CloudWatch dashboard
   AddressManagerMicroserviceCloudWatchDashboard:
