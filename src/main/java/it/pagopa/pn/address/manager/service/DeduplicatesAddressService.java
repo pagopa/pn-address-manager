@@ -2,8 +2,8 @@ package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
-import it.pagopa.pn.address.manager.server.v1.dto.DeduplicatesRequest;
-import it.pagopa.pn.address.manager.server.v1.dto.DeduplicatesResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 

@@ -2,9 +2,9 @@ package it.pagopa.pn.address.manager.utils;
 
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
-import it.pagopa.pn.address.manager.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.server.v1.dto.NormalizeRequest;
-import it.pagopa.pn.address.manager.server.v1.dto.NormalizeResult;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.service.CsvService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;

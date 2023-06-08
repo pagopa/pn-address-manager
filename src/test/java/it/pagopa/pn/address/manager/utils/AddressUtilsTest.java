@@ -1,8 +1,8 @@
 package it.pagopa.pn.address.manager.utils;
 
-import it.pagopa.pn.address.manager.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.server.v1.dto.NormalizeRequest;
-import it.pagopa.pn.address.manager.server.v1.dto.NormalizeResult;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 
 import java.util.ArrayList;
 import java.util.List;
