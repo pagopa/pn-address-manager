@@ -1,8 +1,8 @@
 package it.pagopa.pn.address.manager.rest;
 
-import it.pagopa.pn.address.manager.server.v1.api.NormalizeAddressServiceApi;
-import it.pagopa.pn.address.manager.server.v1.dto.AcceptedResponse;
-import it.pagopa.pn.address.manager.server.v1.dto.NormalizeItemsRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.api.NormalizeAddressServiceApi;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
-
-import static it.pagopa.pn.address.manager.constant.ProcessStatus.*;
 
 @RestController
 @lombok.CustomLog
@@ -40,11 +38,8 @@ public class NormalizeAddressController implements NormalizeAddressServiceApi {
      */
     @Override
     public Mono<ResponseEntity<AcceptedResponse>> normalize(String pnAddressManagerCxId, String xApiKey, Mono<NormalizeItemsRequest> normalizeItemsRequest, final ServerWebExchange exchange) {
-        log.logStartingProcess(PROCESS_NAME_NORMALIZE_ADDRESS_NORMALIZE);
         return normalizeItemsRequest
                 .flatMap(request -> normalizeAddressService.normalizeAddressAsync(pnAddressManagerCxId, request))
-                .doOnNext(acceptedResponse -> log.logEndingProcess(PROCESS_NAME_NORMALIZE_ADDRESS_NORMALIZE))
-                .doOnError(throwable -> log.logEndingProcess(PROCESS_NAME_NORMALIZE_ADDRESS_NORMALIZE,false,throwable.getMessage()))
                 .map(acceptedResponse -> ResponseEntity.ok().body(acceptedResponse))
                 .publishOn(scheduler);
     }

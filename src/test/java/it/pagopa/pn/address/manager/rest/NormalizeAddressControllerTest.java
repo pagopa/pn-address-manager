@@ -1,8 +1,8 @@
 package it.pagopa.pn.address.manager.rest;
 
 import it.pagopa.pn.address.manager.config.SchedulerConfig;
-import it.pagopa.pn.address.manager.server.v1.dto.AcceptedResponse;
-import it.pagopa.pn.address.manager.server.v1.dto.NormalizeItemsRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
