@@ -3,6 +3,8 @@
     "flagCsv": "true",
     "CpuValue": "2048",
     "MemoryAmount": "4GB",
-    "MaxTasksNumber": "1"
+    "MinTasksNumber": "2",
+    "MaxTasksNumber": "3",
+    "AutoscalingThreshold": "2500"
   }
 }
