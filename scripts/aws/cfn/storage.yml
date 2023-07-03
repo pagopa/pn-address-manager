@@ -24,11 +24,46 @@ Parameters:
     Type: String
     Description: 'Where to send CDC'
 
+  LogRetention:
+    Type: Number
+    Default: 14
+
 Resources:
-    NullResource:
-        Type: AWS::CloudFormation::WaitConditionHandle
+  # Log group
+  PnAddressManagerLogGroup:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/log-group.yaml"
+      Parameters:
+        LogGroupName: !Sub "${ProjectName}-address-manager"
+        LogGroupRetention: !Ref LogRetention
+        LogGroupPrefix: '/aws/ecs'
+
+  # Event Bus
+  AddressManagerEventBus:
+    Type: AWS::Events::EventBus
+    Properties:
+      Name: !Sub '${ProjectName}-AddressManagerBus'
+
+  # Event Bus Dead Letter Queue
+  AddressManagerEventBusDLQ:
+    Type: AWS::SQS::Queue
+    Properties:
+      MessageRetentionPeriod: 1209600
+      QueueName: !Sub '${ProjectName}-AddressManagerBus-DLQ'
 
 Outputs:
-    SampleOutput:
-      Description: A Sample Output
-      Value: 'na'
+  EcsLogGroup:
+    Value: !GetAtt PnAddressManagerLogGroup.Outputs.LogGroupName
+  AddressManagerEventBusArn:
+    Value: !GetAtt AddressManagerEventBus.Arn
+  AddressManagerEventBusName:
+    Value: !GetAtt AddressManagerEventBus.Name
+  AddressManagerEventBusDLQArn:
+    Value: !GetAtt AddressManagerEventBusDLQ.Arn
+  AddressManagerEventBusDLQName:
+    Value: !GetAtt AddressManagerEventBusDLQ.QueueName
+  AddressManagerEventBusDLQUrl:
+    Value: !GetAtt AddressManagerEventBusDLQ.QueueUrl

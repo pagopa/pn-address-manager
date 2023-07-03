@@ -11,14 +11,6 @@ Parameters:
     Type: String
     Description: ARN of alarm topic
 
-  WebApiDnsName:
-    Type: String
-    Description: 'The DNS name used for WEB rest API.'
-  
-  CorsAllowedDomains:
-    Type: String
-    Description: 'Comma separated list of domains allowed to make cross origin request'
-
   ContainerImageUri:
     Type: String
     Description: 'Exact container image URI with full repository and image digest'
@@ -54,10 +46,6 @@ Parameters:
   ApplicationLoadBalancerDomain:
     Type: String
     Description: 'Base URL of the load balancer where the service is going to be reachable'
-
-  NetworkLoadBalancerLink:
-    Type: String
-    Description: 'network load balancer link for API-GW'
   
   LogsKinesisSourceStreamArn:
     Type: String
@@ -67,21 +55,153 @@ Parameters:
     Type: String
     Description: 'keep track of used projects commitIds'
 
+  EcsLogGroup:
+    Type: String
+
+  # Heath Check parameters
+  HealthCheckInterval:
+    Description: Seconds between two health check
+    Type: Number
+    Default: 60
+
+  HealthCheckTimeout:
+    Description: health check timeout seconds
+    Type: Number
+    Default: 5
+
+  HealthyThresholdCount:
+    Description: |
+      The number of consecutive health checks successes required before considering 
+      an unhealthy target healthy.
+    Type: Number
+    Default: 5
+
+  HealthCheckPath:
+    Description: Path endpoint di health check
+    Type: String
+    Default: '/actuator/health'
+
+  UnhealthyThresholdCount:
+    Description: |
+      The number of consecutive health check failures required before considering a target unhealthy.
+    Type: Number
+    Default: 2
+
+  # Instance parameters
+  # 256 (.25 vCPU) - Available memory values: 0.5GB, 1GB, 2GB
+  # 512 (.5 vCPU) - Available memory values: 1GB, 2GB, 3GB, 4GB
+  # 1024 (1 vCPU) - Available memory values: 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB
+  # 2048 (2 vCPU) - Available memory values: Between 4GB and 16GB in 1GB increments
+  # 4096 (4 vCPU) - Available memory values: Between 8GB and 30GB in 1GB increments
+  CpuValue:
+    Type: Number
+    Default: 1024
+    Description: Fargate virtual CPU quantity 1024 equals one vCPU
+
+  # 0.5GB, 1GB, 2GB - Available cpu values: 256 (.25 vCPU)
+  # 1GB, 2GB, 3GB, 4GB - Available cpu values: 512 (.5 vCPU)
+  # 2GB, 3GB, 4GB, 5GB, 6GB, 7GB, 8GB - Available cpu values: 1024 (1 vCPU)
+  # Between 4GB and 16GB in 1GB increments - Available cpu values: 2048 (2 vCPU)
+  # Between 8GB and 30GB in 1GB increments - Available cpu values: 4096 (4 vCPU)
+  MemoryAmount:
+    Type: String
+    Default: 2GB
+    Description: memory amount reserved to the task pod.
+    AllowedValues: [ 2GB, 4GB, 6GB, 8GB ]
+
+  # Autoscaling parameters
+  AutoscalingCheckPeriod:
+    Default: 60
+    Type: Number
+    Description: minimum autoscaling number of tasks\
+
+  AutoscalingDataPointN:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingDataPointM:
+    Default: 1
+    Type: Number
+    Description: activate when N datapoint on M
+
+  AutoscalingThreshold:
+    Default: 70
+    Type: String
+
+  MinTasksNumber:
+    Default: 1
+    Type: Number
+    Description: minimum autoscaling number of tasks
+
+  MaxTasksNumber:
+    Default: 6
+    Type: Number
+    Description: maximum autoscaling number of tasks
+
+  AddressManagerEventBusArn:
+    Type: String
+    Description: ARN of the address manager event bus
+
+  AddressManagerEventBusName:
+    Type: String
+    Description: Name of the address manager event bus
+
+  PnCoreTargetEventBus:
+    Type: String
+    Description: ARN of the core target event bus
+
+  AddressManagerEventBusDLQArn:
+    Type: String
+    Description: ARN of the address manager event bus DLQ
+
+  AddressManagerEventBusDLQName:
+    Type: String
+    Description: Name of the address manager event bus DLQ
+
+  AddressManagerEventBusDLQUrl:
+    Type: String
+    Description: URL of the address manager event bus DLQ
+
+  flagCsv:
+    Default: true
+    Type: String
+    Description: flag to enable csv file check
+
+  LogAlarmStrategy:
+    Type: String
+    Default: 'FATAL'
+    
 Resources:
 
-  # PN-TemplateBeMs microservice
-  TemplateBeMsMicroservice:
+  # PN-address-manager microservice
+  AddressManagerMicroservice:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/ecs-service.yaml"
       Parameters:
-        MicroServiceUniqueName: !Sub '${ProjectName}-template-ms-be'
-        CpuValue: 512
-        MemoryAmount: 2GB
+        MicroServiceUniqueName: !Sub '${ProjectName}-address-manager'
+        CpuValue: !Ref CpuValue
+        MemoryAmount: !Ref MemoryAmount
+        HealthCheckTimeout: !Ref HealthCheckTimeout
+        HealthCheckInterval: !Ref HealthCheckInterval
+        HealthyThresholdCount: !Ref HealthyThresholdCount
+        HealthCheckPath: !Ref HealthCheckPath
+        UnhealthyThresholdCount: !Ref UnhealthyThresholdCount
+        AutoscalingStrategy: REST-API
+        AutoscalingThreshold: !Ref AutoscalingThreshold
+        AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
+        MinTasksNumber: !Ref MinTasksNumber
+        MaxTasksNumber: !Ref MaxTasksNumber
+        AutoscalingDataPointN: !Ref AutoscalingDataPointN
+        AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
         ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
-        MappedPaths: '/template-ms-be/*'
+        ContainerEnvEntry2: !Sub 'PN_ADDRESS_MANAGER_EVENTBUS_NAME=${AddressManagerEventBusName}'
+        ContainerEnvEntry3: !Sub 'PN_ADDRESS_MANAGER_FLAG_CSV=${flagCsv}'
+        ContainerEnvEntry4: !Sub 'PN_ADDRESS_MANAGER_HEALTH_CHECK_PATH=${HealthCheckPath}'
+        MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
         VpcId: !Ref VpcId
@@ -89,3 +209,123 @@ Resources:
         LoadBalancerListenerArn: !Ref ApplicationLoadBalancerListenerArn
         LoadbalancerRulePriority: !Ref MicroserviceNumber
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
+        TaskRoleManagedPolicyArn: !Ref AddressManagerMicroserviceTaskManagedPolicy
+        EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
+
+  # CloudWatch dashboard
+  AddressManagerMicroserviceCloudWatchDashboard:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/microservice-cloudwatch-dashboard.yaml"
+      Parameters:
+        DashboardName: !Sub "${ProjectName}-address-manager"
+        AlarmArns: !Join
+          - ','
+          - - !GetAtt AddressManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
+            - !GetAtt DLQHasMessagesAlarm.Arn
+        LogGroupsNames: !Join
+          - ','
+          - - !Ref EcsLogGroup
+        EventRuleArns: !Join
+          - ','
+          - - !GetAtt AddressManagerEventBusToTarget.Arn
+        QueueArns: !Join
+          - ','
+          - - !Ref AddressManagerEventBusDLQArn
+
+  AddressManagerMicroserviceTaskManagedPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - events:PutEvents
+            Resource:
+              - !Ref AddressManagerEventBusArn
+
+  ###################
+  ### EventBridge ###
+  ###################
+
+  # Dead Letter Queue policy
+  EventBusDeadLetterQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref AddressManagerEventBusDLQUrl
+      PolicyDocument:
+        Statement:
+          - Sid: "SendEventsToDLQ"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "events.amazonaws.com"
+            Action:
+              - "SQS:SendMessage"
+            Resource:
+              - !Ref AddressManagerEventBusDLQArn
+
+  DLQHasMessagesAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub '${ProjectName}-AddressManagerBus-DLQ-HasMessage'
+      AlarmDescription: "CloudWatch alarm for when DLQ has 1 or more messages."
+      Namespace: "AWS/SQS"
+      MetricName: "ApproximateNumberOfMessagesVisible"
+      Dimensions:
+        - Name: "QueueName"
+          Value: !Ref AddressManagerEventBusDLQName
+      Statistic: "Sum"
+      TreatMissingData: "notBreaching"
+      Period: 60
+      Threshold: 1
+      ComparisonOperator: "GreaterThanOrEqualToThreshold"
+      EvaluationPeriods: 1
+      AlarmActions:
+        - !Ref AlarmSNSTopicArn
+      InsufficientDataActions:
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+
+  # Event Bus to target bus role
+  AddressManagerEventBusTargetRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+        Version: "2012-10-17"
+      Policies:
+        - PolicyName: putEventIntoTargetBus
+          PolicyDocument:
+            Statement:
+              - Sid: putEvents
+                Action:
+                  - events:PutEvents
+                Effect: Allow
+                Resource:
+                  - !Ref PnCoreTargetEventBus
+
+  # Event Bus rule that direct event to target event bus
+  AddressManagerEventBusToTarget:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Route Address Manager Events to target event bus
+      RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
+      EventBusName: !Ref AddressManagerEventBusName
+      EventPattern:
+        detail-type: [ "AddressManagerOutcomeEvent" ]
+        source: [ "pn-address-manager" ]
+      Targets:
+        - Id: !Sub '${ProjectName}-AddressManagerBus-PnCoreTargetEventBus'
+          Arn: !Ref PnCoreTargetEventBus
+          RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
+          DeadLetterConfig:
+            Arn: !Ref AddressManagerEventBusDLQArn
