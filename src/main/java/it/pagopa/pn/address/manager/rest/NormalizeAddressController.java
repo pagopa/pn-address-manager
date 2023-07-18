@@ -3,13 +3,19 @@ package it.pagopa.pn.address.manager.rest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.api.NormalizeAddressServiceApi;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
+import it.pagopa.pn.address.manager.service.ISINIReceiverService;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
+
+import javax.xml.bind.JAXBException;
+import javax.xml.soap.SOAPException;
+import javax.xml.transform.TransformerException;
 
 @RestController
 @lombok.CustomLog
@@ -19,9 +25,12 @@ public class NormalizeAddressController implements NormalizeAddressServiceApi {
 
     private final NormalizeAddressService normalizeAddressService;
 
-    public NormalizeAddressController(Scheduler scheduler, NormalizeAddressService normalizeAddressService) {
+    private final ISINIReceiverService isiniReceiverService;
+
+    public NormalizeAddressController(Scheduler scheduler, NormalizeAddressService normalizeAddressService, ISINIReceiverService isiniReceiverService) {
         this.scheduler = scheduler;
         this.normalizeAddressService = normalizeAddressService;
+        this.isiniReceiverService = isiniReceiverService;
     }
 
 
@@ -40,6 +49,12 @@ public class NormalizeAddressController implements NormalizeAddressServiceApi {
     public Mono<ResponseEntity<AcceptedResponse>> normalize(String pnAddressManagerCxId, String xApiKey, Mono<NormalizeItemsRequest> normalizeItemsRequest, final ServerWebExchange exchange) {
         return normalizeItemsRequest
                 .flatMap(request -> normalizeAddressService.normalizeAddressAsync(pnAddressManagerCxId, request))
+                .map(acceptedResponse -> ResponseEntity.ok().body(acceptedResponse))
+                .publishOn(scheduler);
+    }
+    @RequestMapping("/test")
+    public Mono<ResponseEntity<String>> normalize() throws JAXBException, SOAPException, TransformerException {
+        return isiniReceiverService.activateSINIComponent()
                 .map(acceptedResponse -> ResponseEntity.ok().body(acceptedResponse))
                 .publishOn(scheduler);
     }

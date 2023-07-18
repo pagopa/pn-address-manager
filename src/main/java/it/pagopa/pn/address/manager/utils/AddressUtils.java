@@ -1,13 +1,13 @@
 package it.pagopa.pn.address.manager.utils;
 
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
+import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
+import it.pagopa.pn.address.manager.model.WsNormAccInputModel;
 import it.pagopa.pn.address.manager.service.CsvService;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -16,23 +16,88 @@ import java.util.Map;
 import java.util.Optional;
 
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
 @lombok.CustomLog
 public class AddressUtils {
 
-    private static final String ERROR_DURING_VERIFY_CSV = "Error during verify csv";
-    private final boolean flagCsv;
     private final Map<String, Object> capMap;
     private final Map<String, String> countryMap;
 
-    public AddressUtils(@Value("${pn.address.manager.flag.csv}") boolean flagCsv,
-                        CsvService csvService) {
-        this.flagCsv = flagCsv;
+    public AddressUtils(CsvService csvService) {
         this.capMap = csvService.capMap();
         this.countryMap = csvService.countryMap();
+    }
+
+    public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
+        return requestItems.stream()
+                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId()))
+                .map(this::toNormalizeResult)
+                .toList();
+    }
+
+    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id) {
+        NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress);
+        normalizedAddressResponse.setId(id);
+        if (StringUtils.isBlank(normalizedAddressResponse.getError())) {
+            normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
+        }
+        return normalizedAddressResponse;
+    }
+
+    private NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
+        NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
+        log.logChecking(PROCESS_VERIFY_ADDRESS);
+        try {
+            verifyAddressInCsv(analogAddress, normalizedAddressResponse);
+        } catch (PnAddressManagerException e) {
+            log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, e.getDescription());
+            normalizedAddressResponse.setError(e.getDescription());
+        }
+        log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS,true);
+        return normalizedAddressResponse;
+    }
+
+    private void verifyAddressInCsv(AnalogAddress analogAddress, NormalizedAddressResponse normalizedAddressResponse) {
+        if (StringUtils.isBlank(analogAddress.getCountry()) || analogAddress.getCountry().toUpperCase().trim().startsWith("ITAL")){
+            normalizedAddressResponse.setItalian(true);
+            if(StringUtils.isBlank(analogAddress.getCap())){
+                throw new PnAddressManagerException(ERROR_ADDRESS_MANAGER_DURING_VERIFY_CSV, ERROR_ADDRESS_MANAGER_DURING_CAP_MANDATORY_DESCRIPTION, HttpStatus.BAD_REQUEST.value(), ERROR_ADDRESS_MANAGER_CAP_NOT_FOUND_ERROR);
+            }
+            searchCap(analogAddress.getCap());
+        } else {
+            searchCountry(StringUtils.normalizeSpace(analogAddress.getCountry().toUpperCase()));
+        }
+    }
+
+    private void searchCap(String cap) {
+        if(!capMap.containsKey(cap.trim())) {
+            throw new PnAddressManagerException(ERROR_ADDRESS_MANAGER_DURING_VERIFY_CSV, String.format(ERROR_ADDRESS_MANAGER_DURING_CAP_NOT_FOUND_DESCRIPTION, cap), HttpStatus.BAD_REQUEST.value(), ERROR_ADDRESS_MANAGER_CAP_NOT_FOUND_ERROR);
+        }
+    }
+
+    private void searchCountry(String country) {
+        if (!countryMap.containsKey(country)){
+            throw new PnAddressManagerException(ERROR_ADDRESS_MANAGER_DURING_VERIFY_CSV, String.format(ERROR_ADDRESS_MANAGER_DURING_COUNTRY_NOT_FOUND_DESCRIPTION, country), HttpStatus.BAD_REQUEST.value(), ERROR_ADDRESS_MANAGER_COUNTRY_NOT_FOUND_ERROR);
+        }
+    }
+
+    public List<WsNormAccInputModel> normalizeRequestToWsNormAccInputModel(List<NormalizeRequest> normalizeRequestList){
+        return normalizeRequestList.stream()
+                .map(normalizeRequest -> {
+                    AnalogAddress address = normalizeRequest.getAddress();
+                    WsNormAccInputModel wsNormAccInputModel = new WsNormAccInputModel();
+                    wsNormAccInputModel.setIdCodiceCliente(normalizeRequest.getId());
+                    wsNormAccInputModel.setProvincia(address.getPr());
+                    wsNormAccInputModel.setCap(address.getCap());
+                    wsNormAccInputModel.setLocalita(address.getCity());
+                    wsNormAccInputModel.setLocalitaAggiuntiva(address.getCity2());
+                    wsNormAccInputModel.setDug(address.getCountry());
+                    wsNormAccInputModel.setIndirizzo(address.getAddressRow());
+                    wsNormAccInputModel.setCivico(address.getAddressRow()); //???
+                    return wsNormAccInputModel;
+                }).toList();
     }
 
     public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress, boolean isItalian) {
@@ -51,15 +116,6 @@ public class AddressUtils {
         return trimmedBase.equalsIgnoreCase(trimmedTarget);
     }
 
-    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id) {
-        NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress);
-        normalizedAddressResponse.setId(id);
-        if (StringUtils.isBlank(normalizedAddressResponse.getError())) {
-            normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
-        }
-        return normalizedAddressResponse;
-    }
-
     private AnalogAddress toUpperCase(AnalogAddress analogAddress) {
         analogAddress.setAddressRow(Optional.ofNullable(analogAddress.getAddressRow()).map(s -> StringUtils.normalizeSpace(s).toUpperCase()).orElse(null));
         analogAddress.setCity(Optional.ofNullable(analogAddress.getCity()).map(s -> StringUtils.normalizeSpace(s).toUpperCase()).orElse(null));
@@ -69,58 +125,6 @@ public class AddressUtils {
         analogAddress.setCity2(Optional.ofNullable(analogAddress.getCity2()).map(s -> StringUtils.normalizeSpace(s).toUpperCase()).orElse(null));
         analogAddress.setCountry(Optional.ofNullable(analogAddress.getCountry()).map(s -> StringUtils.normalizeSpace(s).toUpperCase()).orElse(null));
         return analogAddress;
-    }
-
-
-    public NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
-        NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
-        log.logChecking(PROCESS_VERIFY_ADDRESS);
-        if (flagCsv) {
-            try {
-                verifyAddressInCsv(analogAddress, normalizedAddressResponse);
-            } catch (PnAddressManagerException e) {
-                log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, e.getDescription());
-                log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
-                normalizedAddressResponse.setError(e.getDescription());
-            }
-        } else {
-            //TODO: verify with postel
-            normalizedAddressResponse.setError("TODO: verify with postel");
-        }
-        log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS,true);
-        return normalizedAddressResponse;
-    }
-
-    private void verifyAddressInCsv(AnalogAddress analogAddress, NormalizedAddressResponse normalizedAddressResponse) {
-        if (StringUtils.isBlank(analogAddress.getCountry())
-                || analogAddress.getCountry().toUpperCase().trim().startsWith("ITAL")){
-            normalizedAddressResponse.setItalian(true);
-            searchCap(analogAddress.getCap(), capMap);
-        } else {
-            searchCountry(analogAddress.getCountry(), countryMap);
-        }
-    }
-
-    private void searchCountry(String country, Map<String, String> countryMap) {
-        String normalizedCountry = StringUtils.normalizeSpace(country.toUpperCase());
-        if (!countryMap.containsKey(normalizedCountry)){
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Country %s not found", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
-        }
-    }
-
-    private void searchCap(String cap, Map<String, Object> capMap) {
-        if(StringUtils.isBlank(cap)){
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Cap is mandatory", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
-        }else if(!capMap.containsKey(cap.trim())) {
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Cap %s not found", cap), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
-        }
-    }
-
-    public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
-        return requestItems.stream()
-                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId()))
-                .map(this::toNormalizeResult)
-                .toList();
     }
 
     private NormalizeResult toNormalizeResult(NormalizedAddressResponse response) {

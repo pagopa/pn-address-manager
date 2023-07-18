@@ -5,15 +5,14 @@ import com.amazonaws.services.eventbridge.AmazonEventBridgeAsync;
 import com.amazonaws.services.eventbridge.model.PutEventsRequest;
 import com.amazonaws.services.eventbridge.model.PutEventsRequestEntry;
 import com.amazonaws.services.eventbridge.model.PutEventsResult;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
 @Component
+@lombok.CustomLog
 public class EventService {
 
     private final AmazonEventBridgeAsync amazonEventBridge;
