@@ -8,8 +8,8 @@ public class PnAddressManagerException extends PnRuntimeException {
     @Getter
     private final String description;
 
-    public PnAddressManagerException(String message, String description, int status, String errorCode){
-        super(message, description, status, errorCode, null, null);
+    public PnAddressManagerException(String message, String description, int statusCode, String errorCode){
+        super(message, description, statusCode, errorCode, null, null);
         this.description = description;
     }
 }

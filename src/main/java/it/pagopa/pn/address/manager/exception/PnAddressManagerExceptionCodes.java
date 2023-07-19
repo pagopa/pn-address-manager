@@ -22,9 +22,9 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
     public static final String ERROR_ADDRESS_MANAGER_DURING_CAP_MANDATORY_DESCRIPTION = "CAP is mandatory";
     public static final String ERROR_ADDRESS_MANAGER_DURING_CAP_NOT_FOUND_DESCRIPTION = "Cap %s not found";
     public static final String ERROR_ADDRESS_MANAGER_DURING_COUNTRY_NOT_FOUND_DESCRIPTION = "Country %s not found";
-
-
     public static final String ERROR_ADDRESS_MANAGER_CAP_NOT_FOUND_ERROR = "CAP_NOT_FOUND";
     public static final String ERROR_ADDRESS_MANAGER_COUNTRY_NOT_FOUND_ERROR = "COUNTRY_NOT_FOUND";
+
+    public static final String ERROR_ADDRESS_MANAGER_DEDUPLICA_ONLINE_ERROR_CODE = "DEDUPLICA_ONLINE_ERROR";
 
 }

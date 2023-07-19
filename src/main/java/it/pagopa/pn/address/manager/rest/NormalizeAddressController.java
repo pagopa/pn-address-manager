@@ -48,12 +48,12 @@ public class NormalizeAddressController implements NormalizeAddressServiceApi {
     @Override
     public Mono<ResponseEntity<AcceptedResponse>> normalize(String pnAddressManagerCxId, String xApiKey, Mono<NormalizeItemsRequest> normalizeItemsRequest, final ServerWebExchange exchange) {
         return normalizeItemsRequest
-                .flatMap(request -> normalizeAddressService.normalizeAddressAsync(pnAddressManagerCxId, request))
+                .flatMap(request -> normalizeAddressService.normalizeAddressAsync(request, pnAddressManagerCxId))
                 .map(acceptedResponse -> ResponseEntity.ok().body(acceptedResponse))
                 .publishOn(scheduler);
     }
     @RequestMapping("/test")
-    public Mono<ResponseEntity<String>> normalize() throws JAXBException, SOAPException, TransformerException {
+    public Mono<ResponseEntity<String>> normalize() throws JAXBException, TransformerException, SOAPException {
         return isiniReceiverService.activateSINIComponent()
                 .map(acceptedResponse -> ResponseEntity.ok().body(acceptedResponse))
                 .publishOn(scheduler);

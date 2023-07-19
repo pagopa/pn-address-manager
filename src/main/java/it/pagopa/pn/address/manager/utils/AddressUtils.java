@@ -1,11 +1,11 @@
 package it.pagopa.pn.address.manager.utils;
 
+import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
-import it.pagopa.pn.address.manager.model.WsNormAccInputModel;
 import it.pagopa.pn.address.manager.service.CsvService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -22,10 +22,13 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 @lombok.CustomLog
 public class AddressUtils {
 
+    private final AddressConverter addressConverter;
     private final Map<String, Object> capMap;
     private final Map<String, String> countryMap;
 
-    public AddressUtils(CsvService csvService) {
+    public AddressUtils(AddressConverter addressConverter,
+                        CsvService csvService) {
+        this.addressConverter = addressConverter;
         this.capMap = csvService.capMap();
         this.countryMap = csvService.countryMap();
     }
@@ -33,7 +36,7 @@ public class AddressUtils {
     public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
         return requestItems.stream()
                 .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId()))
-                .map(this::toNormalizeResult)
+                .map(addressConverter::normalizedAddressResponsetoNormalizeResult)
                 .toList();
     }
 
@@ -83,23 +86,6 @@ public class AddressUtils {
         }
     }
 
-    public List<WsNormAccInputModel> normalizeRequestToWsNormAccInputModel(List<NormalizeRequest> normalizeRequestList){
-        return normalizeRequestList.stream()
-                .map(normalizeRequest -> {
-                    AnalogAddress address = normalizeRequest.getAddress();
-                    WsNormAccInputModel wsNormAccInputModel = new WsNormAccInputModel();
-                    wsNormAccInputModel.setIdCodiceCliente(normalizeRequest.getId());
-                    wsNormAccInputModel.setProvincia(address.getPr());
-                    wsNormAccInputModel.setCap(address.getCap());
-                    wsNormAccInputModel.setLocalita(address.getCity());
-                    wsNormAccInputModel.setLocalitaAggiuntiva(address.getCity2());
-                    wsNormAccInputModel.setDug(address.getCountry());
-                    wsNormAccInputModel.setIndirizzo(address.getAddressRow());
-                    wsNormAccInputModel.setCivico(address.getAddressRow()); //???
-                    return wsNormAccInputModel;
-                }).toList();
-    }
-
     public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress, boolean isItalian) {
         return compare(baseAddress.getAddressRow(), targetAddress.getAddressRow())
                 && compare(baseAddress.getAddressRow2(), targetAddress.getAddressRow2())
@@ -127,11 +113,4 @@ public class AddressUtils {
         return analogAddress;
     }
 
-    private NormalizeResult toNormalizeResult(NormalizedAddressResponse response) {
-        NormalizeResult normalizeResult = new NormalizeResult();
-        normalizeResult.setId(response.getId());
-        normalizeResult.setError(response.getError());
-        normalizeResult.setNormalizedAddress(response.getNormalizedAddress());
-        return normalizeResult;
-    }
 }

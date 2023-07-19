@@ -6,8 +6,8 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import javax.xml.bind.JAXBException;
-import javax.xml.soap.*;
-import javax.xml.transform.*;
+import javax.xml.soap.SOAPException;
+import javax.xml.transform.TransformerException;
 
 @Service
 public class ISINIReceiverService {
@@ -18,7 +18,7 @@ public class ISINIReceiverService {
         this.soapBuilder = soapBuilder;
     }
 
-    public Mono<String> activateSINIComponent() throws JAXBException, SOAPException, TransformerException {
+    public Mono<String> activateSINIComponent() throws JAXBException, TransformerException, SOAPException {
         return Mono.just(soapBuilder.soapActivationMessageBuilder());
     }
 }

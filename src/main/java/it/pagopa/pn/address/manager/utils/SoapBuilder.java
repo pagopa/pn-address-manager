@@ -26,7 +26,7 @@ public class SoapBuilder {
 
     private static final String WS_ADDRESSING_NAMESPACE_URI = "http://www.w3.org/2005/08/addressing";
 
-    public String soapActivationMessageBuilder() throws JAXBException, SOAPException, TransformerException {
+    public String soapActivationMessageBuilder() throws JAXBException, TransformerException, SOAPException {
 
         // Command
         Command command = new Command();

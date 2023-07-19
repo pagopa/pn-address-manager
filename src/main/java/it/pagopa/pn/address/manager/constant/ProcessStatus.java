@@ -7,4 +7,6 @@ import lombok.NoArgsConstructor;
 public final class ProcessStatus {
 
     public static final String PROCESS_VERIFY_ADDRESS = "[VERIFY] verify address";
+
+    public static final String PROCESS_SERVICE_DEDUPLICA_ONLINE = "[DEDUPLICA] verify address slave and master";
 }

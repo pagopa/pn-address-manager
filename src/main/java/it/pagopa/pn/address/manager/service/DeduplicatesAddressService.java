@@ -5,25 +5,20 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.Deduplicates
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Mono;
 
 @Service
 @lombok.CustomLog
 public class DeduplicatesAddressService {
 
-    private final AddressUtils addressUtils;
+    private final AddressService addressService;
 
-    public DeduplicatesAddressService(AddressUtils addressUtils){
-        this.addressUtils = addressUtils;
+    public DeduplicatesAddressService(AddressService addressService){
+        this.addressService = addressService;
     }
 
-    public DeduplicatesResponse deduplicates(DeduplicatesRequest request){
-        DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
-        deduplicatesResponse.setCorrelationId(request.getCorrelationId());
-        NormalizedAddressResponse normalizeAddressResponse = addressUtils.normalizeAddress(request.getTargetAddress(), null);
-        deduplicatesResponse.setEqualityResult(addressUtils.compareAddress(request.getBaseAddress(), request.getTargetAddress(), normalizeAddressResponse.isItalian()));
-        deduplicatesResponse.setError(normalizeAddressResponse.getError());
-        deduplicatesResponse.setNormalizedAddress(normalizeAddressResponse.getNormalizedAddress());
-        return deduplicatesResponse;
+    public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request){
+        return addressService.normalizeAddress(request);
     }
 
 }
