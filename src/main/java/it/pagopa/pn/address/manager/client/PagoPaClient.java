@@ -1,6 +1,5 @@
 package it.pagopa.pn.address.manager.client;
 
-import io.micrometer.core.instrument.binder.db.MetricsDSLContext;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaRequest;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaResponse;
