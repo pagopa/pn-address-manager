@@ -12,10 +12,10 @@ public class Input {
     @XmlElement(name = "ATTACHED_FILE")
     private AttachedFile attachedFile;
 
-    @XmlElement
+    @XmlElement(name = "ESTERNO")
     private Esterno esterno;
 
-    @XmlElement
+    @XmlElement(name = "ID_LOTTO")
     private IdLotto idLotto;
 
     @XmlElement(name = "OUPUT")

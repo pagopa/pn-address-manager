@@ -26,5 +26,7 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
     public static final String ERROR_ADDRESS_MANAGER_COUNTRY_NOT_FOUND_ERROR = "COUNTRY_NOT_FOUND";
 
     public static final String ERROR_ADDRESS_MANAGER_DEDUPLICA_ONLINE_ERROR_CODE = "DEDUPLICA_ONLINE_ERROR";
+    public static final String ERROR_ADDRESS_MANAGER_POSTEL_ATTIVAZIONE_SINI = "POSTEL_ATTIVAZIONE_SINI_ERROR";
+
 
 }

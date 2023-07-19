@@ -23,6 +23,7 @@ public class AddressService {
     private final PagoPaClient pagoPaClient;
     private final EventService eventService;
     private final CsvService csvService;
+    private final ISINIReceiverService isiniReceiverService;
     private final AddressConverter addressConverter;
     private final AddressUtils addressUtils;
     private final Scheduler scheduler;
@@ -32,13 +33,14 @@ public class AddressService {
     public AddressService(PagoPaClient pagoPaClient,
                           EventService eventService,
                           CsvService csvService,
-                          AddressConverter addressConverter,
+                          ISINIReceiverService isiniReceiverService, AddressConverter addressConverter,
                           AddressUtils addressUtils,
                           @Qualifier("addressManagerScheduler") Scheduler scheduler,
                           @Value("${pn.address.manager.flag.csv}") boolean flagCsv){
         this.pagoPaClient = pagoPaClient;
         this.eventService = eventService;
         this.csvService = csvService;
+        this.isiniReceiverService = isiniReceiverService;
         this.addressConverter = addressConverter;
         this.addressUtils = addressUtils;
         this.scheduler = scheduler;
@@ -61,6 +63,7 @@ public class AddressService {
         else{
             List<WsNormAccInputModel> wsNormAccInputModels = addressConverter.normalizeRequestToWsNormAccInputModel(normalizeItemsRequest.getRequestItems());
             csvService.writeItemsOnCsv(wsNormAccInputModels, normalizeItemsRequest.getCorrelationId()+".csv", "C:\\Users\\baldivi\\Desktop\\");
+            isiniReceiverService.activateSINIComponent(); // TODO: Check response and throw exception if it fails
         }
         return Mono.just(addressConverter.normalizeItemsRequestToAcceptedResponse(normalizeItemsRequest));
     }
@@ -89,6 +92,4 @@ public class AddressService {
         String message = JsonUtils.writeValueAsString(eventDetail);
         eventService.sendEvent(message, normalizeItemsResult.getCorrelationId());
     }
-
-
 }

@@ -59,7 +59,7 @@ class DeduplicatesAddressServiceTest {
         when(addressUtils.compareAddress(any(),any(), anyBoolean())).thenReturn(true);
         when(addressUtils.normalizeAddress(any(), any())).thenReturn(normalizedAddressResponse);
 
-        DeduplicatesResponse response = deduplicatesAddressService.deduplicates(deduplicatesRequest);
+        DeduplicatesResponse response = deduplicatesAddressService.deduplicates(deduplicatesRequest).block();
         assertEquals(deduplicatesResponse.getEqualityResult(), response.getEqualityResult());
     }
 
@@ -94,7 +94,7 @@ class DeduplicatesAddressServiceTest {
         when(addressUtils.compareAddress(any(),any(), anyBoolean())).thenReturn(false);
         when(addressUtils.normalizeAddress(any(), any())).thenReturn(normalizedAddressResponse);
 
-        DeduplicatesResponse response = deduplicatesAddressService.deduplicates(deduplicatesRequest);
+        DeduplicatesResponse response = deduplicatesAddressService.deduplicates(deduplicatesRequest).block();
         assertEquals(response.getEqualityResult(), deduplicatesResponse.getEqualityResult());
     }
 }
