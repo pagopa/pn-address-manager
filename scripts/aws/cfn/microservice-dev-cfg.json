@@ -5,6 +5,8 @@
     "MemoryAmount": "4GB",
     "MinTasksNumber": "2",
     "MaxTasksNumber": "3",
-    "AutoscalingThreshold": "2500"
+    "AutoscalingThreshold": "2500",
+    "CountriesCsv": "PagoPA-Lista-Nazioni.csv",
+    "CapCsv": "PagoPA-ListaCAP.csv"
   }
 }
