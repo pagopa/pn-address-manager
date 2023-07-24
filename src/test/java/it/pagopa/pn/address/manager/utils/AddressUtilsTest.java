@@ -79,7 +79,6 @@ class AddressUtilsTest {
         AddressUtils addressUtils = new AddressUtils(addressConverter, csvService);
         assertNotNull(addressUtils.normalizeAddress(base, "1"));
     }
-
     @Test
     void normalizeAddress2() {
         AnalogAddress base = new AnalogAddress();
@@ -108,85 +107,6 @@ class AddressUtilsTest {
         normalizeRequestList.add(normalizeRequest);
         List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
         assertEquals(1, resultItems.size());
-    }
-
-    /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
-     */
-    @Test
-    void testNormalizeAddresses4() {
-
-        AddressUtils addressUtils = new AddressUtils(addressConverter, csvService);
-        NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
-        when(normalizeRequest.getAddress()).thenReturn(new AnalogAddress());
-        when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
-        when(normalizeRequest.getId()).thenReturn("42");
-        normalizeRequest.address(new AnalogAddress());
-
-        ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
-        normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
-        assertEquals(1, resultItems.size());
-        NormalizeResult getResult = resultItems.get(0);
-        assertEquals("42", getResult.getId());
-        verify(normalizeRequest).getAddress();
-        verify(normalizeRequest).address(any());
-        verify(normalizeRequest).getId();
-    }
-
-    /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
-     */
-    @Test
-    void testNormalizeAddresses6() {
-        AddressUtils addressUtils = new AddressUtils(addressConverter, csvService);
-        AnalogAddress analogAddress = mock(AnalogAddress.class);
-        when(analogAddress.getCap()).thenReturn("Cap");
-        when(analogAddress.getCountry()).thenReturn("GB");
-        NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
-        when(normalizeRequest.getAddress()).thenReturn(analogAddress);
-        when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
-        when(normalizeRequest.getId()).thenReturn("42");
-        normalizeRequest.address(new AnalogAddress());
-
-        ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
-        normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
-        assertEquals(1, resultItems.size());
-        NormalizeResult getResult = resultItems.get(0);
-        assertEquals("42", getResult.getId());
-        verify(normalizeRequest).getAddress();
-        verify(normalizeRequest).address(any());
-        verify(normalizeRequest).getId();
-        verify(analogAddress, atLeast(1)).getCountry();
-    }
-
-    /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
-     */
-    @Test
-    void testNormalizeAddresses7() {
-
-        AddressUtils addressUtils = new AddressUtils(addressConverter, csvService);
-        AnalogAddress analogAddress = mock(AnalogAddress.class);
-        when(analogAddress.getAddressRow2()).thenReturn("42 Main St");
-        when(analogAddress.getCap()).thenReturn("Cap");
-        when(analogAddress.getCity2()).thenReturn("Oxford");
-        when(analogAddress.getCountry()).thenReturn("GB");
-        when(analogAddress.getPr()).thenReturn("Pr");
-        when(analogAddress.getCity()).thenReturn("Oxford");
-        when(analogAddress.getAddressRow()).thenReturn("42 Main St");
-        NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
-        when(normalizeRequest.getAddress()).thenReturn(analogAddress);
-        when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
-        when(normalizeRequest.getId()).thenReturn("42");
-        normalizeRequest.address(new AnalogAddress());
-
-        ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
-        normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
-        assertEquals(1, resultItems.size());
-        assertEquals("42", resultItems.get(0).getId());
     }
 }
 

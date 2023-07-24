@@ -9,7 +9,6 @@ import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.CountryModel;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
@@ -33,13 +32,13 @@ public class CsvService {
 
     private final String countryPath;
     private final String capPath;
-    @Autowired
-    private ResourceLoader resourceLoader;
+    private final ResourceLoader resourceLoader;
 
     public CsvService(@Value("${pn.address.manager.csv.path.country}") String countryPath,
-                      @Value("${pn.address.manager.csv.path.cap}") String capPath) {
+                      @Value("${pn.address.manager.csv.path.cap}") String capPath, ResourceLoader resourceLoader) {
         this.countryPath = countryPath;
         this.capPath = capPath;
+        this.resourceLoader = resourceLoader;
     }
 
     public <T> void writeItemsOnCsv(List<T> items, String nameFile, String directoryPath) {
