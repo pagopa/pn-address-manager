@@ -29,13 +29,11 @@ public class PagoPaClient {
     public Mono<DeduplicaResponse> deduplicaOnline(DeduplicaRequest deduplicaRequest) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_ADDRESS_MANAGER, PROCESS_SERVICE_DEDUPLICA_ONLINE);
         return webClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/normalizzaRest")
-                        .build())
+                .uri("/normalizzaRest")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue(deduplicaRequest)
-                .headers(httpHeaders -> httpHeaders.setContentType(MediaType.APPLICATION_FORM_URLENCODED))
                 .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<DeduplicaResponse>() {})
+                .bodyToMono(DeduplicaResponse.class)
                 .doOnError(throwable -> {
                     if (throwable instanceof WebClientResponseException ex) {
                         throw new PnAddressManagerException(ex.getMessage(), ex.getStatusText()
@@ -47,11 +45,9 @@ public class PagoPaClient {
     public Mono<String> activateSINIComponent(String soapMessage) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_ADDRESS_MANAGER, PROCESS_SERVICE_POSTEL_ATTIVAZIONE_SINI);
         return webClient.post()
-                .uri(uriBuilder -> uriBuilder
-                        .path("/SINI/WcfSiniService.svc")
-                        .build())
+                .uri("/SINI/WcfSiniService.svc")
+                .contentType(MediaType.TEXT_XML)
                 .bodyValue(soapMessage)
-                .headers(httpHeaders -> httpHeaders.setContentType(MediaType.TEXT_XML))
                 .retrieve()
                 .bodyToMono(String.class)
                 .doOnError(throwable -> {

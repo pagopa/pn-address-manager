@@ -1,29 +1,21 @@
 package it.pagopa.pn.address.manager.converter;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaRequest;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaResponse;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import it.pagopa.pn.address.manager.model.deduplica.NormOutputPagoPa;
-import it.pagopa.pn.address.manager.utils.JsonUtils;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.configuration.IMockitoConfiguration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ContextConfiguration (classes = {AddressConverter.class})
 @ExtendWith (SpringExtension.class)
@@ -78,6 +70,21 @@ class AddressConverterTest {
 		// Act and Assert
 		assertEquals("An error occurred",
 				addressConverter.createDeduplicatesResponseFromDeduplicaResponse(deduplicaResponse).getError());
+	}
+	@Test
+	void testCreateDeduplicatesResponseFromDeduplicaResponse2 () {
+		// Arrange
+		DeduplicaResponse deduplicaResponse = new DeduplicaResponse();
+		deduplicaResponse.setErrorCode(-1);
+		deduplicaResponse.setErrorMessage("An error occurred");
+		deduplicaResponse.setErrore(false);
+		deduplicaResponse.setNextValue(42L);
+		deduplicaResponse.setNumeroRecords(10);
+		deduplicaResponse.setResult("{}");
+		deduplicaResponse.setRowFetched(2);
+
+		// Act and Assert
+		assertNull(addressConverter.createDeduplicatesResponseFromDeduplicaResponse(deduplicaResponse).getCorrelationId());
 	}
 
 	/**

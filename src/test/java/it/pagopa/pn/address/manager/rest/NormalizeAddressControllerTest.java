@@ -3,7 +3,6 @@ package it.pagopa.pn.address.manager.rest;
 import it.pagopa.pn.address.manager.config.SchedulerConfig;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
-import it.pagopa.pn.address.manager.service.DeduplicatesAddressService;
 import it.pagopa.pn.address.manager.service.ISINIReceiverService;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
 import org.junit.jupiter.api.Test;
@@ -19,10 +18,6 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 import reactor.test.StepVerifier;
-
-import javax.xml.bind.JAXBException;
-import javax.xml.soap.SOAPException;
-import javax.xml.transform.TransformerException;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;

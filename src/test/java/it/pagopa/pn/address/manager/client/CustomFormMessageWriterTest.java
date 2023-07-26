@@ -1,15 +1,11 @@
 package it.pagopa.pn.address.manager.client;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 import java.nio.charset.Charset;
 
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.http.MediaType;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CustomFormMessageWriterTest {
 	/**
