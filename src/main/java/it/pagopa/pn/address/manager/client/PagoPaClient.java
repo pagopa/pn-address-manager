@@ -4,7 +4,6 @@ import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaRequest;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaResponse;
 import it.pagopa.pn.commons.log.PnLogger;
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -13,7 +12,8 @@ import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_DEDUPLICA_ONLINE;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_POSTEL_ATTIVAZIONE_SINI;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_DEDUPLICA_ONLINE_ERROR_CODE;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_POSTEL_ATTIVAZIONE_SINI;
 
 @Component
 @lombok.CustomLog
