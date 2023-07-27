@@ -16,8 +16,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
 @lombok.CustomLog
@@ -72,7 +71,7 @@ public class AddressUtils {
     }
 
 
-    public NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
+    private NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         log.logChecking(PROCESS_VERIFY_ADDRESS);
         if (flagCsv) {
@@ -96,8 +95,15 @@ public class AddressUtils {
                 || analogAddress.getCountry().toUpperCase().trim().startsWith("ITAL")){
             normalizedAddressResponse.setItalian(true);
             searchCap(analogAddress.getCap(), capMap);
+            verifyProvince(analogAddress.getPr());
         } else {
             searchCountry(analogAddress.getCountry(), countryMap);
+        }
+    }
+
+    private void verifyProvince(String pr) {
+        if (StringUtils.isBlank(pr)) {
+            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Province is mandatory", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_PROVINCENOTFOUND);
         }
     }
 
