@@ -5,10 +5,15 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeReq
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
+import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.service.CsvService;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -22,10 +27,36 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class AddressUtilsTest {
 
     @Mock
     private CsvService csvService;
+
+    @BeforeAll
+    void setUp() {
+        when(csvService.capMap()).thenReturn(getMockedCapMap());
+        when(csvService.countryMap()).thenReturn(getMockedCountryMap());
+    }
+
+    private Map<String, String> getMockedCountryMap() {
+        Map<String, String> mockedCountryMap = new HashMap<>();
+        mockedCountryMap.put("ITALIA","ITALIA");
+        mockedCountryMap.put("AFRICA DEL SUD","SUDAFRICA");
+        mockedCountryMap.put("AMERICA","STATI UNITI D'AMERICA");
+        return mockedCountryMap;
+    }
+
+    private Map<String, Object> getMockedCapMap() {
+        Map<String, Object> mockedCapMap = new HashMap<>();
+        CapModel capModel = new CapModel("00010","Lazio","Roma");
+        mockedCapMap.put("00010",capModel);
+        CapModel capModel1 = new CapModel("00011","Lazio","Roma");
+        mockedCapMap.put("00011",capModel1);
+        CapModel capModel2 = new CapModel("00012","Lazio","Roma");
+        mockedCapMap.put("00012",capModel2);
+        return mockedCapMap;
+    }
 
     @Test
     void compareAddress() {
@@ -137,8 +168,56 @@ class AddressUtilsTest {
     void testNormalizeAddresses6() {
         AddressUtils addressUtils = new AddressUtils(true, csvService);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
-        when(analogAddress.getCap()).thenReturn("Cap");
-        when(analogAddress.getCountry()).thenReturn("GB");
+        when(analogAddress.getCap()).thenReturn("00010");
+        when(analogAddress.getCountry()).thenReturn("ITALIA");
+        when(analogAddress.getPr()).thenReturn("RM");
+        NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
+        when(normalizeRequest.getAddress()).thenReturn(analogAddress);
+        when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
+        when(normalizeRequest.getId()).thenReturn("42");
+        normalizeRequest.address(new AnalogAddress());
+
+        ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
+        normalizeRequestList.add(normalizeRequest);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        assertEquals(1, resultItems.size());
+        NormalizeResult getResult = resultItems.get(0);
+        assertEquals("42", getResult.getId());
+        verify(normalizeRequest).getAddress();
+        verify(normalizeRequest).address(any());
+        verify(normalizeRequest).getId();
+        verify(analogAddress, atLeast(1)).getCountry();
+    }
+
+    @Test
+    void testNormalizeAddresses7() {
+        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AnalogAddress analogAddress = mock(AnalogAddress.class);
+        when(analogAddress.getCap()).thenReturn("00010");
+        when(analogAddress.getCountry()).thenReturn("ITALIA");
+        NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
+        when(normalizeRequest.getAddress()).thenReturn(analogAddress);
+        when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
+        when(normalizeRequest.getId()).thenReturn("42");
+        normalizeRequest.address(new AnalogAddress());
+
+        ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
+        normalizeRequestList.add(normalizeRequest);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        assertEquals(1, resultItems.size());
+        NormalizeResult getResult = resultItems.get(0);
+        assertEquals("42", getResult.getId());
+        verify(normalizeRequest).getAddress();
+        verify(normalizeRequest).address(any());
+        verify(normalizeRequest).getId();
+        verify(analogAddress, atLeast(1)).getCountry();
+    }
+    @Test
+    void testNormalizeAddresses8() {
+        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AnalogAddress analogAddress = mock(AnalogAddress.class);
+        when(analogAddress.getCap()).thenReturn("00015");
+        when(analogAddress.getCountry()).thenReturn("ITALIA");
         NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
         when(normalizeRequest.getAddress()).thenReturn(analogAddress);
         when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
@@ -161,7 +240,7 @@ class AddressUtilsTest {
      * Method under test: {@link AddressUtils#normalizeAddresses(List)}
      */
     @Test
-    void testNormalizeAddresses7() {
+    void testNormalizeAddresses9() {
 
         AddressUtils addressUtils = new AddressUtils(false, csvService);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
