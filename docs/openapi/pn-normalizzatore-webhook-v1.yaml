@@ -14,6 +14,9 @@ tags:
 
 paths:
   #TODO: Aggiungere Callback da esporre al servizio di normalizzazione asincrona
+
+
+  
   /normalizzatore-ingress/v1/attachment-preload:
     put:
       summary: Richiesta di pre-caricamento dei documenti da comunicare a PN
