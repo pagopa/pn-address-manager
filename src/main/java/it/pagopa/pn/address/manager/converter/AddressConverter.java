@@ -7,6 +7,7 @@ import it.pagopa.pn.address.manager.model.deduplica.DeduplicaRequest;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaResponse;
 import it.pagopa.pn.address.manager.model.deduplica.NormOutputPagoPa;
 import it.pagopa.pn.address.manager.utils.JsonUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -44,20 +45,26 @@ public class AddressConverter {
         else{
             NormOutputPagoPa normOutputPagoPa = JsonUtils.fromJson(deduplicaResponse.getResult(), NormOutputPagoPa.class);
 
-            AnalogAddress target = new AnalogAddress();
-            target.setPr(normOutputPagoPa.getSSiglaProvincia());
-            target.setCap(normOutputPagoPa.getSCAP());
-            target.setCity(normOutputPagoPa.getSComuneUfficiale());
-            target.setCity2(normOutputPagoPa.getSComuneAbbreviato());
-            target.setCountry(normOutputPagoPa.getSStatoUfficiale());
-            target.setAddressRow(normOutputPagoPa.getSViaCompletaUfficiale());
-            target.setAddressRow2(normOutputPagoPa.getSViaCompletaAbbreviata());
+            AnalogAddress target = getAnalogAddress(normOutputPagoPa);
 
             deduplicatesResponse.setEqualityResult(normOutputPagoPa.getFlagNormalizzatoSlave() == 1);
             deduplicatesResponse.setNormalizedAddress(target);
         }
 
         return deduplicatesResponse;
+    }
+
+    @NotNull
+    private static AnalogAddress getAnalogAddress (NormOutputPagoPa normOutputPagoPa) {
+        AnalogAddress target = new AnalogAddress();
+        target.setPr(normOutputPagoPa.getSSiglaProvincia());
+        target.setCap(normOutputPagoPa.getSCAP());
+        target.setCity(normOutputPagoPa.getSComuneUfficiale());
+        target.setCity2(normOutputPagoPa.getSComuneAbbreviato());
+        target.setCountry(normOutputPagoPa.getSStatoUfficiale());
+        target.setAddressRow(normOutputPagoPa.getSViaCompletaUfficiale());
+        target.setAddressRow2(normOutputPagoPa.getSViaCompletaAbbreviata());
+        return target;
     }
 
     public AcceptedResponse normalizeItemsRequestToAcceptedResponse(NormalizeItemsRequest normalizeItemsRequest) {

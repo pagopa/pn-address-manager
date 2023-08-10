@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.client.PagoPaClient;
+import it.pagopa.pn.address.manager.client.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.model.EventDetail;
@@ -63,7 +64,8 @@ public class AddressService {
         else{
             List<WsNormAccInputModel> wsNormAccInputModels = addressConverter.normalizeRequestToWsNormAccInputModel(normalizeItemsRequest.getRequestItems());
             csvService.writeItemsOnCsv(wsNormAccInputModels, normalizeItemsRequest.getCorrelationId()+".csv", "C:\\Users\\baldivi\\Desktop\\");
-            isiniReceiverService.activateSINIComponent(); // TODO: Check response and throw exception if it fails
+			//ToDo: Aggiungere chiamara pnSafeStorageClient createFile
+            isiniReceiverService.activateSINIComponent();// TODO: Check response and throw exception if it fails
         }
         return Mono.just(addressConverter.normalizeItemsRequestToAcceptedResponse(normalizeItemsRequest));
     }

@@ -10,6 +10,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -24,6 +25,7 @@ import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ExtendWith (SpringExtension.class)
+@ContextConfiguration (classes = {PagoPaClient.class})
 class PagoPaClientTest {
 	@MockBean
 	private WebClient webClient;
