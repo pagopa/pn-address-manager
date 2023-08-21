@@ -3,6 +3,8 @@ package it.pagopa.pn.address.manager.client;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaRequest;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaResponse;
+import it.pagopa.pn.address.manager.model.deduplica.InputDeduplica;
+import it.pagopa.pn.address.manager.model.deduplica.RisultatoDeduplica;
 import it.pagopa.pn.commons.log.PnLogger;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -26,14 +28,14 @@ public class PagoPaClient {
     }
 
 
-    public Mono<DeduplicaResponse> deduplicaOnline(DeduplicaRequest deduplicaRequest) {
+    public Mono<RisultatoDeduplica> deduplicaOnline(InputDeduplica deduplicaRequest) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_ADDRESS_MANAGER, PROCESS_SERVICE_DEDUPLICA_ONLINE);
         return webClient.post()
                 .uri("/normalizzaRest")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .bodyValue(deduplicaRequest)
                 .retrieve()
-                .bodyToMono(DeduplicaResponse.class)
+                .bodyToMono(RisultatoDeduplica.class)
                 .doOnError(throwable -> {
                     if (throwable instanceof WebClientResponseException ex) {
                         throw new PnAddressManagerException(ex.getMessage(), ex.getStatusText()
