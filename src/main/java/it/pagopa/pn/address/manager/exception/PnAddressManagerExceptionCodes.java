@@ -29,5 +29,8 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
     public static final String ERROR_ADDRESS_MANAGER_DEDUPLICA_ONLINE_ERROR_CODE = "DEDUPLICA_ONLINE_ERROR";
     public static final String ERROR_ADDRESS_MANAGER_POSTEL_ATTIVAZIONE_SINI = "POSTEL_ATTIVAZIONE_SINI_ERROR";
 
+    public static final String APIKEY_DOES_NOT_EXISTS = "ApiKey does not exist";
+    public static final String CAP_DOES_NOT_EXISTS = "ApiKey does not exist";
+
 
 }

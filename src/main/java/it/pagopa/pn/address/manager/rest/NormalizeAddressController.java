@@ -39,7 +39,7 @@ public class NormalizeAddressController implements NormalizeAddressServiceApi {
     @Override
     public Mono<ResponseEntity<AcceptedResponse>> normalize(String pnAddressManagerCxId, String xApiKey, Mono<NormalizeItemsRequest> normalizeItemsRequest, final ServerWebExchange exchange) {
         return normalizeItemsRequest
-                .flatMap(request -> normalizeAddressService.normalizeAddressAsync(request, pnAddressManagerCxId))
+                .flatMap(request -> normalizeAddressService.normalizeAddressAsync(request, pnAddressManagerCxId, xApiKey))
                 .map(acceptedResponse -> ResponseEntity.ok().body(acceptedResponse))
                 .publishOn(scheduler);
     }

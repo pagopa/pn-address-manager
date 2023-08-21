@@ -1,17 +1,13 @@
 package it.pagopa.pn.address.manager.converter;
 
-import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.model.WsNormAccInputModel;
 import it.pagopa.pn.address.manager.model.deduplica.*;
-import org.springframework.beans.factory.annotation.Value;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 
 @Component
@@ -106,7 +102,21 @@ public class AddressConverter {
         return normalizeResult;
     }
 
-    public List<WsNormAccInputModel> normalizeRequestToWsNormAccInputModel(List<NormalizeRequest> normalizeRequestList){
+    public WsNormAccInputModel normalizeRequestToWsNormAccInputModel(NormalizeRequest normalizeRequest){
+        AnalogAddress address = normalizeRequest.getAddress();
+        WsNormAccInputModel wsNormAccInputModel = new WsNormAccInputModel();
+        wsNormAccInputModel.setIdCodiceCliente(normalizeRequest.getId());
+        wsNormAccInputModel.setProvincia(address.getPr());
+        wsNormAccInputModel.setCap(address.getCap());
+        wsNormAccInputModel.setLocalita(address.getCity());
+        wsNormAccInputModel.setLocalitaAggiuntiva(address.getCity2());
+        wsNormAccInputModel.setDug(address.getCountry());
+        wsNormAccInputModel.setIndirizzo(address.getAddressRow());
+        wsNormAccInputModel.setCivico(address.getAddressRow()); //???
+        return wsNormAccInputModel;
+    }
+
+    public List<WsNormAccInputModel> normalizeRequestListToWsNormAccInputModel(List<NormalizeRequest> normalizeRequestList){
         return normalizeRequestList.stream()
                 .map(normalizeRequest -> {
                     AnalogAddress address = normalizeRequest.getAddress();
