@@ -1,8 +1,6 @@
 package it.pagopa.pn.address.manager.client;
 
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import it.pagopa.pn.address.manager.model.deduplica.DeduplicaRequest;
-import it.pagopa.pn.address.manager.model.deduplica.DeduplicaResponse;
 import it.pagopa.pn.address.manager.model.deduplica.InputDeduplica;
 import it.pagopa.pn.address.manager.model.deduplica.RisultatoDeduplica;
 import org.junit.jupiter.api.Test;
