@@ -5,14 +5,12 @@ import it.pagopa.pn.address.manager.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -29,7 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_BATCH_REQUEST_RETRY_EXHAUSTED;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
@@ -42,18 +39,17 @@ public class AddressBatchRequestService {
     private final CsvService csvService;
     private final PnSafeStorageClient pnSafeStorageClient;
     private final UploadDownloadClient uploadDownloadClient;
-    
+
     private static final int MAX_BATCH_REQUEST_SIZE = 100;
 
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
-                                      PostelBatchRepository postelBatchRepository, AddressConverter addressConverter, CsvService csvService, PnSafeStorageClient pnSafeStorageClient, UploadDownloadClient uploadDownloadClient, @Value("${pn.national-registries.inipec.batch.request.max-retry}") int maxRetry) {
+                                      PostelBatchRepository postelBatchRepository, AddressConverter addressConverter, CsvService csvService, PnSafeStorageClient pnSafeStorageClient, UploadDownloadClient uploadDownloadClient) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.addressConverter = addressConverter;
         this.csvService = csvService;
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.uploadDownloadClient = uploadDownloadClient;
-        this.maxRetry = maxRetry;
     }
 
     @Scheduled(fixedDelayString = "${pn.address.manager.postel.batch.request.delay}")

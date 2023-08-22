@@ -1,7 +1,6 @@
 package it.pagopa.pn.address.manager.client.safestorage;
 
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import lombok.extern.slf4j.Slf4j;
