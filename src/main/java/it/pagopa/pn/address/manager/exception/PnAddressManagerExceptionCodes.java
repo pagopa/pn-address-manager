@@ -28,9 +28,14 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
 
     public static final String ERROR_ADDRESS_MANAGER_DEDUPLICA_ONLINE_ERROR_CODE = "DEDUPLICA_ONLINE_ERROR";
     public static final String ERROR_ADDRESS_MANAGER_POSTEL_ATTIVAZIONE_SINI = "POSTEL_ATTIVAZIONE_SINI_ERROR";
+    public static final String ERROR_MESSAGE_BATCH_REQUEST_RETRY_EXHAUSTED = "Errore durante il recupero dei batch di richiesta - numero massimo di tentativi esaurito!";
 
     public static final String APIKEY_DOES_NOT_EXISTS = "ApiKey does not exist";
     public static final String CAP_DOES_NOT_EXISTS = "ApiKey does not exist";
+
+    public static final String ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_CODE = "CSV_UPLOAD_FAILED";
+
+    public static final String ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_DESCRIPTION = "Failed to upload the csv to the Safe Storage presigned uri";
 
 
 }

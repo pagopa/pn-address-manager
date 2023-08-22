@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import it.pagopa.pn.address.manager.client.PnSafeStorageClient;
+import it.pagopa.pn.address.manager.client.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;

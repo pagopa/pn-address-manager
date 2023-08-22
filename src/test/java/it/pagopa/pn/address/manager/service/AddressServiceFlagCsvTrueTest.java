@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.service;
 
 
 import it.pagopa.pn.address.manager.client.PagoPaClient;
-import it.pagopa.pn.address.manager.client.PnSafeStorageClient;
+import it.pagopa.pn.address.manager.client.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;

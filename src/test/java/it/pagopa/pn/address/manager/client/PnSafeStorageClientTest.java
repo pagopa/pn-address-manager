@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.client;
 
+import it.pagopa.pn.address.manager.client.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnSafeStorageException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;

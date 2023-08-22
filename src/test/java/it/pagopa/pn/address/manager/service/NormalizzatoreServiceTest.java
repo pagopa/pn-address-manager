@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import it.pagopa.pn.address.manager.client.PnSafeStorageClient;
+import it.pagopa.pn.address.manager.client.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.PreLoadRequestData;
 import org.junit.jupiter.api.Test;

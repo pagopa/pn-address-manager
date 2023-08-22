@@ -1,4 +1,4 @@
-package it.pagopa.pn.address.manager.client;
+package it.pagopa.pn.address.manager.client.safestorage;
 
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnSafeStorageException;

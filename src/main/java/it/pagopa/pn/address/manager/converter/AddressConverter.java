@@ -1,5 +1,7 @@
 package it.pagopa.pn.address.manager.converter;
 
+import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.model.WsNormAccInputModel;
@@ -8,6 +10,8 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 @Component
@@ -124,7 +128,8 @@ public class AddressConverter {
                     return wsNormAccInputModel;
                 }).toList();
     }
-    /*public PostelBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey) {
+
+    public PostelBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         PostelBatch batchPolling = new PostelBatch();
         batchPolling.setBatchId(batchId);
@@ -134,5 +139,5 @@ public class AddressConverter {
         batchPolling.setCreatedAt(now);
         batchPolling.setTtl(now.plusSeconds(postelTtl).toEpochSecond(ZoneOffset.UTC));
         return batchPolling;
-    }*/
+    }
 }
