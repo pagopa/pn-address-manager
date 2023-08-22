@@ -3,6 +3,8 @@ package it.pagopa.pn.address.manager.client;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaRequest;
 import it.pagopa.pn.address.manager.model.deduplica.DeduplicaResponse;
+import it.pagopa.pn.address.manager.model.deduplica.InputDeduplica;
+import it.pagopa.pn.address.manager.model.deduplica.RisultatoDeduplica;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -36,9 +38,8 @@ class PagoPaClientTest {
 		when(pagoPaWebClient.init()).thenReturn(webClient);
 		PagoPaClient pagoPaClient = new PagoPaClient(pagoPaWebClient);
 
-		DeduplicaRequest deduplicaRequest = mock(DeduplicaRequest.class);
-		DeduplicaResponse deduplicaResponseMock = mock(DeduplicaResponse.class);
-		when(deduplicaRequest.getConfigurazioneDeduplica()).thenReturn("configurazioneDeduplica");
+		InputDeduplica inputDeduplica = mock(InputDeduplica.class);
+		RisultatoDeduplica risultatoDeduplica = mock(RisultatoDeduplica.class);
 
 		WebClient.RequestBodyUriSpec requestBodyUriSpec = mock(WebClient.RequestBodyUriSpec.class);
 		WebClient.RequestBodySpec requestBodySpec = mock(WebClient.RequestBodySpec.class);
@@ -50,10 +51,10 @@ class PagoPaClientTest {
 		when(requestBodySpec.contentType(MediaType.APPLICATION_FORM_URLENCODED)).thenReturn(requestBodySpec);
 		when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
 		when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-		when(responseSpec.bodyToMono(DeduplicaResponse.class)).thenReturn(Mono.just(deduplicaResponseMock));
+		when(responseSpec.bodyToMono(RisultatoDeduplica.class)).thenReturn(Mono.just(risultatoDeduplica));
 
-		StepVerifier.create(pagoPaClient.deduplicaOnline(deduplicaRequest))
-				.expectNext(deduplicaResponseMock)
+		StepVerifier.create(pagoPaClient.deduplicaOnline(inputDeduplica))
+				.expectNext(risultatoDeduplica)
 				.verifyComplete();
 	}
 	@Test
@@ -70,15 +71,16 @@ class PagoPaClientTest {
 		WebClient.RequestBodySpec requestBodySpec = mock(WebClient.RequestBodySpec.class);
 		WebClient.RequestHeadersSpec requestHeadersSpec = mock(WebClient.RequestHeadersSpec.class);
 		WebClient.ResponseSpec responseSpec = mock(WebClient.ResponseSpec.class);
+		InputDeduplica inputDeduplica = mock(InputDeduplica.class);
 
 		when(webClient.post()).thenReturn(requestBodyUriSpec);
 		when(requestBodyUriSpec.uri("/normalizzaRest")).thenReturn(requestBodySpec);
 		when(requestBodySpec.contentType(MediaType.APPLICATION_FORM_URLENCODED)).thenReturn(requestBodySpec);
 		when(requestBodySpec.bodyValue(any())).thenReturn(requestHeadersSpec);
 		when(requestHeadersSpec.retrieve()).thenReturn(responseSpec);
-		when(responseSpec.bodyToMono(DeduplicaResponse.class)).thenReturn(Mono.error(webClientResponseException));
+		when(responseSpec.bodyToMono(RisultatoDeduplica.class)).thenReturn(Mono.error(webClientResponseException));
 
-		StepVerifier.create(pagoPaClient.deduplicaOnline(mock(DeduplicaRequest.class)))
+		StepVerifier.create(pagoPaClient.deduplicaOnline(inputDeduplica))
 				.verifyError(PnAddressManagerException.class);
 	}
 	@Test

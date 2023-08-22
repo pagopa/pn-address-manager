@@ -59,6 +59,15 @@ public class AddressConverter {
         deduplicatesResponse.setError(risultatoDeduplica.getRisultatoDedu());
         deduplicatesResponse.setCorrelationId("correlationId"); // come lo valorizziamo?
 
+        AnalogAddress target = getAnalogAddress(risultatoDeduplica);
+
+        deduplicatesResponse.setNormalizedAddress(target);
+
+        return deduplicatesResponse;
+    }
+
+    @NotNull
+    private static AnalogAddress getAnalogAddress (RisultatoDeduplica risultatoDeduplica) {
         AnalogAddress target = new AnalogAddress();
 
         target.setAddressRow(risultatoDeduplica.getMasterOut().getsViaCompletaSpedizione());
@@ -68,25 +77,8 @@ public class AddressConverter {
         target.setCap(risultatoDeduplica.getMasterOut().getsCap());
         target.setPr(risultatoDeduplica.getMasterOut().getsSiglaProv());
         target.setCountry(risultatoDeduplica.getMasterOut().getsStatoSpedizione());
-
-        deduplicatesResponse.setNormalizedAddress(target);
-
-        return deduplicatesResponse;
-    }
-
-    @NotNull
-    private static AnalogAddress getAnalogAddress (NormOutputPagoPa normOutputPagoPa) {
-        AnalogAddress target = new AnalogAddress();
-        target.setPr(normOutputPagoPa.getSSiglaProvincia());
-        target.setCap(normOutputPagoPa.getSCAP());
-        target.setCity(normOutputPagoPa.getSComuneUfficiale());
-        target.setCity2(normOutputPagoPa.getSComuneAbbreviato());
-        target.setCountry(normOutputPagoPa.getSStatoUfficiale());
-        target.setAddressRow(normOutputPagoPa.getSViaCompletaUfficiale());
-        target.setAddressRow2(normOutputPagoPa.getSViaCompletaAbbreviata());
         return target;
     }
-
     public AcceptedResponse normalizeItemsRequestToAcceptedResponse(NormalizeItemsRequest normalizeItemsRequest) {
         AcceptedResponse acceptedResponse = new AcceptedResponse();
         acceptedResponse.setCorrelationId(normalizeItemsRequest.getCorrelationId());
@@ -132,8 +124,7 @@ public class AddressConverter {
                     return wsNormAccInputModel;
                 }).toList();
     }
-
-    public PostelBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey) {
+    /*public PostelBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         PostelBatch batchPolling = new PostelBatch();
         batchPolling.setBatchId(batchId);
@@ -143,5 +134,5 @@ public class AddressConverter {
         batchPolling.setCreatedAt(now);
         batchPolling.setTtl(now.plusSeconds(postelTtl).toEpochSecond(ZoneOffset.UTC));
         return batchPolling;
-    }
+    }*/
 }

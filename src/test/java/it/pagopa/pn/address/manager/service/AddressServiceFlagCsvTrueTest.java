@@ -4,9 +4,8 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.client.PagoPaClient;
 import it.pagopa.pn.address.manager.client.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
+import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,7 +18,10 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.scheduler.Scheduler;
 import reactor.test.StepVerifier;
 
+import java.util.List;
+
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -46,6 +48,7 @@ class AddressServiceFlagCsvTrueTest {
 	private Scheduler scheduler;
 	@MockBean
 	private PnSafeStorageClient pnSafeStorageClient;
+
 	@Test
 	void testNormalizeAddressAsync () {
 		//AddressService addressService = new AddressService(pagoPaClient, eventService, csvService, isiniReceiverService, addressConverter, addressUtils, scheduler, true, pnSafeStorageClient);
@@ -57,6 +60,22 @@ class AddressServiceFlagCsvTrueTest {
 		when(addressConverter.normalizeItemsRequestToAcceptedResponse(any())).thenReturn(acceptedResponse);
 		StepVerifier.create(addressService.normalizeAddressAsync(normalizedAddressRequest, "cxId"))
 				.expectNext(acceptedResponse)
+				.verifyComplete();
+	}
+
+	@Test
+	void testNormalizeAddress () {
+		DeduplicatesRequest deduplicatesRequest = mock(DeduplicatesRequest.class);
+		DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
+		deduplicatesResponse.setCorrelationId(null);
+		deduplicatesResponse.setEqualityResult(true);
+		deduplicatesResponse.setError(null);
+		deduplicatesResponse.setNormalizedAddress(null);
+		NormalizedAddressResponse normalizedAddressResponse = mock(NormalizedAddressResponse.class);
+		when(addressUtils.compareAddress(any(),any(),anyBoolean())).thenReturn(true);
+		when(addressUtils.normalizeAddress(any(),any())).thenReturn(normalizedAddressResponse);
+		StepVerifier.create(addressService.normalizeAddress(deduplicatesRequest))
+				.expectNext(deduplicatesResponse)
 				.verifyComplete();
 	}
 }

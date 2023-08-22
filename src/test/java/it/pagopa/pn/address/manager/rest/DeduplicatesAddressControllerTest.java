@@ -27,16 +27,16 @@ class DeduplicatesAddressControllerTest {
 
     @MockBean
     private DeduplicatesAddressService deduplicatesAddressService;
-
-
     @Test
     void testDeduplicates() {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setCorrelationId("correlationId");
         DeduplicatesRequest deduplicateRequest = new DeduplicatesRequest();
         deduplicateRequest.setCorrelationId("correlationId");
-        when(deduplicatesAddressService.deduplicates(deduplicateRequest)).thenReturn(Mono.just(deduplicatesResponse));
-        StepVerifier.create(deduplicatesAddressController.deduplicates("cxId", "ApiKey", Mono.just(deduplicateRequest), mock(ServerWebExchange.class)))
-                .expectNext(ResponseEntity.ok().body(deduplicatesResponse)).verifyComplete();
+        when(this.deduplicatesAddressService.deduplicates(deduplicateRequest, "xApiKey"))
+                .thenReturn(Mono.just(deduplicatesResponse));
+        StepVerifier.create(this.deduplicatesAddressController.deduplicates("pnAddressManagerCxId","xApiKey",Mono.just(deduplicateRequest), mock(ServerWebExchange.class)))
+                .expectNext(ResponseEntity.ok(deduplicatesResponse))
+                .verifyComplete();
     }
 }
