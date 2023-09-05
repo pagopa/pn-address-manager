@@ -14,7 +14,7 @@ public class CapModel {
     private String cap;
 
     @CsvBindByPosition(position = 1)
-    private String region;
+    private String city;
 
     @CsvBindByPosition(position = 2)
     private String province;

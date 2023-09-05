@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.utils;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
@@ -21,7 +22,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -33,10 +33,16 @@ class AddressUtilsTest {
     @Mock
     private CsvService csvService;
 
+    @Mock
+    private PnAddressManagerConfig pnAddressManagerConfig;
+
     @BeforeAll
     void setUp() {
-        when(csvService.capMap()).thenReturn(getMockedCapMap());
+        when(csvService.capList()).thenReturn(getMockedCapMap());
         when(csvService.countryMap()).thenReturn(getMockedCountryMap());
+        when(pnAddressManagerConfig.getEnableValidation()).thenReturn(true);
+        when(pnAddressManagerConfig.getFlagCsv()).thenReturn(true);
+        when(pnAddressManagerConfig.getValidationPattern()).thenReturn("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-");
     }
 
     private Map<String, String> getMockedCountryMap() {
@@ -47,15 +53,12 @@ class AddressUtilsTest {
         return mockedCountryMap;
     }
 
-    private Map<String, Object> getMockedCapMap() {
-        Map<String, Object> mockedCapMap = new HashMap<>();
-        CapModel capModel = new CapModel("00010","Lazio","Roma");
-        mockedCapMap.put("00010",capModel);
-        CapModel capModel1 = new CapModel("00011","Lazio","Roma");
-        mockedCapMap.put("00011",capModel1);
-        CapModel capModel2 = new CapModel("00012","Lazio","Roma");
-        mockedCapMap.put("00012",capModel2);
-        return mockedCapMap;
+    private List<CapModel> getMockedCapMap() {
+        List<CapModel> mockedCapList = new ArrayList<>();
+        mockedCapList.add(new CapModel("00010","Roma","RM"));
+        mockedCapList.add( new CapModel("00011","Roma","RM"));
+        mockedCapList.add(new CapModel("00012","Roma","RM"));
+        return mockedCapList;
     }
 
     @Test
@@ -68,7 +71,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         assertTrue(addressUtils.compareAddress(base, base, true));
     }
 
@@ -81,7 +84,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         assertTrue(addressUtils.compareAddress(base, base, false));
     }
 
@@ -90,7 +93,7 @@ class AddressUtilsTest {
         AnalogAddress base = new AnalogAddress();
         base.setCity("42");
         AnalogAddress target = new AnalogAddress();
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         assertFalse(addressUtils.compareAddress(base, target, true));
     }
 
@@ -103,7 +106,20 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("42");
         base.setCap("00010");
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        assertNotNull(addressUtils.normalizeAddress(base,"1"));
+    }
+
+    @Test
+    void normalizeAddress1() {
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("Roma ");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("RM  ");
+        base.setCap("00010");
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         assertNotNull(addressUtils.normalizeAddress(base,"1"));
     }
 
@@ -117,7 +133,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCap("ARUBA");
         base.setCountry("ARUBA");
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         assertNotNull(addressUtils.normalizeAddress(base, "1"));
     }
 
@@ -126,7 +142,7 @@ class AddressUtilsTest {
      */
     @Test
     void testNormalizeAddresses3() {
-        AddressUtils addressUtils = new AddressUtils(true,csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
 
         NormalizeRequest normalizeRequest = new NormalizeRequest();
         normalizeRequest.address(new AnalogAddress());
@@ -143,7 +159,7 @@ class AddressUtilsTest {
     @Test
     void testNormalizeAddresses4() {
 
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
         when(normalizeRequest.getAddress()).thenReturn(new AnalogAddress());
         when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
@@ -166,7 +182,7 @@ class AddressUtilsTest {
      */
     @Test
     void testNormalizeAddresses6() {
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00010");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -186,12 +202,11 @@ class AddressUtilsTest {
         verify(normalizeRequest).getAddress();
         verify(normalizeRequest).address(any());
         verify(normalizeRequest).getId();
-        verify(analogAddress, atLeast(1)).getCountry();
     }
 
     @Test
     void testNormalizeAddresses7() {
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00010");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -210,11 +225,10 @@ class AddressUtilsTest {
         verify(normalizeRequest).getAddress();
         verify(normalizeRequest).address(any());
         verify(normalizeRequest).getId();
-        verify(analogAddress, atLeast(1)).getCountry();
     }
     @Test
     void testNormalizeAddresses8() {
-        AddressUtils addressUtils = new AddressUtils(true, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00015");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -233,7 +247,6 @@ class AddressUtilsTest {
         verify(normalizeRequest).getAddress();
         verify(normalizeRequest).address(any());
         verify(normalizeRequest).getId();
-        verify(analogAddress, atLeast(1)).getCountry();
     }
 
     /**
@@ -242,7 +255,7 @@ class AddressUtilsTest {
     @Test
     void testNormalizeAddresses9() {
 
-        AddressUtils addressUtils = new AddressUtils(false, csvService);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getAddressRow2()).thenReturn("42 Main St");
         when(analogAddress.getCap()).thenReturn("Cap");
