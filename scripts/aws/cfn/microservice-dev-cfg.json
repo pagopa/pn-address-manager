@@ -8,6 +8,7 @@
     "AutoscalingThreshold": "2500",
     "CountriesCsv": "PagoPA-Lista-Nazioni.csv",
     "CapCsv": "PagoPA-ListaCAP.csv",
-    "enablePatternValidation": true
+    "EnablePatternValidation": "true",
+    "PhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
   }
 }
