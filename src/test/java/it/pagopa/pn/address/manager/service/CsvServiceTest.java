@@ -18,7 +18,7 @@ class CsvServiceTest {
 
     @Test
     void testCountryMap() {
-        CsvService csvService = new CsvService("Mock-Lista-Nazioni.csv", "Mock-ListaCAP.csv");
+        CsvService csvService = new CsvService("Mock-Lista-Nazioni.csv", "Mock-ListaCLP.csv");
         Map<String, String> expectedCountryMap = new HashMap<>();
         expectedCountryMap.put("AFGHANISTAN","AFGHANISTAN");
         expectedCountryMap.put("AFRICA DEL SUD","SUDAFRICA");
@@ -30,7 +30,7 @@ class CsvServiceTest {
 
     @Test
     void testCapMap(){
-        CsvService csvService = new CsvService("Mock-Lista-Nazioni.csv", "Mock-ListaCAP.csv");
+        CsvService csvService = new CsvService("Mock-Lista-Nazioni.csv", "Mock-ListaCLP.csv");
 
         List<CapModel> expectedCapMap = new ArrayList<>();
         expectedCapMap.add(new CapModel("00100", "ROMA", "RM"));

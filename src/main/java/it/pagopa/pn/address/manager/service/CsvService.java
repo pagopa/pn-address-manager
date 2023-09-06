@@ -50,6 +50,7 @@ public class CsvService {
         try(FileReader fileReader = new FileReader(ResourceUtils.getFile("classpath:" + capPath))) {
             CsvToBeanBuilder<CapModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
             csvToBeanBuilder.withSkipLines(1);
+            csvToBeanBuilder.withSeparator(';');
             csvToBeanBuilder.withType(CapModel.class);
             return csvToBeanBuilder.build().parse()
                     .stream()
