@@ -179,7 +179,18 @@ Parameters:
   CapCsv:
     Type: String
     Description: National CAP CSV File
-    
+
+  EnablePatternValidation:
+    Type: String
+    Default: true
+    Description: Boolean to Enable address pattern validationù
+    AllowedValues: [true, false]
+
+  PhysicalAddressValidationCharsValue:
+    Type: String
+    Description: 'Physical address validation. Allowed Characters'
+    Default: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
+
 Resources:
 
   # PN-address-manager microservice
@@ -211,6 +222,8 @@ Resources:
         ContainerEnvEntry4: !Sub 'PN_ADDRESS_MANAGER_HEALTH_CHECK_PATH=${HealthCheckPath}'
         ContainerEnvEntry5: !Sub 'PN_ADDRESS_MANAGER_COUNTRIES_CSV=${CountriesCsv}'
         ContainerEnvEntry6: !Sub 'PN_ADDRESS_MANAGER_CAP_CSV=${CapCsv}'
+        ContainerEnvEntry7: !Sub 'PN_ADDRESS_MANAGER_ENABLE_PATTERN_VALIDATION=${EnablePatternValidation}'
+        ContainerEnvEntry8: !Sub 'PN_ADDRESS_MANAGER_VALIDATION_PATTERN=${PhysicalAddressValidationCharsValue}'
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

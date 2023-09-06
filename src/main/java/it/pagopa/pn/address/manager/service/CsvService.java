@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 import java.io.*;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -45,15 +46,16 @@ public class CsvService {
         }
     }
 
-    public Map<String, Object> capMap() {
+    public List<CapModel> capList() {
         try(FileReader fileReader = new FileReader(ResourceUtils.getFile("classpath:" + capPath))) {
             CsvToBeanBuilder<CapModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
             csvToBeanBuilder.withSkipLines(1);
+            csvToBeanBuilder.withSeparator(';');
             csvToBeanBuilder.withType(CapModel.class);
             return csvToBeanBuilder.build().parse()
                     .stream()
                     .filter(capModel -> !StringUtils.isBlank(capModel.getCap()))
-                    .collect(Collectors.toMap(model -> model.getCap().trim(), o -> o, (o, o2) -> o));
+                    .toList();
         } catch (IOException e) {
             throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + capPath, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
