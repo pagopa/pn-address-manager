@@ -37,7 +37,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./schemas-pn-address.yaml#/components/schemas/NormalizeItemsRequest"  
+              $ref: "#/components/schemas/NormalizeItemsRequest"  
         required: true
       responses: 
         "202":
@@ -45,7 +45,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './schemas-pn-address.yaml#/components/schemas/AcceptedResponse'
+                $ref: '#/components/schemas/AcceptedResponse'
         "400":
           description: Bad Request
           content:
@@ -69,7 +69,7 @@ paths:
                   content:
                     application/json:
                       schema:
-                        $ref: './schemas-pn-address.yaml#/components/schemas/NormalizeItemsResult'
+                        $ref: '#/components/schemas/NormalizeItemsResult'
                   
   /address-private/deduplicates:
     post: 
@@ -88,7 +88,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./schemas-pn-address.yaml#/components/schemas/DeduplicatesRequest"
+              $ref: "#/components/schemas/DeduplicatesRequest"
         required: true
       responses: 
         "200":
@@ -96,7 +96,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: './schemas-pn-address.yaml#/components/schemas/DeduplicatesResponse'
+                $ref: '#/components/schemas/DeduplicatesResponse'
         "400":
           description:  Bad Request
           content:
@@ -115,18 +115,21 @@ components:
 
   parameters: 
     xPagopaAddrManCxId:
-      name: "pn-address-manager-cx-id"
-      in: header
-      schema:
-        type: string
-      required: true
+      $ref: 'parameters-pn-address.yaml#/components/parameters/xPagopaAddrManCxId'
     xPagopaAddrManApiKey:
-      name: x-api-key
-      description: Credenziale di accesso
-      in: header
-      required: true
-      schema:
-        type: string
+      $ref: 'parameters-pn-address.yaml#/components/parameters/xPagopaAddrManApiKey'
+
+  schemas: 
+    NormalizeItemsRequest:
+      $ref: "schemas-pn-address.yaml#/components/schemas/NormalizeItemsRequest" 
+    AcceptedResponse:
+      $ref: 'schemas-pn-address.yaml#/components/schemas/AcceptedResponse'
+    NormalizeItemsResult:
+      $ref: 'schemas-pn-address.yaml#/components/schemas/NormalizeItemsResult'
+    DeduplicatesRequest:
+      $ref: "schemas-pn-address.yaml#/components/schemas/DeduplicatesRequest"
+    DeduplicatesResponse:
+      $ref: 'schemas-pn-address.yaml#/components/schemas/DeduplicatesResponse'
   
   securitySchemes:        # ONLY EXTERNAL
     ApiKeyAuth:           # ONLY EXTERNAL

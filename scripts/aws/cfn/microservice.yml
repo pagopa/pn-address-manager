@@ -168,6 +168,29 @@ Parameters:
     Type: String
     Description: flag to enable csv file check
 
+  LogAlarmStrategy:
+    Type: String
+    Default: 'FATAL'
+
+  CountriesCsv:
+    Type: String
+    Description: Foreign Countries CSV File
+
+  CapCsv:
+    Type: String
+    Description: National CAP CSV File
+
+  EnablePatternValidation:
+    Type: String
+    Default: true
+    Description: Boolean to Enable address pattern validationù
+    AllowedValues: [true, false]
+
+  PhysicalAddressValidationCharsValue:
+    Type: String
+    Description: 'Physical address validation. Allowed Characters'
+    Default: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
+
 Resources:
 
   # PN-address-manager microservice
@@ -197,6 +220,10 @@ Resources:
         ContainerEnvEntry2: !Sub 'PN_ADDRESS_MANAGER_EVENTBUS_NAME=${AddressManagerEventBusName}'
         ContainerEnvEntry3: !Sub 'PN_ADDRESS_MANAGER_FLAG_CSV=${flagCsv}'
         ContainerEnvEntry4: !Sub 'PN_ADDRESS_MANAGER_HEALTH_CHECK_PATH=${HealthCheckPath}'
+        ContainerEnvEntry5: !Sub 'PN_ADDRESS_MANAGER_COUNTRIES_CSV=${CountriesCsv}'
+        ContainerEnvEntry6: !Sub 'PN_ADDRESS_MANAGER_CAP_CSV=${CapCsv}'
+        ContainerEnvEntry7: !Sub 'PN_ADDRESS_MANAGER_ENABLE_PATTERN_VALIDATION=${EnablePatternValidation}'
+        ContainerEnvEntry8: !Sub 'PN_ADDRESS_MANAGER_VALIDATION_PATTERN=${PhysicalAddressValidationCharsValue}'
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -207,6 +234,7 @@ Resources:
         CloudwatchLogKinesisStreamArn: !Ref LogsKinesisSourceStreamArn
         TaskRoleManagedPolicyArn: !Ref AddressManagerMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
+        LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
   # CloudWatch dashboard
   AddressManagerMicroserviceCloudWatchDashboard:

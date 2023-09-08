@@ -1,10 +1,9 @@
 package it.pagopa.pn.address.manager.rest;
 
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.api.DeduplicatesAddressServiceApi;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.address.manager.service.DeduplicatesAddressService;
-import it.pagopa.pn.address.manager.rest.v1.api.DeduplicatesAddressServiceApi;
-import it.pagopa.pn.address.manager.rest.v1.dto.DeduplicatesRequest;
-import it.pagopa.pn.address.manager.rest.v1.dto.DeduplicatesResponse;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,7 +12,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
 @RestController
-@Slf4j
+@lombok.CustomLog
 public class DeduplicatesAddressController implements DeduplicatesAddressServiceApi {
 
     private final Scheduler scheduler;

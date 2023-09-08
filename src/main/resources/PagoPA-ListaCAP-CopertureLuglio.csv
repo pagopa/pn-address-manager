@@ -257,86 +257,12 @@ CAP,Regione,Provincia
 04029,Lazio,Latina
 04031,Lazio,Latina
 04100,Lazio,Latina
-05010,Umbria,Terni
-05011,Umbria,Terni
-05012,Umbria,Terni
-05013,Umbria,Terni
-05014,Umbria,Terni
-05015,Umbria,Terni
-05016,Umbria,Terni
-05017,Umbria,Terni
-05018,Umbria,Terni
-05020,Umbria,Terni
-05021,Umbria,Terni
-05022,Umbria,Terni
-05023,Umbria,Terni
-05024,Umbria,Terni
-05025,Umbria,Terni
-05026,Umbria,Terni
-05028,Umbria,Terni
-05029,Umbria,Terni
-05030,Umbria,Terni
-05031,Umbria,Terni
-05032,Umbria,Terni
-05034,Umbria,Terni
-05035,Umbria,Terni
-05039,Umbria,Terni
-05100,Umbria,Terni
-06010,Umbria,Perugia
-06012,Umbria,Perugia
-06014,Umbria,Perugia
-06016,Umbria,Perugia
-06018,Umbria,Perugia
-06019,Umbria,Perugia
-06021,Umbria,Perugia
-06022,Umbria,Perugia
-06023,Umbria,Perugia
-06024,Umbria,Perugia
-06025,Umbria,Perugia
-06026,Umbria,Perugia
-06027,Umbria,Perugia
-06028,Umbria,Perugia
-06029,Umbria,Perugia
-06030,Umbria,Perugia
 06031,Umbria,Perugia
-06033,Umbria,Perugia
-06034,Umbria,Perugia
-06035,Umbria,Perugia
 06036,Umbria,Perugia
-06038,Umbria,Perugia
 06039,Umbria,Perugia
-06040,Umbria,Perugia
-06041,Umbria,Perugia
 06042,Umbria,Perugia
-06043,Umbria,Perugia
 06044,Umbria,Perugia
-06045,Umbria,Perugia
-06046,Umbria,Perugia
-06047,Umbria,Perugia
 06049,Umbria,Perugia
-06050,Umbria,Perugia
-06051,Umbria,Perugia
-06053,Umbria,Perugia
-06054,Umbria,Perugia
-06055,Umbria,Perugia
-06056,Umbria,Perugia
-06057,Umbria,Perugia
-06059,Umbria,Perugia
-06060,Umbria,Perugia
-06061,Umbria,Perugia
-06062,Umbria,Perugia
-06063,Umbria,Perugia
-06064,Umbria,Perugia
-06065,Umbria,Perugia
-06066,Umbria,Perugia
-06068,Umbria,Perugia
-06069,Umbria,Perugia
-06072,Umbria,Perugia
-06073,Umbria,Perugia
-06081,Umbria,Perugia
-06083,Umbria,Perugia
-06084,Umbria,Perugia
-06089,Umbria,Perugia
 06121,Umbria,Perugia
 06122,Umbria,Perugia
 06123,Umbria,Perugia
@@ -348,8 +274,6 @@ CAP,Regione,Provincia
 06129,Umbria,Perugia
 06131,Umbria,Perugia
 06132,Umbria,Perugia
-06133,Umbria,Perugia
-06134,Umbria,Perugia
 06135,Umbria,Perugia
 07010,Sardegna,Sassari
 07011,Sardegna,Sassari
@@ -357,8 +281,6 @@ CAP,Regione,Provincia
 07013,Sardegna,Sassari
 07014,Sardegna,Sassari
 07015,Sardegna,Sassari
-07016,Sardegna,Sassari
-07017,Sardegna,Sassari
 07018,Sardegna,Sassari
 07019,Sardegna,Sassari
 07020,Sardegna,Sassari
@@ -368,7 +290,6 @@ CAP,Regione,Provincia
 07024,Sardegna,Sassari
 07025,Sardegna,Sassari
 07026,Sardegna,Sassari
-07027,Sardegna,Sassari
 07028,Sardegna,Sassari
 07029,Sardegna,Sassari
 07030,Sardegna,Sassari
@@ -389,21 +310,17 @@ CAP,Regione,Provincia
 07046,Sardegna,Sassari
 07047,Sardegna,Sassari
 07048,Sardegna,Sassari
-07049,Sardegna,Sassari
 07051,Sardegna,Sassari
 07052,Sardegna,Sassari
-07100,Sardegna,Sassari
 08010,Sardegna,Nuoro
 08011,Sardegna,Nuoro
 08012,Sardegna,Nuoro
-08015,Sardegna,Nuoro
 08016,Sardegna,Nuoro
 08017,Sardegna,Nuoro
 08018,Sardegna,Nuoro
 08020,Sardegna,Nuoro
 08021,Sardegna,Nuoro
 08022,Sardegna,Nuoro
-08023,Sardegna,Nuoro
 08024,Sardegna,Nuoro
 08025,Sardegna,Nuoro
 08026,Sardegna,Nuoro
@@ -418,10 +335,8 @@ CAP,Regione,Provincia
 08039,Sardegna,Nuoro
 08040,Sardegna,Nuoro
 08042,Sardegna,Nuoro
-08044,Sardegna,Nuoro
 08045,Sardegna,Nuoro
 08046,Sardegna,Nuoro
-08047,Sardegna,Nuoro
 08048,Sardegna,Nuoro
 08049,Sardegna,Nuoro
 08100,Sardegna,Nuoro
@@ -438,7 +353,6 @@ CAP,Regione,Provincia
 09020,Sardegna,Sud Sardegna
 09021,Sardegna,Sud Sardegna
 09022,Sardegna,Sud Sardegna
-09023,Sardegna,Sud Sardegna
 09024,Sardegna,Sud Sardegna
 09025,Sardegna,Sud Sardegna
 09026,Sardegna,Sud Sardegna
@@ -454,7 +368,6 @@ CAP,Regione,Provincia
 09036,Sardegna,Sud Sardegna
 09037,Sardegna,Sud Sardegna
 09038,Sardegna,Sud Sardegna
-09039,Sardegna,Sud Sardegna
 09040,Sardegna,Sud Sardegna
 09041,Sardegna,Sud Sardegna
 09042,Sardegna,Cagliari
@@ -488,7 +401,6 @@ CAP,Regione,Provincia
 09071,Sardegna,Oristano
 09072,Sardegna,Oristano
 09073,Sardegna,Oristano
-09074,Sardegna,Oristano
 09075,Sardegna,Oristano
 09076,Sardegna,Oristano
 09077,Sardegna,Oristano
@@ -502,10 +414,8 @@ CAP,Regione,Provincia
 09085,Sardegna,Oristano
 09086,Sardegna,Oristano
 09088,Sardegna,Oristano
-09089,Sardegna,Oristano
 09090,Sardegna,Oristano
 09091,Sardegna,Oristano
-09092,Sardegna,Oristano
 09093,Sardegna,Oristano
 09094,Sardegna,Oristano
 09095,Sardegna,Oristano
@@ -521,7 +431,6 @@ CAP,Regione,Provincia
 09126,Sardegna,Cagliari
 09127,Sardegna,Cagliari
 09128,Sardegna,Cagliari
-09129,Sardegna,Cagliari
 09131,Sardegna,Cagliari
 09134,Sardegna,Cagliari
 09170,Sardegna,Oristano
@@ -641,25 +550,6 @@ CAP,Regione,Provincia
 10154,Piemonte,Torino
 10155,Piemonte,Torino
 10156,Piemonte,Torino
-11010,Valle d'Aosta,Valle d'Aosta
-11011,Valle d'Aosta,Valle d'Aosta
-11012,Valle d'Aosta,Valle d'Aosta
-11013,Valle d'Aosta,Valle d'Aosta
-11014,Valle d'Aosta,Valle d'Aosta
-11015,Valle d'Aosta,Valle d'Aosta
-11016,Valle d'Aosta,Valle d'Aosta
-11017,Valle d'Aosta,Valle d'Aosta
-11018,Valle d'Aosta,Valle d'Aosta
-11020,Valle d'Aosta,Valle d'Aosta
-11021,Valle d'Aosta,Valle d'Aosta
-11022,Valle d'Aosta,Valle d'Aosta
-11023,Valle d'Aosta,Valle d'Aosta
-11024,Valle d'Aosta,Valle d'Aosta
-11025,Valle d'Aosta,Valle d'Aosta
-11026,Valle d'Aosta,Valle d'Aosta
-11027,Valle d'Aosta,Valle d'Aosta
-11028,Valle d'Aosta,Valle d'Aosta
-11029,Valle d'Aosta,Valle d'Aosta
 11100,Valle d'Aosta,Valle d'Aosta
 12010,Piemonte,Cuneo
 12011,Piemonte,Cuneo
@@ -949,45 +839,17 @@ CAP,Regione,Provincia
 15079,Piemonte,Alessandria
 15121,Piemonte,Alessandria
 15122,Piemonte,Alessandria
-16010,Liguria,Genova
 16011,Liguria,Genova
 16012,Liguria,Genova
-16013,Liguria,Genova
-16014,Liguria,Genova
-16015,Liguria,Genova
 16016,Liguria,Genova
-16017,Liguria,Genova
-16018,Liguria,Genova
-16019,Liguria,Genova
-16020,Liguria,Genova
-16021,Liguria,Genova
-16022,Liguria,Genova
-16023,Liguria,Genova
-16024,Liguria,Genova
-16025,Liguria,Genova
-16026,Liguria,Genova
-16027,Liguria,Genova
-16028,Liguria,Genova
-16029,Liguria,Genova
-16030,Liguria,Genova
 16031,Liguria,Genova
-16032,Liguria,Genova
 16033,Liguria,Genova
-16034,Liguria,Genova
 16035,Liguria,Genova
 16036,Liguria,Genova
 16038,Liguria,Genova
 16039,Liguria,Genova
-16040,Liguria,Genova
-16041,Liguria,Genova
 16042,Liguria,Genova
 16043,Liguria,Genova
-16044,Liguria,Genova
-16045,Liguria,Genova
-16046,Liguria,Genova
-16047,Liguria,Genova
-16048,Liguria,Genova
-16049,Liguria,Genova
 16121,Liguria,Genova
 16122,Liguria,Genova
 16123,Liguria,Genova
@@ -1031,109 +893,40 @@ CAP,Regione,Provincia
 16165,Liguria,Genova
 16166,Liguria,Genova
 16167,Liguria,Genova
-17010,Liguria,Savona
 17011,Liguria,Savona
 17012,Liguria,Savona
-17013,Liguria,Savona
 17014,Liguria,Savona
 17015,Liguria,Savona
 17017,Liguria,Savona
 17019,Liguria,Savona
-17020,Liguria,Savona
 17021,Liguria,Savona
-17022,Liguria,Savona
 17023,Liguria,Savona
 17024,Liguria,Savona
 17025,Liguria,Savona
-17026,Liguria,Savona
 17027,Liguria,Savona
 17028,Liguria,Savona
-17030,Liguria,Savona
 17031,Liguria,Savona
-17032,Liguria,Savona
-17033,Liguria,Savona
-17034,Liguria,Savona
-17035,Liguria,Savona
-17037,Liguria,Savona
-17038,Liguria,Savona
-17039,Liguria,Savona
-17040,Liguria,Savona
 17041,Liguria,Savona
-17042,Liguria,Savona
 17043,Liguria,Savona
-17044,Liguria,Savona
-17045,Liguria,Savona
-17046,Liguria,Savona
 17047,Liguria,Savona
-17048,Liguria,Savona
 17051,Liguria,Savona
 17052,Liguria,Savona
-17053,Liguria,Savona
 17054,Liguria,Savona
 17055,Liguria,Savona
 17056,Liguria,Savona
-17057,Liguria,Savona
-17058,Liguria,Savona
 17100,Liguria,Savona
-18010,Liguria,Imperia
-18011,Liguria,Imperia
-18012,Liguria,Imperia
-18013,Liguria,Imperia
-18014,Liguria,Imperia
-18015,Liguria,Imperia
-18016,Liguria,Imperia
-18017,Liguria,Imperia
-18018,Liguria,Imperia
-18019,Liguria,Imperia
-18020,Liguria,Imperia
-18021,Liguria,Imperia
-18022,Liguria,Imperia
-18023,Liguria,Imperia
-18024,Liguria,Imperia
 18025,Liguria,Imperia
-18026,Liguria,Imperia
-18027,Liguria,Imperia
-18028,Liguria,Imperia
-18030,Liguria,Imperia
-18031,Liguria,Imperia
-18032,Liguria,Imperia
-18033,Liguria,Imperia
-18034,Liguria,Imperia
-18035,Liguria,Imperia
-18036,Liguria,Imperia
-18037,Liguria,Imperia
-18038,Liguria,Imperia
 18039,Liguria,Imperia
-18100,Liguria,Imperia
-19010,Liguria,La Spezia
-19011,Liguria,La Spezia
-19012,Liguria,La Spezia
-19013,Liguria,La Spezia
-19014,Liguria,La Spezia
-19015,Liguria,La Spezia
-19016,Liguria,La Spezia
-19017,Liguria,La Spezia
-19018,Liguria,La Spezia
-19020,Liguria,La Spezia
 19021,Liguria,La Spezia
-19025,Liguria,La Spezia
-19028,Liguria,La Spezia
 19031,Liguria,La Spezia
 19032,Liguria,La Spezia
 19033,Liguria,La Spezia
 19034,Liguria,La Spezia
 19037,Liguria,La Spezia
 19038,Liguria,La Spezia
-19121,Liguria,La Spezia
-19122,Liguria,La Spezia
-19123,Liguria,La Spezia
 19124,Liguria,La Spezia
 19125,Liguria,La Spezia
 19126,Liguria,La Spezia
-19131,Liguria,La Spezia
-19132,Liguria,La Spezia
-19133,Liguria,La Spezia
-19134,Liguria,La Spezia
 19135,Liguria,La Spezia
 19136,Liguria,La Spezia
 19137,Liguria,La Spezia
@@ -2106,7 +1899,6 @@ CAP,Regione,Provincia
 32100,Veneto,Belluno
 33010,Friuli-Venezia Giulia,Udine
 33011,Friuli-Venezia Giulia,Udine
-33012,Friuli-Venezia Giulia,Udine
 33013,Friuli-Venezia Giulia,Udine
 33014,Friuli-Venezia Giulia,Udine
 33015,Friuli-Venezia Giulia,Udine
@@ -2115,7 +1907,6 @@ CAP,Regione,Provincia
 33018,Friuli-Venezia Giulia,Udine
 33019,Friuli-Venezia Giulia,Udine
 33020,Friuli-Venezia Giulia,Udine
-33021,Friuli-Venezia Giulia,Udine
 33022,Friuli-Venezia Giulia,Udine
 33023,Friuli-Venezia Giulia,Udine
 33024,Friuli-Venezia Giulia,Udine
@@ -2185,7 +1976,6 @@ CAP,Regione,Provincia
 34015,Friuli-Venezia Giulia,Trieste
 34016,Friuli-Venezia Giulia,Trieste
 34018,Friuli-Venezia Giulia,Trieste
-34070,Friuli-Venezia Giulia,Gorizia
 34071,Friuli-Venezia Giulia,Gorizia
 34072,Friuli-Venezia Giulia,Gorizia
 34073,Friuli-Venezia Giulia,Gorizia
@@ -2493,47 +2283,16 @@ CAP,Regione,Provincia
 38121,Trentino-Alto Adige,Trento
 38122,Trentino-Alto Adige,Trento
 38123,Trentino-Alto Adige,Trento
-39010,Trentino-Alto Adige,Bolzano/Bozen
 39011,Trentino-Alto Adige,Bolzano/Bozen
 39012,Trentino-Alto Adige,Bolzano/Bozen
-39013,Trentino-Alto Adige,Bolzano/Bozen
 39014,Trentino-Alto Adige,Bolzano/Bozen
-39015,Trentino-Alto Adige,Bolzano/Bozen
-39016,Trentino-Alto Adige,Bolzano/Bozen
-39017,Trentino-Alto Adige,Bolzano/Bozen
 39018,Trentino-Alto Adige,Bolzano/Bozen
-39019,Trentino-Alto Adige,Bolzano/Bozen
-39020,Trentino-Alto Adige,Bolzano/Bozen
 39021,Trentino-Alto Adige,Bolzano/Bozen
 39022,Trentino-Alto Adige,Bolzano/Bozen
-39023,Trentino-Alto Adige,Bolzano/Bozen
-39024,Trentino-Alto Adige,Bolzano/Bozen
 39025,Trentino-Alto Adige,Bolzano/Bozen
-39026,Trentino-Alto Adige,Bolzano/Bozen
-39027,Trentino-Alto Adige,Bolzano/Bozen
-39028,Trentino-Alto Adige,Bolzano/Bozen
-39029,Trentino-Alto Adige,Bolzano/Bozen
-39030,Trentino-Alto Adige,Bolzano/Bozen
-39031,Trentino-Alto Adige,Bolzano/Bozen
-39032,Trentino-Alto Adige,Bolzano/Bozen
-39033,Trentino-Alto Adige,Bolzano/Bozen
-39034,Trentino-Alto Adige,Bolzano/Bozen
-39035,Trentino-Alto Adige,Bolzano/Bozen
-39036,Trentino-Alto Adige,Bolzano/Bozen
-39037,Trentino-Alto Adige,Bolzano/Bozen
-39038,Trentino-Alto Adige,Bolzano/Bozen
-39039,Trentino-Alto Adige,Bolzano/Bozen
-39040,Trentino-Alto Adige,Bolzano/Bozen
-39041,Trentino-Alto Adige,Bolzano/Bozen
 39042,Trentino-Alto Adige,Bolzano/Bozen
 39043,Trentino-Alto Adige,Bolzano/Bozen
 39044,Trentino-Alto Adige,Bolzano/Bozen
-39045,Trentino-Alto Adige,Bolzano/Bozen
-39046,Trentino-Alto Adige,Bolzano/Bozen
-39047,Trentino-Alto Adige,Bolzano/Bozen
-39048,Trentino-Alto Adige,Bolzano/Bozen
-39049,Trentino-Alto Adige,Bolzano/Bozen
-39050,Trentino-Alto Adige,Bolzano/Bozen
 39051,Trentino-Alto Adige,Bolzano/Bozen
 39052,Trentino-Alto Adige,Bolzano/Bozen
 39053,Trentino-Alto Adige,Bolzano/Bozen
@@ -3216,7 +2975,6 @@ CAP,Regione,Provincia
 59025,Toscana,Prato
 59026,Toscana,Prato
 59100,Toscana,Prato
-60010,Marche,Ancona
 60011,Marche,Ancona
 60012,Marche,Ancona
 60013,Marche,Ancona
@@ -3239,7 +2997,6 @@ CAP,Regione,Provincia
 60037,Marche,Ancona
 60038,Marche,Ancona
 60039,Marche,Ancona
-60040,Marche,Ancona
 60041,Marche,Ancona
 60043,Marche,Ancona
 60044,Marche,Ancona
@@ -3254,7 +3011,6 @@ CAP,Regione,Provincia
 60128,Marche,Ancona
 60129,Marche,Ancona
 60131,Marche,Ancona
-61010,Marche,Pesaro e Urbino
 61011,Marche,Pesaro e Urbino
 61012,Marche,Pesaro e Urbino
 61013,Marche,Pesaro e Urbino
@@ -3267,7 +3023,6 @@ CAP,Regione,Provincia
 61026,Marche,Pesaro e Urbino
 61028,Marche,Pesaro e Urbino
 61029,Marche,Pesaro e Urbino
-61030,Marche,Pesaro e Urbino
 61032,Marche,Pesaro e Urbino
 61033,Marche,Pesaro e Urbino
 61034,Marche,Pesaro e Urbino
@@ -3275,7 +3030,6 @@ CAP,Regione,Provincia
 61037,Marche,Pesaro e Urbino
 61038,Marche,Pesaro e Urbino
 61039,Marche,Pesaro e Urbino
-61040,Marche,Pesaro e Urbino
 61041,Marche,Pesaro e Urbino
 61042,Marche,Pesaro e Urbino
 61043,Marche,Pesaro e Urbino
@@ -3295,7 +3049,6 @@ CAP,Regione,Provincia
 62017,Marche,Macerata
 62018,Marche,Macerata
 62019,Marche,Macerata
-62020,Marche,Macerata
 62021,Marche,Macerata
 62022,Marche,Macerata
 62024,Marche,Macerata
@@ -3320,7 +3073,6 @@ CAP,Regione,Provincia
 63066,Marche,Ascoli Piceno
 63067,Marche,Ascoli Piceno
 63068,Marche,Ascoli Piceno
-63069,Marche,Ascoli Piceno
 63071,Marche,Ascoli Piceno
 63072,Marche,Ascoli Piceno
 63073,Marche,Ascoli Piceno
@@ -3337,11 +3089,8 @@ CAP,Regione,Provincia
 63085,Marche,Ascoli Piceno
 63086,Marche,Ascoli Piceno
 63087,Marche,Ascoli Piceno
-63088,Marche,Ascoli Piceno
 63091,Marche,Ascoli Piceno
-63092,Marche,Ascoli Piceno
 63093,Marche,Ascoli Piceno
-63094,Marche,Ascoli Piceno
 63095,Marche,Ascoli Piceno
 63096,Marche,Ascoli Piceno
 63100,Marche,Ascoli Piceno
@@ -3356,7 +3105,6 @@ CAP,Regione,Provincia
 63823,Marche,Fermo
 63824,Marche,Fermo
 63825,Marche,Fermo
-63826,Marche,Fermo
 63827,Marche,Fermo
 63828,Marche,Fermo
 63831,Marche,Fermo
@@ -3366,22 +3114,15 @@ CAP,Regione,Provincia
 63835,Marche,Fermo
 63836,Marche,Fermo
 63837,Marche,Fermo
-63838,Marche,Fermo
 63839,Marche,Fermo
-63841,Marche,Fermo
-63842,Marche,Fermo
 63843,Marche,Fermo
 63844,Marche,Fermo
 63845,Marche,Fermo
 63846,Marche,Fermo
-63847,Marche,Fermo
 63848,Marche,Fermo
 63851,Marche,Fermo
-63852,Marche,Fermo
 63853,Marche,Fermo
 63854,Marche,Fermo
-63855,Marche,Fermo
-63856,Marche,Fermo
 63857,Marche,Fermo
 63858,Marche,Fermo
 63900,Marche,Fermo
@@ -3453,14 +3194,11 @@ CAP,Regione,Provincia
 66015,Abruzzo,Chieti
 66016,Abruzzo,Chieti
 66017,Abruzzo,Chieti
-66018,Abruzzo,Chieti
 66019,Abruzzo,Chieti
-66020,Abruzzo,Chieti
 66021,Abruzzo,Chieti
 66022,Abruzzo,Chieti
 66023,Abruzzo,Chieti
 66026,Abruzzo,Chieti
-66030,Abruzzo,Chieti
 66031,Abruzzo,Chieti
 66032,Abruzzo,Chieti
 66033,Abruzzo,Chieti
@@ -3468,8 +3206,6 @@ CAP,Regione,Provincia
 66036,Abruzzo,Chieti
 66037,Abruzzo,Chieti
 66038,Abruzzo,Chieti
-66040,Abruzzo,Chieti
-66041,Abruzzo,Chieti
 66042,Abruzzo,Chieti
 66043,Abruzzo,Chieti
 66044,Abruzzo,Chieti
@@ -3481,24 +3217,16 @@ CAP,Regione,Provincia
 66052,Abruzzo,Chieti
 66054,Abruzzo,Chieti
 66100,Abruzzo,Chieti
-67010,Abruzzo,L'Aquila
 67012,Abruzzo,L'Aquila
-67013,Abruzzo,L'Aquila
-67014,Abruzzo,L'Aquila
 67015,Abruzzo,L'Aquila
 67017,Abruzzo,L'Aquila
 67019,Abruzzo,L'Aquila
-67020,Abruzzo,L'Aquila
 67021,Abruzzo,L'Aquila
 67022,Abruzzo,L'Aquila
-67023,Abruzzo,L'Aquila
 67024,Abruzzo,L'Aquila
-67025,Abruzzo,L'Aquila
 67026,Abruzzo,L'Aquila
 67027,Abruzzo,L'Aquila
 67028,Abruzzo,L'Aquila
-67029,Abruzzo,L'Aquila
-67030,Abruzzo,L'Aquila
 67031,Abruzzo,L'Aquila
 67032,Abruzzo,L'Aquila
 67033,Abruzzo,L'Aquila
@@ -3508,16 +3236,13 @@ CAP,Regione,Provincia
 67037,Abruzzo,L'Aquila
 67038,Abruzzo,L'Aquila
 67039,Abruzzo,L'Aquila
-67040,Abruzzo,L'Aquila
 67041,Abruzzo,L'Aquila
 67043,Abruzzo,L'Aquila
 67044,Abruzzo,L'Aquila
 67045,Abruzzo,L'Aquila
 67046,Abruzzo,L'Aquila
-67047,Abruzzo,L'Aquila
 67048,Abruzzo,L'Aquila
 67049,Abruzzo,L'Aquila
-67050,Abruzzo,L'Aquila
 67051,Abruzzo,L'Aquila
 67052,Abruzzo,L'Aquila
 67053,Abruzzo,L'Aquila
@@ -3527,11 +3252,9 @@ CAP,Regione,Provincia
 67057,Abruzzo,L'Aquila
 67058,Abruzzo,L'Aquila
 67059,Abruzzo,L'Aquila
-67060,Abruzzo,L'Aquila
 67061,Abruzzo,L'Aquila
 67062,Abruzzo,L'Aquila
 67063,Abruzzo,L'Aquila
-67064,Abruzzo,L'Aquila
 67066,Abruzzo,L'Aquila
 67067,Abruzzo,L'Aquila
 67068,Abruzzo,L'Aquila
@@ -3586,7 +3309,6 @@ CAP,Regione,Provincia
 71017,Puglia,Foggia
 71018,Puglia,Foggia
 71019,Puglia,Foggia
-71020,Puglia,Foggia
 71021,Puglia,Foggia
 71022,Puglia,Foggia
 71023,Puglia,Foggia
@@ -3613,7 +3335,6 @@ CAP,Regione,Provincia
 71045,Puglia,Foggia
 71047,Puglia,Foggia
 71048,Puglia,Foggia
-71051,Puglia,Foggia
 71121,Puglia,Foggia
 71122,Puglia,Foggia
 72012,Puglia,Brindisi
@@ -3674,7 +3395,6 @@ CAP,Regione,Provincia
 73047,Puglia,Lecce
 73048,Puglia,Lecce
 73049,Puglia,Lecce
-73050,Puglia,Lecce
 73051,Puglia,Lecce
 73052,Puglia,Lecce
 73053,Puglia,Lecce
@@ -3700,14 +3420,12 @@ CAP,Regione,Provincia
 74022,Puglia,Taranto
 74023,Puglia,Taranto
 74024,Puglia,Taranto
-74025,Puglia,Taranto
 74026,Puglia,Taranto
 74027,Puglia,Taranto
 74028,Puglia,Taranto
 74121,Puglia,Taranto
 74122,Puglia,Taranto
 74123,Puglia,Taranto
-75010,Basilicata,Matera
 75011,Basilicata,Matera
 75012,Basilicata,Matera
 75013,Basilicata,Matera
@@ -3717,7 +3435,6 @@ CAP,Regione,Provincia
 75017,Basilicata,Matera
 75018,Basilicata,Matera
 75019,Basilicata,Matera
-75020,Basilicata,Matera
 75021,Basilicata,Matera
 75022,Basilicata,Matera
 75023,Basilicata,Matera
@@ -3784,24 +3501,14 @@ CAP,Regione,Provincia
 80057,Campania,Napoli
 80058,Campania,Napoli
 80059,Campania,Napoli
-80060,Campania,Napoli
 80061,Campania,Napoli
 80062,Campania,Napoli
 80063,Campania,Napoli
 80065,Campania,Napoli
-80066,Campania,Napoli
 80067,Campania,Napoli
 80069,Campania,Napoli
 80070,Campania,Napoli
-80071,Campania,Napoli
-80072,Campania,Napoli
-80073,Campania,Napoli
-80074,Campania,Napoli
-80075,Campania,Napoli
-80076,Campania,Napoli
-80077,Campania,Napoli
 80078,Campania,Napoli
-80079,Campania,Napoli
 80081,Campania,Napoli
 80121,Campania,Napoli
 80122,Campania,Napoli
@@ -3874,19 +3581,14 @@ CAP,Regione,Provincia
 81100,Campania,Caserta
 82010,Campania,Benevento
 82011,Campania,Benevento
-82013,Campania,Benevento
 82014,Campania,Benevento
 82015,Campania,Benevento
 82016,Campania,Benevento
 82017,Campania,Benevento
 82018,Campania,Benevento
 82019,Campania,Benevento
-82020,Campania,Benevento
 82021,Campania,Benevento
-82022,Campania,Benevento
-82023,Campania,Benevento
 82024,Campania,Benevento
-82025,Campania,Benevento
 82026,Campania,Benevento
 82027,Campania,Benevento
 82028,Campania,Benevento
@@ -3900,7 +3602,6 @@ CAP,Regione,Provincia
 82037,Campania,Benevento
 82038,Campania,Benevento
 82100,Campania,Benevento
-83010,Campania,Avellino
 83011,Campania,Avellino
 83012,Campania,Avellino
 83013,Campania,Avellino
@@ -3909,7 +3610,6 @@ CAP,Regione,Provincia
 83016,Campania,Avellino
 83017,Campania,Avellino
 83018,Campania,Avellino
-83020,Campania,Avellino
 83021,Campania,Avellino
 83022,Campania,Avellino
 83023,Campania,Avellino
@@ -3918,7 +3618,6 @@ CAP,Regione,Provincia
 83027,Campania,Avellino
 83028,Campania,Avellino
 83029,Campania,Avellino
-83030,Campania,Avellino
 83031,Campania,Avellino
 83032,Campania,Avellino
 83034,Campania,Avellino
@@ -3927,7 +3626,6 @@ CAP,Regione,Provincia
 83037,Campania,Avellino
 83038,Campania,Avellino
 83039,Campania,Avellino
-83040,Campania,Avellino
 83041,Campania,Avellino
 83042,Campania,Avellino
 83043,Campania,Avellino
@@ -3936,16 +3634,11 @@ CAP,Regione,Provincia
 83046,Campania,Avellino
 83047,Campania,Avellino
 83048,Campania,Avellino
-83049,Campania,Avellino
-83050,Campania,Avellino
 83051,Campania,Avellino
 83052,Campania,Avellino
-83053,Campania,Avellino
 83054,Campania,Avellino
 83055,Campania,Avellino
-83056,Campania,Avellino
 83057,Campania,Avellino
-83058,Campania,Avellino
 83059,Campania,Avellino
 83100,Campania,Avellino
 84010,Campania,Salerno
@@ -3958,14 +3651,10 @@ CAP,Regione,Provincia
 84017,Campania,Salerno
 84018,Campania,Salerno
 84019,Campania,Salerno
-84020,Campania,Salerno
 84021,Campania,Salerno
-84022,Campania,Salerno
-84023,Campania,Salerno
 84024,Campania,Salerno
 84025,Campania,Salerno
 84026,Campania,Salerno
-84027,Campania,Salerno
 84028,Campania,Salerno
 84029,Campania,Salerno
 84030,Campania,Salerno
@@ -3991,14 +3680,11 @@ CAP,Regione,Provincia
 84051,Campania,Salerno
 84052,Campania,Salerno
 84053,Campania,Salerno
-84055,Campania,Salerno
 84056,Campania,Salerno
-84057,Campania,Salerno
 84059,Campania,Salerno
 84060,Campania,Salerno
 84061,Campania,Salerno
 84062,Campania,Salerno
-84065,Campania,Salerno
 84066,Campania,Salerno
 84067,Campania,Salerno
 84068,Campania,Salerno
@@ -4041,7 +3727,6 @@ CAP,Regione,Provincia
 84133,Campania,Salerno
 84134,Campania,Salerno
 84135,Campania,Salerno
-85010,Basilicata,Potenza
 85011,Basilicata,Potenza
 85012,Basilicata,Potenza
 85013,Basilicata,Potenza
@@ -4049,9 +3734,6 @@ CAP,Regione,Provincia
 85015,Basilicata,Potenza
 85016,Basilicata,Potenza
 85017,Basilicata,Potenza
-85018,Basilicata,Potenza
-85020,Basilicata,Potenza
-85021,Basilicata,Potenza
 85022,Basilicata,Potenza
 85023,Basilicata,Potenza
 85024,Basilicata,Potenza
@@ -4060,7 +3742,6 @@ CAP,Regione,Provincia
 85027,Basilicata,Potenza
 85028,Basilicata,Potenza
 85029,Basilicata,Potenza
-85030,Basilicata,Potenza
 85031,Basilicata,Potenza
 85032,Basilicata,Potenza
 85033,Basilicata,Potenza
@@ -4070,7 +3751,6 @@ CAP,Regione,Provincia
 85037,Basilicata,Potenza
 85038,Basilicata,Potenza
 85039,Basilicata,Potenza
-85040,Basilicata,Potenza
 85042,Basilicata,Potenza
 85043,Basilicata,Potenza
 85044,Basilicata,Potenza
@@ -4078,7 +3758,6 @@ CAP,Regione,Provincia
 85047,Basilicata,Potenza
 85048,Basilicata,Potenza
 85049,Basilicata,Potenza
-85050,Basilicata,Potenza
 85051,Basilicata,Potenza
 85052,Basilicata,Potenza
 85053,Basilicata,Potenza
@@ -4089,7 +3768,6 @@ CAP,Regione,Provincia
 85058,Basilicata,Potenza
 85059,Basilicata,Potenza
 85100,Basilicata,Potenza
-86010,Molise,Campobasso
 86011,Molise,Campobasso
 86012,Molise,Campobasso
 86013,Molise,Campobasso
@@ -4099,17 +3777,14 @@ CAP,Regione,Provincia
 86017,Molise,Campobasso
 86018,Molise,Campobasso
 86019,Molise,Campobasso
-86020,Molise,Campobasso
 86021,Molise,Campobasso
 86022,Molise,Campobasso
 86023,Molise,Campobasso
 86024,Molise,Campobasso
 86025,Molise,Campobasso
-86026,Molise,Campobasso
 86027,Molise,Campobasso
 86028,Molise,Campobasso
 86029,Molise,Campobasso
-86030,Molise,Campobasso
 86031,Molise,Campobasso
 86032,Molise,Campobasso
 86033,Molise,Campobasso
@@ -4119,7 +3794,6 @@ CAP,Regione,Provincia
 86037,Molise,Campobasso
 86038,Molise,Campobasso
 86039,Molise,Campobasso
-86040,Molise,Campobasso
 86041,Molise,Campobasso
 86042,Molise,Campobasso
 86043,Molise,Campobasso
@@ -4129,26 +3803,19 @@ CAP,Regione,Provincia
 86047,Molise,Campobasso
 86048,Molise,Campobasso
 86049,Molise,Campobasso
-86070,Molise,Isernia
 86071,Molise,Isernia
 86072,Molise,Isernia
 86073,Molise,Isernia
-86074,Molise,Isernia
 86075,Molise,Isernia
 86077,Molise,Isernia
 86078,Molise,Isernia
 86079,Molise,Isernia
-86080,Molise,Isernia
 86081,Molise,Isernia
 86082,Molise,Isernia
 86083,Molise,Isernia
-86084,Molise,Isernia
 86085,Molise,Isernia
-86086,Molise,Isernia
 86087,Molise,Isernia
-86088,Molise,Isernia
 86089,Molise,Isernia
-86090,Molise,Isernia
 86091,Molise,Isernia
 86092,Molise,Isernia
 86093,Molise,Isernia
@@ -4158,170 +3825,66 @@ CAP,Regione,Provincia
 86097,Molise,Isernia
 86100,Molise,Campobasso
 86170,Molise,Isernia
-87010,Calabria,Cosenza
 87011,Calabria,Cosenza
 87012,Calabria,Cosenza
-87013,Calabria,Cosenza
-87014,Calabria,Cosenza
-87015,Calabria,Cosenza
-87016,Calabria,Cosenza
 87017,Calabria,Cosenza
 87018,Calabria,Cosenza
 87019,Calabria,Cosenza
-87020,Calabria,Cosenza
 87021,Calabria,Cosenza
 87022,Calabria,Cosenza
 87023,Calabria,Cosenza
 87024,Calabria,Cosenza
-87026,Calabria,Cosenza
 87027,Calabria,Cosenza
-87028,Calabria,Cosenza
 87029,Calabria,Cosenza
 87030,Calabria,Cosenza
-87031,Calabria,Cosenza
 87032,Calabria,Cosenza
-87033,Calabria,Cosenza
-87034,Calabria,Cosenza
-87035,Calabria,Cosenza
 87036,Calabria,Cosenza
-87037,Calabria,Cosenza
 87038,Calabria,Cosenza
 87040,Calabria,Cosenza
 87041,Calabria,Cosenza
-87042,Calabria,Cosenza
 87043,Calabria,Cosenza
-87044,Calabria,Cosenza
 87045,Calabria,Cosenza
 87046,Calabria,Cosenza
 87047,Calabria,Cosenza
 87048,Calabria,Cosenza
 87050,Calabria,Cosenza
-87051,Calabria,Cosenza
-87052,Calabria,Cosenza
-87053,Calabria,Cosenza
 87054,Calabria,Cosenza
-87055,Calabria,Cosenza
-87056,Calabria,Cosenza
-87057,Calabria,Cosenza
-87058,Calabria,Cosenza
-87059,Calabria,Cosenza
 87060,Calabria,Cosenza
-87061,Calabria,Cosenza
 87062,Calabria,Cosenza
 87064,Calabria,Cosenza
-87066,Calabria,Cosenza
-87069,Calabria,Cosenza
-87070,Calabria,Cosenza
-87071,Calabria,Cosenza
-87072,Calabria,Cosenza
-87073,Calabria,Cosenza
-87074,Calabria,Cosenza
 87075,Calabria,Cosenza
 87076,Calabria,Cosenza
 87100,Calabria,Cosenza
-88020,Calabria,Catanzaro
 88021,Calabria,Catanzaro
 88022,Calabria,Catanzaro
 88024,Calabria,Catanzaro
 88025,Calabria,Catanzaro
-88040,Calabria,Catanzaro
 88041,Calabria,Catanzaro
 88042,Calabria,Catanzaro
 88044,Calabria,Catanzaro
-88045,Calabria,Catanzaro
 88046,Calabria,Catanzaro
 88047,Calabria,Catanzaro
 88049,Calabria,Catanzaro
-88050,Calabria,Catanzaro
-88051,Calabria,Catanzaro
-88054,Calabria,Catanzaro
 88055,Calabria,Catanzaro
 88056,Calabria,Catanzaro
-88060,Calabria,Catanzaro
-88062,Calabria,Catanzaro
 88064,Calabria,Catanzaro
-88065,Calabria,Catanzaro
 88067,Calabria,Catanzaro
 88068,Calabria,Catanzaro
 88069,Calabria,Catanzaro
-88070,Calabria,Catanzaro
-88100,Calabria,Catanzaro
 88811,Calabria,Crotone
-88812,Calabria,Crotone
-88813,Calabria,Crotone
 88814,Calabria,Crotone
-88815,Calabria,Crotone
 88816,Calabria,Crotone
-88817,Calabria,Crotone
-88818,Calabria,Crotone
-88819,Calabria,Crotone
 88821,Calabria,Crotone
-88822,Calabria,Crotone
-88823,Calabria,Crotone
-88824,Calabria,Crotone
-88825,Calabria,Crotone
-88831,Calabria,Crotone
-88832,Calabria,Crotone
-88833,Calabria,Crotone
-88834,Calabria,Crotone
-88835,Calabria,Crotone
 88836,Calabria,Crotone
 88837,Calabria,Crotone
 88838,Calabria,Crotone
 88841,Calabria,Crotone
 88842,Calabria,Crotone
 88900,Calabria,Crotone
-89010,Calabria,Reggio Calabria
-89011,Calabria,Reggio Calabria
-89012,Calabria,Reggio Calabria
-89013,Calabria,Reggio Calabria
-89014,Calabria,Reggio Calabria
-89015,Calabria,Reggio Calabria
-89016,Calabria,Reggio Calabria
 89017,Calabria,Reggio Calabria
-89018,Calabria,Reggio Calabria
-89020,Calabria,Reggio Calabria
-89021,Calabria,Reggio Calabria
-89022,Calabria,Reggio Calabria
-89023,Calabria,Reggio Calabria
-89024,Calabria,Reggio Calabria
-89025,Calabria,Reggio Calabria
-89026,Calabria,Reggio Calabria
-89027,Calabria,Reggio Calabria
-89028,Calabria,Reggio Calabria
-89029,Calabria,Reggio Calabria
-89030,Calabria,Reggio Calabria
-89031,Calabria,Reggio Calabria
-89032,Calabria,Reggio Calabria
-89033,Calabria,Reggio Calabria
-89034,Calabria,Reggio Calabria
-89035,Calabria,Reggio Calabria
-89036,Calabria,Reggio Calabria
-89037,Calabria,Reggio Calabria
-89038,Calabria,Reggio Calabria
-89039,Calabria,Reggio Calabria
-89040,Calabria,Reggio Calabria
-89041,Calabria,Reggio Calabria
 89042,Calabria,Reggio Calabria
-89043,Calabria,Reggio Calabria
 89044,Calabria,Reggio Calabria
-89045,Calabria,Reggio Calabria
 89046,Calabria,Reggio Calabria
-89047,Calabria,Reggio Calabria
-89048,Calabria,Reggio Calabria
-89049,Calabria,Reggio Calabria
-89050,Calabria,Reggio Calabria
-89052,Calabria,Reggio Calabria
-89054,Calabria,Reggio Calabria
-89056,Calabria,Reggio Calabria
-89057,Calabria,Reggio Calabria
-89058,Calabria,Reggio Calabria
-89060,Calabria,Reggio Calabria
-89062,Calabria,Reggio Calabria
-89063,Calabria,Reggio Calabria
-89064,Calabria,Reggio Calabria
-89065,Calabria,Reggio Calabria
-89069,Calabria,Reggio Calabria
 89121,Calabria,Reggio Calabria
 89122,Calabria,Reggio Calabria
 89123,Calabria,Reggio Calabria
@@ -4334,20 +3897,16 @@ CAP,Regione,Provincia
 89131,Calabria,Reggio Calabria
 89132,Calabria,Reggio Calabria
 89133,Calabria,Reggio Calabria
-89134,Calabria,Reggio Calabria
 89135,Calabria,Reggio Calabria
 89812,Calabria,Vibo Valentia
-89813,Calabria,Vibo Valentia
 89814,Calabria,Vibo Valentia
 89815,Calabria,Vibo Valentia
 89816,Calabria,Vibo Valentia
 89817,Calabria,Vibo Valentia
-89818,Calabria,Vibo Valentia
 89819,Calabria,Vibo Valentia
 89821,Calabria,Vibo Valentia
 89822,Calabria,Vibo Valentia
 89823,Calabria,Vibo Valentia
-89824,Calabria,Vibo Valentia
 89831,Calabria,Vibo Valentia
 89832,Calabria,Vibo Valentia
 89833,Calabria,Vibo Valentia
@@ -4361,7 +3920,6 @@ CAP,Regione,Provincia
 89853,Calabria,Vibo Valentia
 89861,Calabria,Vibo Valentia
 89862,Calabria,Vibo Valentia
-89863,Calabria,Vibo Valentia
 89864,Calabria,Vibo Valentia
 89866,Calabria,Vibo Valentia
 89867,Calabria,Vibo Valentia
@@ -4373,7 +3931,6 @@ CAP,Regione,Provincia
 90013,Sicilia,Palermo
 90014,Sicilia,Palermo
 90015,Sicilia,Palermo
-90016,Sicilia,Palermo
 90017,Sicilia,Palermo
 90018,Sicilia,Palermo
 90019,Sicilia,Palermo
@@ -4381,11 +3938,7 @@ CAP,Regione,Provincia
 90021,Sicilia,Palermo
 90022,Sicilia,Palermo
 90023,Sicilia,Palermo
-90024,Sicilia,Palermo
 90025,Sicilia,Palermo
-90026,Sicilia,Palermo
-90027,Sicilia,Palermo
-90028,Sicilia,Palermo
 90029,Sicilia,Palermo
 90030,Sicilia,Palermo
 90031,Sicilia,Palermo
@@ -4407,7 +3960,6 @@ CAP,Regione,Provincia
 90047,Sicilia,Palermo
 90048,Sicilia,Palermo
 90049,Sicilia,Palermo
-90051,Sicilia,Palermo
 90121,Sicilia,Palermo
 90123,Sicilia,Palermo
 90124,Sicilia,Palermo
@@ -4439,13 +3991,11 @@ CAP,Regione,Provincia
 91014,Sicilia,Trapani
 91015,Sicilia,Trapani
 91016,Sicilia,Trapani
-91017,Sicilia,Trapani
 91018,Sicilia,Trapani
 91019,Sicilia,Trapani
 91020,Sicilia,Trapani
 91021,Sicilia,Trapani
 91022,Sicilia,Trapani
-91023,Sicilia,Trapani
 91024,Sicilia,Trapani
 91025,Sicilia,Trapani
 91026,Sicilia,Trapani
@@ -4557,7 +4107,6 @@ CAP,Regione,Provincia
 96018,Sicilia,Siracusa
 96019,Sicilia,Siracusa
 96100,Sicilia,Siracusa
-97010,Sicilia,Ragusa
 97011,Sicilia,Ragusa
 97012,Sicilia,Ragusa
 97013,Sicilia,Ragusa
@@ -4568,18 +4117,14 @@ CAP,Regione,Provincia
 97018,Sicilia,Ragusa
 97019,Sicilia,Ragusa
 97100,Sicilia,Ragusa
-98020,Sicilia,Messina
 98021,Sicilia,Messina
-98022,Sicilia,Messina
 98023,Sicilia,Messina
 98025,Sicilia,Messina
 98026,Sicilia,Messina
 98027,Sicilia,Messina
 98028,Sicilia,Messina
 98029,Sicilia,Messina
-98030,Sicilia,Messina
 98031,Sicilia,Messina
-98032,Sicilia,Messina
 98033,Sicilia,Messina
 98034,Sicilia,Messina
 98035,Sicilia,Messina
@@ -4597,26 +4142,19 @@ CAP,Regione,Provincia
 98047,Sicilia,Messina
 98048,Sicilia,Messina
 98049,Sicilia,Messina
-98050,Sicilia,Messina
 98051,Sicilia,Messina
 98053,Sicilia,Messina
 98054,Sicilia,Messina
 98055,Sicilia,Messina
-98056,Sicilia,Messina
 98057,Sicilia,Messina
-98058,Sicilia,Messina
 98059,Sicilia,Messina
-98060,Sicilia,Messina
 98061,Sicilia,Messina
-98062,Sicilia,Messina
 98063,Sicilia,Messina
 98064,Sicilia,Messina
 98065,Sicilia,Messina
 98066,Sicilia,Messina
-98067,Sicilia,Messina
 98068,Sicilia,Messina
 98069,Sicilia,Messina
-98070,Sicilia,Messina
 98071,Sicilia,Messina
 98072,Sicilia,Messina
 98073,Sicilia,Messina

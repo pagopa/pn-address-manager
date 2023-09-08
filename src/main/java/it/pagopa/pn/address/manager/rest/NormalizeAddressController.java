@@ -1,10 +1,9 @@
 package it.pagopa.pn.address.manager.rest;
 
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.api.NormalizeAddressServiceApi;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
-import it.pagopa.pn.address.manager.rest.v1.api.NormalizeAddressServiceApi;
-import it.pagopa.pn.address.manager.rest.v1.dto.AcceptedResponse;
-import it.pagopa.pn.address.manager.rest.v1.dto.NormalizeItemsRequest;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,7 +12,7 @@ import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Scheduler;
 
 @RestController
-@Slf4j
+@lombok.CustomLog
 public class NormalizeAddressController implements NormalizeAddressServiceApi {
     @Qualifier("addressManagerScheduler")
     private final Scheduler scheduler;

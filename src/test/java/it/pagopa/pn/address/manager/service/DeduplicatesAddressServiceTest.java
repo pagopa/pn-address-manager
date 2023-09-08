@@ -1,9 +1,9 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
-import it.pagopa.pn.address.manager.rest.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.rest.v1.dto.DeduplicatesRequest;
-import it.pagopa.pn.address.manager.rest.v1.dto.DeduplicatesResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

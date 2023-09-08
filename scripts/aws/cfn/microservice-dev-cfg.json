@@ -1,5 +1,14 @@
 {
   "Parameters" : {
-    "flagCsv": "true"
+    "flagCsv": "true",
+    "CpuValue": "2048",
+    "MemoryAmount": "4GB",
+    "MinTasksNumber": "2",
+    "MaxTasksNumber": "3",
+    "AutoscalingThreshold": "2500",
+    "CountriesCsv": "PagoPA-Lista-Nazioni.csv",
+    "CapCsv": "PagoPA-ListaCLP.csv",
+    "EnablePatternValidation": "true",
+    "PhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-@_"
   }
 }
