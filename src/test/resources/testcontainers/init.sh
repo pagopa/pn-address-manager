@@ -9,7 +9,7 @@ for qn in $(echo $queues | tr " " "\n"); do
 done
 
 echo "### CREATE EVENT BUS ###"
-event_bus_name="my-event-bus"
+event_bus_name="PN_ADDRESS_MANAGER_EVENTBUS_NAME"
 aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
   events create-event-bus --name $event_bus_name
 
