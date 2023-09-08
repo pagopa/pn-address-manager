@@ -9,6 +9,6 @@
     "CountriesCsv": "PagoPA-Lista-Nazioni.csv",
     "CapCsv": "PagoPA-ListaCLP.csv",
     "EnablePatternValidation": "true",
-    "PhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
+    "PhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-@"
   }
 }
