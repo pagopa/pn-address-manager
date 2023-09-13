@@ -1,3 +1,5 @@
+## Quando viene aggiornato questo file, aggiornare anche il commitId presente nel file initsh-for-testcontainer-sh
+
 echo "### CREATE QUEUES ###"
 queues="local-address-inputs"
 for qn in $(echo $queues | tr " " "\n"); do
