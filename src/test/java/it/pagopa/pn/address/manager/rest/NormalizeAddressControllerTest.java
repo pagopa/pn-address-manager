@@ -37,7 +37,7 @@ class NormalizeAddressControllerTest {
         AcceptedResponse acceptedResponse = new AcceptedResponse();
         acceptedResponse.setCorrelationId("CorrelationId");
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
-        when(normalizeAddressService.normalizeAddressAsync(any(), any())).
+        when(normalizeAddressService.normalizeAddressAsync(any(), any(), any())).
                 thenReturn(Mono.just(acceptedResponse));
         StepVerifier.create(normalizeAddressController.normalize("cxId", "ApiKey", Mono.just(normalizeItemsRequest), serverWebExchange))
               .expectNext(ResponseEntity.ok().body(acceptedResponse)).verifyComplete();

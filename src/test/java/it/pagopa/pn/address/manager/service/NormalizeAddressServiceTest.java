@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.address.manager.config.SchedulerConfig;
+import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.test.StepVerifier;
 
@@ -23,6 +25,8 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {NormalizeAddressService.class, SchedulerConfig.class})
+@TestPropertySource(properties = "pn.address.manager.flag.csv=true")
+@TestPropertySource(properties = "pn.address.manager.batch.ttl=1000")
 class NormalizeAddressServiceTest {
 
     @Autowired
@@ -32,6 +36,12 @@ class NormalizeAddressServiceTest {
 
     @MockBean
     private ObjectMapper objectMapper;
+
+    @MockBean
+    private SqsService sqsService;
+
+    @MockBean
+    private AddressBatchRequestRepository addressBatchRequestRepository;
 
     @MockBean
     private EventService eventService;
@@ -45,7 +55,7 @@ class NormalizeAddressServiceTest {
         when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
-        StepVerifier.create(normalizeAddressService.normalizeAddressAsync("cxId", normalizeItemsRequest))
+        StepVerifier.create(normalizeAddressService.normalizeAddressAsync("xApiKey", "cxId", normalizeItemsRequest))
                 .expectNext(acceptedResponse).verifyComplete();
     }
 
@@ -58,7 +68,7 @@ class NormalizeAddressServiceTest {
         when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
-        StepVerifier.create(normalizeAddressService.normalizeAddressAsync("cxId", normalizeItemsRequest))
+        StepVerifier.create(normalizeAddressService.normalizeAddressAsync("xApiKey", "cxId", normalizeItemsRequest))
                 .expectNext(acceptedResponse).verifyComplete();
     }
 }

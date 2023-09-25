@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: Normalizzatore ingress API.
   description: >-
@@ -13,10 +13,43 @@ tags:
     description: API esposte verso il normalizzatore
 
 paths:
-  #TODO: Aggiungere Callback da esporre al servizio di normalizzazione asincrona
+  /normalizzatore-ingress/v1/callback:
+    post:
+      summary: Richiesta di callback di avvenuta normalizzazione della lista di address in ingresso
+      description: |-
+        Operazione che avvisa pn-address-manager dell'avvenuta normalizzazione di una lista di address.
+      tags:
+        - Normalizzatore
+      parameters:
+        - $ref: '#/components/parameters/xPagopaAddrManCxId'
+        - $ref: '#/components/parameters/xPagopaAddrManApiKey'
+      operationId: callbackNormalizedAddress
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CallbackRequestData'
+      responses:
+        '200':
+          description: Risposta di successo
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallbackResponseData'
+        '400':
+          description: Bad Request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/CallbackResponseData'
+        '500':
+          description: InternalServerError
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/CallbackResponseData'
 
-
-  
   /normalizzatore-ingress/v1/attachment-preload:
     put:
       summary: Richiesta di pre-caricamento dei documenti da comunicare a PN
@@ -305,6 +338,38 @@ components:
           description: >-
             Stima del numero di secondi da aspettare prima che il contenuto del 
             documento sia scaricabile.
+
+
+    CallbackRequestData:
+      type: object
+      properties:
+        fileKeyInput:
+          type: string
+        fileKeyOutput:
+          type: string
+
+    CallbackResponseData:
+      type: object
+      properties:
+        response:
+          type: string
+          enum:
+            - OK
+            - KO
+    ActvatePostelRequest:
+      type: object
+      properties:
+        fileKey:
+          type: string
+
+    ActvatePostelResponse:
+      type: object
+      properties:
+        response:
+          type: string
+          enum:
+            - OK
+            - KO
 
     OperationResultCodeResponse:
       required:
