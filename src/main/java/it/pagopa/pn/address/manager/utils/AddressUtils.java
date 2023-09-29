@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.utils;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
@@ -51,8 +52,8 @@ public class AddressUtils {
         return trimmedBase.equalsIgnoreCase(trimmedTarget);
     }
 
-    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id) {
-        NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress);
+    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id, String correlationId) {
+        NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress, correlationId);
         normalizedAddressResponse.setId(id);
         if (StringUtils.isBlank(normalizedAddressResponse.getError())) {
             normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
@@ -89,7 +90,7 @@ public class AddressUtils {
     }
 
 
-    private NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
+    private NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress, String correlationId) {
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         log.logChecking(PROCESS_VERIFY_ADDRESS);
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableValidation())
@@ -101,7 +102,7 @@ public class AddressUtils {
         }
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())) {
             try {
-                verifyAddressInCsv(analogAddress, normalizedAddressResponse);
+                verifyAddressInCsv(analogAddress, normalizedAddressResponse, correlationId);
             } catch (PnAddressManagerException e) {
                 log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, e.getDescription());
                 log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
@@ -115,23 +116,23 @@ public class AddressUtils {
         return normalizedAddressResponse;
     }
 
-    private void verifyAddressInCsv(AnalogAddress analogAddress, NormalizedAddressResponse normalizedAddressResponse) {
+    private void verifyAddressInCsv(AnalogAddress analogAddress, NormalizedAddressResponse normalizedAddressResponse, String correlationId) {
         if (StringUtils.isBlank(analogAddress.getCountry())
                 || analogAddress.getCountry().toUpperCase().trim().startsWith("ITAL")) {
             normalizedAddressResponse.setItalian(true);
-            verifyCapAndCity(analogAddress);
+            verifyCapAndCity(analogAddress, correlationId);
         } else {
             searchCountry(analogAddress.getCountry(), countryMap);
         }
     }
 
-    private void verifyCapAndCity(AnalogAddress analogAddress) {
+    private void verifyCapAndCity(AnalogAddress analogAddress, String correlationId) {
         if (StringUtils.isBlank(analogAddress.getCap())
                 || StringUtils.isBlank(analogAddress.getCity())
                 || StringUtils.isBlank(analogAddress.getPr())) {
             throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Cap, city and Province are mandatory", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         } else if (!compareWithCapModelObject(analogAddress)) {
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Invalid Address, Cap, City and Province", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
+            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Invalid Address, Cap, City and Province for correlationId: " + correlationId + ", CAP: " + analogAddress.getCap() + ", Località: " + analogAddress.getCity() + ", Provincia: " + analogAddress.getPr(), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         }
     }
 
@@ -149,9 +150,10 @@ public class AddressUtils {
         }
     }
 
-    public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
+    public List<NormalizeResult> normalizeAddresses(NormalizeItemsRequest normalizeItemsRequest) {
+        List<NormalizeRequest> requestItems = normalizeItemsRequest.getRequestItems();
         return requestItems.stream()
-                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId()))
+                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId(), normalizeItemsRequest.getCorrelationId()))
                 .map(this::toNormalizeResult)
                 .toList();
     }

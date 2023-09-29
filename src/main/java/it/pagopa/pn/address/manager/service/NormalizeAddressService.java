@@ -47,7 +47,7 @@ public class NormalizeAddressService {
     private NormalizeItemsResult normalizeRequestToResult(NormalizeItemsRequest normalizeItemsRequest) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         normalizeItemsResult.setCorrelationId(normalizeItemsRequest.getCorrelationId());
-        normalizeItemsResult.setResultItems(addressUtils.normalizeAddresses(normalizeItemsRequest.getRequestItems()));
+        normalizeItemsResult.setResultItems(addressUtils.normalizeAddresses(normalizeItemsRequest));
         return normalizeItemsResult;
     }
 
