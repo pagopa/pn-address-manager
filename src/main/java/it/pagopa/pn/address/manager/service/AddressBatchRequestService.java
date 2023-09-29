@@ -11,9 +11,11 @@ import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.model.InternalCodeSqsDto;
+import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +33,6 @@ import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedExce
 
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.*;
 
@@ -44,6 +45,7 @@ public class AddressBatchRequestService {
     private final AddressBatchRequestRepository addressBatchRequestRepository;
     private final PostelBatchRepository postelBatchRepository;
     private final AddressConverter addressConverter;
+    private final ObjectMapper objectMapper;
     private final CsvService csvService;
     private final SqsService sqsService;
     private final PnSafeStorageClient pnSafeStorageClient;
@@ -56,7 +58,7 @@ public class AddressBatchRequestService {
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
                                       PostelBatchRepository postelBatchRepository,
                                       AddressConverter addressConverter,
-                                      CsvService csvService,
+                                      ObjectMapper objectMapper, CsvService csvService,
                                       SqsService sqsService, PnSafeStorageClient pnSafeStorageClient,
                                       UploadDownloadClient uploadDownloadClient,
                                       PostelClient postelClient,
@@ -65,6 +67,7 @@ public class AddressBatchRequestService {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.addressConverter = addressConverter;
+        this.objectMapper = objectMapper;
         this.csvService = csvService;
         this.sqsService = sqsService;
         this.pnSafeStorageClient = pnSafeStorageClient;
@@ -156,7 +159,21 @@ public class AddressBatchRequestService {
         fileCreationRequestDto.setStatus("PRELOADED");
         fileCreationRequestDto.setDocumentType("PN_ADDRESSES_RAW"); // costante configurabile dall'esterno
 
-        String csvContent = csvService.writeItemsOnCsvToString(requests);
+
+        List<String> normalizeRequestList = requests.stream().map(BatchRequest::getAddresses).toList();
+
+        List<NormalizeRequest> normalizeRequests = normalizeRequestList.stream()
+                        .map(v-> {
+                            try {
+                                return objectMapper.readValue(v, NormalizeRequest.class);
+                            } catch (JsonProcessingException e) {
+                                throw new PnAddressManagerException("", "", 500, ""); // TODO: valorizzare i campi
+                            }
+                        }).toList();
+
+        List<NormalizeRequestPostelInput> normalizeRequestPostelInputList = normalizeRequestToPostelCsvRequest(normalizeRequests);
+
+        String csvContent = csvService.writeItemsOnCsvToString(normalizeRequestPostelInputList);
         String sha256 = computeSha256(csvContent.getBytes());
 
         return pnSafeStorageClient.createFile(fileCreationRequestDto, "cxId")
@@ -165,6 +182,21 @@ public class AddressBatchRequestService {
                     log.error("ADDRESS MANAGER -> POSTEL - failed to create file", e);
                     incrementAndCheckRetry(requests, e, requests.get(0).getBatchId()).then(Mono.error(e));
                 });
+    }
+
+    private List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(List<NormalizeRequest> normalizeRequestList) {
+        return normalizeRequestList.stream()
+                .map(v -> {
+                    NormalizeRequestPostelInput normalizeRequestPostelInput = new NormalizeRequestPostelInput();
+                    normalizeRequestPostelInput.setCap(v.getAddress().getCap());
+                    normalizeRequestPostelInput.setLocalita(v.getAddress().getCity());
+                    normalizeRequestPostelInput.setProvincia(v.getAddress().getPr());
+                    normalizeRequestPostelInput.setIndirizzo(v.getAddress().getAddressRow());
+                    normalizeRequestPostelInput.setStato(v.getAddress().getCountry());
+                    normalizeRequestPostelInput.setLocalitaAggiuntiva("???");
+
+                    return normalizeRequestPostelInput;
+                }).toList();
     }
 
 
@@ -245,7 +277,6 @@ public class AddressBatchRequestService {
     }
 
     private InternalCodeSqsDto toInternalCodeSqsDto(BatchRequest batchRequest) {
-        ObjectMapper objectMapper = new ObjectMapper();
         NormalizeItemsRequest normalizeItemsRequest;
         try {
            normalizeItemsRequest = objectMapper.readValue(batchRequest.getAddresses(), NormalizeItemsRequest.class);

@@ -1,6 +1,5 @@
 package it.pagopa.pn.address.manager.entity;
 
-import it.pagopa.pn.address.manager.constant.BatchRequestConstant;
 import lombok.Data;
 import lombok.Getter;
 import lombok.ToString;
@@ -28,7 +27,7 @@ public class BatchRequest {
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_BATCH_ID),
-            @DynamoDbSecondaryPartitionKey(indexNames = GSI_B)
+            @DynamoDbSecondaryPartitionKey(indexNames = GSI_BL)
     }))
     private String batchId;
 
@@ -49,13 +48,13 @@ public class BatchRequest {
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_STATUS),
-            @DynamoDbSecondaryPartitionKey(indexNames = BatchRequestConstant.GSI_S)
+            @DynamoDbSecondaryPartitionKey(indexNames = GSI_S)
     }))
     private String status;
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_LAST_RESERVED),
-            @DynamoDbSecondarySortKey(indexNames = {GSI_B, GSI_SSL})
+            @DynamoDbSecondarySortKey(indexNames = {GSI_BL, GSI_SSL})
     }))
     private LocalDateTime lastReserved;
 
@@ -65,7 +64,8 @@ public class BatchRequest {
     private String reservationId;
 
     @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_TIMESTAMP)
+            @DynamoDbAttribute(COL_CREATED_AT),
+            @DynamoDbSortKey
     }))
     private LocalDateTime createdAt;
 
@@ -75,6 +75,7 @@ public class BatchRequest {
     }))
     private String sendStatus;
 
+    @ToString.Exclude
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_MESSAGE)
     }))

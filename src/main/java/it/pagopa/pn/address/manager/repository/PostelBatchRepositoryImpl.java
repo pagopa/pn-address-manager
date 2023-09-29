@@ -33,7 +33,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     public PostelBatchRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                      @Value("${pn.address.manager.postel.batch.secondary.table.max-retry}") int maxRetry,
                                      @Value("${pn.address.manager.postel.batch.secondary.table.recovery.after}") int retryAfter) {
-        this.table = dynamoDbEnhancedAsyncClient.table("pn-batchPolling", TableSchema.fromClass(PostelBatch.class));
+        this.table = dynamoDbEnhancedAsyncClient.table("pn-address-manager-postel-batch", TableSchema.fromClass(PostelBatch.class));
         this.maxRetry = maxRetry;
         this.retryAfter = retryAfter;
     }

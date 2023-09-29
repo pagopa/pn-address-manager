@@ -90,7 +90,7 @@ public class NormalizeAddressService {
         }
         batchRequest.setAddresses(requestAsString);
         batchRequest.setClientId(pnAddressManagerCxId);
-        batchRequest.setCorrelationId(correlationId + batchRequest.getCreatedAt());
+        batchRequest.setCorrelationId(correlationId);
 
         return addressBatchRequestRepository.create(batchRequest);
     }

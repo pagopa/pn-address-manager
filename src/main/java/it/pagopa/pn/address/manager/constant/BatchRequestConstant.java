@@ -16,13 +16,13 @@ public final class BatchRequestConstant {
     public static final String COL_STATUS = "status";
     public static final String COL_LAST_RESERVED = "lastReserved";
     public static final String COL_RESERVATION_ID = "reservationId";
-    public static final String COL_TIMESTAMP = "timeStamp";
+    public static final String COL_CREATED_AT = "createdAt";
     public static final String COL_SEND_STATUS = "sendStatus";
     public static final String COL_MESSAGE = "message";
     public static final String COL_XAPIKEY = "xApiKey";
     public static final String COL_CXID = "cxId";
 
-    public static final String GSI_B = "batchId-index";
+    public static final String GSI_BL = "batchId-lastReserved-index";
     public static final String GSI_S = "status-index";
     public static final String GSI_SSL = "sendStatus-lastReserved-index";
 }

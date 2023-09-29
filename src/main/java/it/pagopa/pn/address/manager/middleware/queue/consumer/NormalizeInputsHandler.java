@@ -16,10 +16,10 @@ import java.util.function.Consumer;
 public class NormalizeInputsHandler {
     private final NormalizeAddressService normalizeAddressService;
 
-    private static final String HANDLER_PROCESS = "pnNationalRegistriesGatewayRequestConsumer";
+    private static final String HANDLER_PROCESS = "pnAddressManagerRequestConsumer";
 
     @Bean
-    public Consumer<Message<PnAddressGatewayEvent.Payload>> pnNationalRegistriesGatewayRequestConsumer() {
+    public Consumer<Message<PnAddressGatewayEvent.Payload>> pnAddressManagerRequestConsumer() {
         return message -> {
             log.logStartingProcess(HANDLER_PROCESS);
             log.debug(HANDLER_PROCESS + "- message: {}", message);

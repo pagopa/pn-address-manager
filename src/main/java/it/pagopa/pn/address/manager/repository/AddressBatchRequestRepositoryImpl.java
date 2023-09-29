@@ -38,7 +38,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     public AddressBatchRequestRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                              @Value("${pn.address.manager.postel.batch.request.table.max-retry}") int maxRetry,
                                              @Value("${pn.address.manager.postel.batch.request.recovery.after}") int retryAfter) {
-        this.table = dynamoDbEnhancedAsyncClient.table("pn-batchRequests", TableSchema.fromClass(BatchRequest.class));
+        this.table = dynamoDbEnhancedAsyncClient.table("pn-address-manager-batch-request", TableSchema.fromClass(BatchRequest.class));
         this.maxRetry = maxRetry;
         this.retryAfter = retryAfter;
     }
@@ -66,7 +66,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         QueryEnhancedRequest queryEnhancedRequest = queryEnhancedRequestBuilder.build();
         // modificare il GSI di modo che contenga solo il batch id, eliminare status e lastReserved e tutte le altre
         // colonne legate al flusso di recovery
-        return Mono.from(table.index(GSI_B).query(queryEnhancedRequest));
+        return Mono.from(table.index(GSI_BL).query(queryEnhancedRequest));
     }
 
     @Override
@@ -79,7 +79,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         }
 
         QueryEnhancedRequest queryEnhancedRequest = queryEnhancedRequestBuilder.build();
-        return Mono.from(table.index(GSI_B).query(queryEnhancedRequest));
+        return Mono.from(table.index(GSI_BL).query(queryEnhancedRequest));
     }
 
     @Override
@@ -95,7 +95,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
                 .queryConditional(QueryConditional.keyEqualTo(keyBuilder(batchId)))
                 .build();
 
-        return Flux.from(table.index(GSI_B).query(queryEnhancedRequest).flatMapIterable(Page::items))
+        return Flux.from(table.index(GSI_BL).query(queryEnhancedRequest).flatMapIterable(Page::items))
                 .collectList();
     }
 
