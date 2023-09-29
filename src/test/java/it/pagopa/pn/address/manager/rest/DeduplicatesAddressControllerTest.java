@@ -35,7 +35,7 @@ class DeduplicatesAddressControllerTest {
         deduplicatesResponse.setCorrelationId("correlationId");
         DeduplicatesRequest deduplicateRequest = new DeduplicatesRequest();
         deduplicateRequest.setCorrelationId("correlationId");
-        when(deduplicatesAddressService.deduplicates(deduplicateRequest)).thenReturn(deduplicatesResponse);
+        when(deduplicatesAddressService.deduplicates(deduplicateRequest)).thenReturn(Mono.just(deduplicatesResponse));
         StepVerifier.create(deduplicatesAddressController.deduplicates("cxId", "ApiKey", Mono.just(deduplicateRequest), mock(ServerWebExchange.class)))
                 .expectNext(ResponseEntity.ok().body(deduplicatesResponse)).verifyComplete();
     }
