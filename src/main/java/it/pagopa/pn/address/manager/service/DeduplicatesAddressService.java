@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.client.PagoPaClient;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
+import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
@@ -34,13 +35,18 @@ public class DeduplicatesAddressService {
         this.apiKeyRepository = apiKeyRepository;
     }
 
-    public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request) {
-        if(Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())){
-            return Mono.just(createDeduplicatesResponseByDeduplicatesRequest(request));
-        }
-        return pagoPaClient
-                    .deduplicaOnline(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
-                    .map(risultatoDeduplica -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, request.getCorrelationId()));
+    public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request, String xApiKey) {
+        return checkApiKey(xApiKey)
+                .flatMap(apiKeyModel -> {
+                    if(Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())){
+                        return Mono.just(createDeduplicatesResponseByDeduplicatesRequest(request));
+                    }
+                    return pagoPaClient
+                            .deduplicaOnline(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
+                            .map(risultatoDeduplica -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, request.getCorrelationId()));
+                })
+                .doOnError(Mono::error);
+
     }
 
     private DeduplicatesResponse createDeduplicatesResponseByDeduplicatesRequest(DeduplicatesRequest request){
@@ -53,7 +59,7 @@ public class DeduplicatesAddressService {
         return deduplicatesResponse;
     }
 
-    public void checkApiKey(String xApiKey) {
-        apiKeyRepository.findById(xApiKey);
+    public Mono<ApiKeyModel> checkApiKey(String xApiKey) {
+        return apiKeyRepository.findById(xApiKey);
     }
 }

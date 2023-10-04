@@ -38,9 +38,8 @@ public class DeduplicatesAddressController implements DeduplicatesAddressService
      */
     @Override
     public Mono<ResponseEntity<DeduplicatesResponse>> deduplicates(String pnAddressManagerCxId, String xApiKey, Mono<DeduplicatesRequest> deduplicatesRequest, ServerWebExchange exchange) {
-        deduplicatesAddressService.checkApiKey(xApiKey);
         return deduplicatesRequest
-                .flatMap(deduplicatesAddressService::deduplicates)
+                .flatMap(request -> deduplicatesAddressService.deduplicates(request, xApiKey))
                 .map(deduplicateResponse -> ResponseEntity.ok().body(deduplicateResponse))
                 .publishOn(scheduler);
     }

@@ -1,73 +1,161 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import it.pagopa.pn.address.manager.client.safestorage.UploadDownloadClient;
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
+import it.pagopa.pn.address.manager.entity.CapModel;
+import it.pagopa.pn.address.manager.entity.CountryModel;
+import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
+import it.pagopa.pn.address.manager.repository.CapRepository;
+import it.pagopa.pn.address.manager.repository.CountryRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.HashMap;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import static java.util.stream.Collectors.groupingBy;
+
 @Component
+@Slf4j
 public class PostelBatchService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
     private final PostelBatchRepository postelBatchRepository;
     private final CsvService csvService;
-    private final ObjectMapper objectMapper;
+    private final AddressUtils addressUtils;
+    private final UploadDownloadClient uploadDownloadClient;
+
+    private final PnAddressManagerConfig pnAddressManagerConfig;
+
+    private final AddressBatchRequestService addressBatchRequestService;
+    private final CapRepository capRepository;
+    private final CountryRepository countryRepository;
 
     public PostelBatchService(AddressBatchRequestRepository addressBatchRequestRepository,
                               PostelBatchRepository postelBatchRepository,
                               CsvService csvService,
-                              ObjectMapper objectMapper) {
+                              AddressUtils addressUtils,
+                              UploadDownloadClient uploadDownloadClient,
+                              PnAddressManagerConfig pnAddressManagerConfig,
+                              AddressBatchRequestService addressBatchRequestService,
+                              CapRepository capRepository,
+                              CountryRepository countryRepository) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.csvService = csvService;
-        this.objectMapper = objectMapper;
+        this.addressUtils = addressUtils;
+        this.uploadDownloadClient = uploadDownloadClient;
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
+        this.addressBatchRequestService = addressBatchRequestService;
+        this.capRepository = capRepository;
+        this.countryRepository = countryRepository;
     }
 
-    public Mono<Void> getResponsesFromCsv(byte[] csvFile, String fileKeyInput) {
+    public Mono<Void> getResponse(String url, PostelBatch postelBatch) {
+        return uploadDownloadClient.downloadContent(url)
+                .flatMap(bytes -> {
+                    List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 1);
+                    Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationId(normalizedAddress.getId())));
+                    return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(postelBatch.getBatchId(), BatchStatus.WORKING)
+                            .flatMapIterable(requests -> requests)
+                            .map(batchRequest -> retrieveNormalizedAddressAndSetToBatchRequestMessage(batchRequest, map))
+                            .collectList()
+                            .flatMap(batchRequestList -> addressBatchRequestService.updateBatchRequest(batchRequestList, postelBatch.getBatchId()));
+                })
+                .onErrorResume(throwable -> incrementAndCheckRetry(postelBatch))
+                .then();
+    }
 
-        List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, csvFile, 1);
+    private BatchRequest retrieveNormalizedAddressAndSetToBatchRequestMessage(BatchRequest batchRequest, Map<String, List<NormalizedAddress>> map) {
+        log.info("Start check postel response for normalizeRequest with correlationId: [{}]", batchRequest.getCorrelationId());
+        if (map.get(batchRequest.getCorrelationId()) != null
+                && map.get(batchRequest.getCorrelationId()).size() == addressUtils.getNormalizeRequestFromBatchRequest(batchRequest).size()) {
+            log.info("Postel response for request with correlationId: [{}] is complete", batchRequest.getCorrelationId());
+            batchRequest.setStatus(BatchStatus.WORKED.name());
+            batchRequest.setMessage(verifyPostelAddressResponse(map.get(batchRequest.getCorrelationId()), batchRequest.getCorrelationId()));
+        } else {
+            log.error("Postel response for request with correlationId: [{}] is not complete", batchRequest.getCorrelationId());
+            batchRequest.setStatus(BatchStatus.NOT_WORKED.name());
+        }
+        return batchRequest;
+    }
 
-        return postelBatchRepository.findByFileKey(fileKeyInput)
-                .flatMap(v -> addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(v.getBatchId(), BatchStatus.WORKED))
-                .map(v -> {
-                    List<String> correlationsId = v.stream().map(BatchRequest::getCorrelationId).toList();
-                    Map<String, NormalizeItemsRequest> normalizeItemsRequestMap = new HashMap<>();
-                    for(BatchRequest batchRequest: v) {
-                        NormalizeItemsRequest normalizeItemsRequest;
-                        try {
-                            normalizeItemsRequest = objectMapper.readValue(batchRequest.getAddresses(), NormalizeItemsRequest.class);
-                        } catch (JsonProcessingException e) {
-                            throw new PnAddressManagerException("", "", 500, ""); // TODO: valorizzare i campi
-                        }
-                        normalizeItemsRequestMap.put(normalizeItemsRequest.getCorrelationId(), normalizeItemsRequest);
+    private Mono<Void> incrementAndCheckRetry(PostelBatch postelBatch) {
+        int nextRetry = postelBatch.getRetry() != null ? postelBatch.getRetry() + 1 : 1;
+        postelBatch.setRetry(nextRetry);
+        if (nextRetry >= pnAddressManagerConfig.getPostel().getBatchRequestMaxRetry()) {
+            postelBatch.setStatus(BatchStatus.ERROR.getValue());
+            log.debug("NormalizeAddress - batchId {} - status in {} (retry: {})", postelBatch.getBatchId(), postelBatch.getStatus(), postelBatch.getRetry());
+        }
+        return postelBatchRepository.update(postelBatch)
+                .doOnNext(p -> log.debug("IniPEC - batchId {} -  retry incremented", postelBatch.getBatchId()))
+                .doOnError(e -> log.warn("IniPEC - batchId {} -  failed to increment retry", postelBatch.getBatchId(), e))
+                .filter(batch -> BatchStatus.ERROR.getValue().equals(batch.getStatus()))
+                .flatMap(batch -> addressBatchRequestService.updateBatchRequestFromBatchId(batch, BatchStatus.ERROR));
+    }
+
+    public Mono<PostelBatch> findPostelBatch(String fileKey) {
+        return postelBatchRepository.findByFileKey(fileKey);
+    }
+
+    private String verifyPostelAddressResponse(List<NormalizedAddress> normalizedAddresses, String correlationId) {
+        NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
+        normalizeItemsResult.setCorrelationId(correlationId);
+        normalizeItemsResult.setResultItems(addressUtils.toResultItem(normalizedAddresses));
+        verifyCapAndCountry(normalizeItemsResult.getResultItems());
+        return addressUtils.toJson(normalizeItemsResult);
+    }
+
+    private void verifyCapAndCountry(List<NormalizeResult> resultItems) {
+        resultItems.forEach(item -> {
+                    if (org.apache.commons.lang3.StringUtils.isBlank(item.getNormalizedAddress().getCountry())
+                            || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL")) {
+                        verifyCap(item.getNormalizedAddress().getCap())
+                                .onErrorResume(throwable -> {
+                                    log.error("Verify cap in whitelist result: {}", throwable.getMessage());
+                                    item.setError(throwable.getMessage());
+                                    return Mono.empty();
+                                });
+                    } else {
+                        verifyCountry(item.getNormalizedAddress().getCountry())
+                                .onErrorResume(throwable -> {
+                                    log.error("Verify country in whitelist result: {}", throwable.getMessage());
+                                    item.setError(throwable.getMessage());
+                                    return Mono.empty();
+                                });
                     }
-                    normalizedAddressList.forEach(z -> {
-                        if(!correlationsId.contains(z.getId())) {
-                            // send correlationId request list to input queue for retry
-                        }
-                    });
-
-                    for(String correlationId : correlationsId) {
-                        long batchRequestCount = normalizedAddressList.stream()
-                                .filter(z -> z.getId().equals(correlationId))
-                                .count();
-                        if(batchRequestCount != normalizeItemsRequestMap.get(correlationId).getRequestItems().size()) {
-                            // send correlationId request list to input queue for retry
-                        }
-                    }
-                    return null;
                 });
-
     }
+
+    private Mono<CountryModel> verifyCountry(String country) {
+        return countryRepository.findByName(country)
+                .switchIfEmpty(Mono.error(new Throwable("Country is not present in whitelist")));
+    }
+
+    private Mono<CapModel> verifyCap(String cap) {
+        return capRepository.findValidCap(cap)
+                .switchIfEmpty(Mono.error(new Throwable("Cap is not present in whitelist")))
+                .flatMap(this::checkValidity);
+    }
+
+    private Mono<CapModel> checkValidity(CapModel capModel) {
+        LocalDateTime now = LocalDateTime.now();
+        if(capModel.getStartValidity() != null && capModel.getStartValidity().isAfter(now)){
+            return Mono.error(new Throwable(String.format("Cap is present in whitelist but start validity date is %s", capModel.getStartValidity())));
+        } else if (capModel.getEndValidity() != null && capModel.getEndValidity().isBefore(now)){
+            return Mono.error(new Throwable(String.format("Cap is present in whitelist but end validity date is %s", capModel.getEndValidity())));
+        }
+        return Mono.just(capModel);
+    }
+
 }

@@ -30,7 +30,7 @@ class CsvServiceTest {
             public ClassLoader getClassLoader() {
                 return null;
             }
-        });
+        }, pnAddressManagerConfig);
         Map<String, String> expectedCountryMap = new HashMap<>();
         expectedCountryMap.put("AFGHANISTAN","AFGHANISTAN");
         expectedCountryMap.put("AFRICA DEL SUD","SUDAFRICA");
@@ -52,7 +52,7 @@ class CsvServiceTest {
             public ClassLoader getClassLoader() {
                 return null;
             }
-        });
+        }, pnAddressManagerConfig);
 
         List<CapModel> expectedCapMap = new ArrayList<>();
         expectedCapMap.add(new CapModel("00100", "ROMA", "RM"));

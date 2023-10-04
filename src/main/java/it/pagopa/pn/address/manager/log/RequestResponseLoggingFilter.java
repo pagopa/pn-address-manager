@@ -3,7 +3,6 @@ package it.pagopa.pn.address.manager.log;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.server.reactive.ServerHttpRequest;

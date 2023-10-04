@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.repository;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,16 +27,12 @@ import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.*;
 public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
     private final DynamoDbAsyncTable<PostelBatch> table;
-
-    private final int maxRetry;
-    private final int retryAfter;
+    private final PnAddressManagerConfig pnAddressManagerConfig;
 
     public PostelBatchRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                                     @Value("${pn.address.manager.postel.batch.secondary.table.max-retry}") int maxRetry,
-                                     @Value("${pn.address.manager.postel.batch.secondary.table.recovery.after}") int retryAfter) {
+                                     PnAddressManagerConfig pnAddressManagerConfig) {
         this.table = dynamoDbEnhancedAsyncClient.table("pn-address-manager-postel-batch", TableSchema.fromClass(PostelBatch.class));
-        this.maxRetry = maxRetry;
-        this.retryAfter = retryAfter;
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
     }
 
     @Override
@@ -125,9 +122,9 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
         expressionNames.put("#lastReserved", COL_LAST_RESERVED);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(maxRetry)).build());
+        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getPostel().getBatchSecondaryTableMaxRetry())).build());
         expressionValues.put(":lastReserved", AttributeValue.builder()
-                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(retryAfter).toString())
+                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getPostel().getBatchSecondaryTableRecoveryAfter()).toString())
                 .build());
 
         String expression = "#retry < :retry AND (:lastReserved > #lastReserved OR attribute_not_exists(#lastReserved))";

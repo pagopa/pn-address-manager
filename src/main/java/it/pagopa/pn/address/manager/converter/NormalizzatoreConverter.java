@@ -38,8 +38,10 @@ public class NormalizzatoreConverter {
 	public FileDownloadResponse fileDownloadResponseDtoToFileDownloadResponse (FileDownloadResponseDto fileDownloadResponseDto) {
 		FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
 		FileDownloadInfo fileDownloadInfo = new FileDownloadInfo();
-		fileDownloadInfo.setRetryAfter(fileDownloadResponseDto.getDownload().getRetryAfter());
-		fileDownloadInfo.setUrl(fileDownloadResponseDto.getDownload().getUrl());
+		if(fileDownloadResponseDto.getDownload() != null) {
+			fileDownloadInfo.setRetryAfter(fileDownloadResponseDto.getDownload().getRetryAfter());
+			fileDownloadInfo.setUrl(fileDownloadResponseDto.getDownload().getUrl());
+		}
 		fileDownloadResponse.setDownload(fileDownloadInfo);
 		fileDownloadResponse.setChecksum(fileDownloadResponseDto.getChecksum());
 		fileDownloadResponse.setContentLength(fileDownloadResponseDto.getContentLength());

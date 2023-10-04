@@ -3,7 +3,6 @@ package it.pagopa.pn.address.manager.repository;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;

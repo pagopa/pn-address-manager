@@ -54,7 +54,177 @@ Resources:
       MessageRetentionPeriod: 1209600
       QueueName: !Sub '${ProjectName}-AddressManagerBus-DLQ'
 
+  # Coda per interna per memorizzare richieste al gateway
+  # NB: usati i valori di default per: DelaySeconds, DeadLetterQueueName, MessageRetentionPeriod, MaxReceiveCount, DeadLetterMessageRetentionPeriod,
+  PnAddressManagerInputsQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-address_manager_inputs'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 300
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
+  BatchRequestTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-addressManagerBatchRequests'
+      AttributeDefinitions:
+        - AttributeName: "correlationId"
+          AttributeType: "S"
+        - AttributeName: "createdAt"
+          AttributeType: "S"
+        - AttributeName: "batchId"
+          AttributeType: "S"
+        - AttributeName: "status"
+          AttributeType: "S"
+        - AttributeName: "lastReserved"
+          AttributeType: "S"
+        - AttributeName: "sendStatus"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "correlationId"
+          KeyType: "HASH"
+        - AttributeName: "createdAt"
+          KeyType: "SORT"
+      GlobalSecondaryIndexes:
+        - IndexName: "batchId-lastReserved-index"
+          KeySchema:
+            - AttributeName: batchId
+              KeyType: HASH
+            - AttributeName: lastReserved
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+        - IndexName: "status-index"
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: "sendStatus-lastReserved-index"
+          KeySchema:
+            - AttributeName: sendStatus
+              KeyType: HASH
+            - AttributeName: lastReserved
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      BillingMode: "PAY_PER_REQUEST"
+      SSESpecification:
+        KMSMasterKeyId: !Ref PnBatchRequestEncryptKey
+        SSEEnabled: true
+        SSEType: KMS
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  PostelBatchTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-addressManagerPostelBatch'
+      AttributeDefinitions:
+        - AttributeName: "batchId"
+          AttributeType: "S"
+        - AttributeName: "status"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "batchId"
+          KeyType: "HASH"
+      GlobalSecondaryIndexes:
+        - IndexName: "status-index"
+          KeySchema:
+            - AttributeName: status
+              KeyType: HASH
+            - AttributeName: lastReserved
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  CountryTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-addressManagerCountry'
+      AttributeDefinitions:
+        - AttributeName: "country"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "country"
+          KeyType: "HASH"
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  CapTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-addressManagerCap'
+      AttributeDefinitions:
+        - AttributeName: "cap"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "cap"
+          KeyType: "HASH"
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
+  ApiKeyTable:
+    Type: AWS::DynamoDB::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableName: !Sub '${ProjectName}-addressManagerApikey'
+      AttributeDefinitions:
+        - AttributeName: "apiKey"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "apiKey"
+          KeyType: "HASH"
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+      BillingMode: "PAY_PER_REQUEST"
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+
 Outputs:
+  ApiKeyTableArn:
+    Value: !Sub '${ApiKeyTable.Arn}'
+  CapTableArn:
+    Value: !Sub '${CapTable.Arn}'
+  CountryTableArn:
+    Value: !Sub '${CountryTable.Arn}'
+  PostelBatchTableArn:
+    Value: !Sub '${PostelBatchTable.Arn}'
+  BatchRequestTableArn:
+    Value: !Sub '${BatchRequestTable.Arn}'
   EcsLogGroup:
     Value: !GetAtt PnAddressManagerLogGroup.Outputs.LogGroupName
   AddressManagerEventBusArn:
@@ -67,3 +237,15 @@ Outputs:
     Value: !GetAtt AddressManagerEventBusDLQ.QueueName
   AddressManagerEventBusDLQUrl:
     Value: !GetAtt AddressManagerEventBusDLQ.QueueUrl
+
+  # PnAddressManagerInputs Queue
+  PnAddressManagerInputsQueueName:
+    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.QueueName
+  PnAddressManagerInputsQueueARN:
+    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.QueueARN
+  PnAddressManagerInputsDLQName:
+    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.DeadLetterQueueName
+  PnAddressManagerInputsDLQURL:
+    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.DeadLetterQueueURL
+  NationalRegistryGatewayInputsDLQARN:
+    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.DeadLetterQueueARN

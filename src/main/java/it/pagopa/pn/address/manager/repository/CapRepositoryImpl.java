@@ -1,8 +1,8 @@
 package it.pagopa.pn.address.manager.repository;
 
-import it.pagopa.pn.address.manager.entity.CAPModel;
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.entity.CapModel;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -17,20 +17,20 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 @lombok.CustomLog
 public class CapRepositoryImpl implements CapRepository {
 
-    private final DynamoDbAsyncTable<CAPModel> table;
+    private final DynamoDbAsyncTable<CapModel> table;
 
     public CapRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient,
-                             @Value("${pn.address.manager.dynamodb.tablename.cap}") String tableName) {
-        this.table = dynamoDbEnhancedClient.table(tableName, TableSchema.fromBean(CAPModel.class));
+                             PnAddressManagerConfig pnAddressManagerConfig) {
+        this.table = dynamoDbEnhancedClient.table(pnAddressManagerConfig.getDynamoDB().getTableNameCap(), TableSchema.fromBean(CapModel.class));
     }
 
     @Override
-    public Mono<CAPModel> findByCap(String id){
+    public Mono<CapModel> findValidCap(String cap){
         Key key = Key.builder()
-                .partitionValue(id)
+                .partitionValue(cap)
                 .build();
         return Mono.fromFuture(table.getItem(key))
-                .switchIfEmpty(Mono.error(new PnAddressManagerException(CAP_DOES_NOT_EXISTS, CAP_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Cap not found")));
+                .switchIfEmpty(Mono.error(new PnAddressManagerException(CAP_DOES_NOT_EXISTS, CAP_DOES_NOT_EXISTS, HttpStatus.NOT_FOUND.value(), "Cap not found")));
 
     }
 }

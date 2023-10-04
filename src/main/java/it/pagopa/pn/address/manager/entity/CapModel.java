@@ -7,15 +7,18 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttri
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 
+import java.time.LocalDateTime;
+
 @Data
-@NoArgsConstructor
 @DynamoDbBean
-public class CAPModel {
+public class CapModel {
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute("cap")}))
     private String cap;
 
-    public CAPModel(CAPModel model) {
-        cap = model.cap;
-    }
+    @Getter(onMethod=@__({@DynamoDbAttribute("startValidity")}))
+    private LocalDateTime startValidity;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute("endValidity")}))
+    private LocalDateTime endValidity;
 }

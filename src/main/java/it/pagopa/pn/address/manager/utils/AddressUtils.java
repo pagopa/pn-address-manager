@@ -8,10 +8,7 @@ import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
-import it.pagopa.pn.address.manager.model.CapModel;
-import it.pagopa.pn.address.manager.model.NormalizeRequestList;
-import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
-import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
+import it.pagopa.pn.address.manager.model.*;
 import it.pagopa.pn.address.manager.service.CsvService;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import org.apache.commons.lang3.StringUtils;
@@ -179,23 +176,26 @@ public class AddressUtils {
 
     public List<NormalizeRequestPostelInput> toNormalizeRequestPostelInput(List<NormalizeRequest> normalizeRequestList, String correlationId) {
         return normalizeRequestList.stream()
-                .map(v -> {
+                .map(normalizeRequest -> {
                     NormalizeRequestPostelInput normalizeRequestPostelInput = new NormalizeRequestPostelInput();
-                    normalizeRequestPostelInput.setIdCodiceCliente(correlationId + "#" + v.getId());
-                    normalizeRequestPostelInput.setCap(v.getAddress().getCap());
-                    normalizeRequestPostelInput.setLocalita(v.getAddress().getCity());
-                    normalizeRequestPostelInput.setProvincia(v.getAddress().getPr());
-                    normalizeRequestPostelInput.setIndirizzo(v.getAddress().getAddressRow());
-                    normalizeRequestPostelInput.setStato(v.getAddress().getCountry());
-                    normalizeRequestPostelInput.setLocalitaAggiuntiva("???");
+                    normalizeRequestPostelInput.setIdCodiceCliente(correlationId + "#" + normalizeRequest.getId());
+                    normalizeRequestPostelInput.setCap(normalizeRequest.getAddress().getCap());
+                    normalizeRequestPostelInput.setLocalita(normalizeRequest.getAddress().getCity());
+                    normalizeRequestPostelInput.setProvincia(normalizeRequest.getAddress().getPr());
+                    normalizeRequestPostelInput.setIndirizzo(normalizeRequest.getAddress().getAddressRow());
+                    normalizeRequestPostelInput.setStato(normalizeRequest.getAddress().getCountry());
+                    normalizeRequestPostelInput.setLocalitaAggiuntiva(normalizeRequest.getAddress().getCity2());
 
                     return normalizeRequestPostelInput;
                 }).toList();
     }
 
+    public List<NormalizeRequest> getNormalizeRequestFromBatchRequest(BatchRequest batchRequest){
+        return toObject(batchRequest.getAddresses(), NormalizeRequestList.class).getNormalizeRequests();
+    }
+
     public List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(BatchRequest batchRequest) {
-        NormalizeRequestList normalizeRequestList = toObject(batchRequest.getAddresses(), NormalizeRequestList.class);
-        return toNormalizeRequestPostelInput(normalizeRequestList.getNormalizeRequests(), batchRequest.getCorrelationId());
+        return toNormalizeRequestPostelInput(getNormalizeRequestFromBatchRequest(batchRequest), batchRequest.getCorrelationId());
     }
 
     public String computeSha256(byte[] content) {
@@ -261,5 +261,43 @@ public class AddressUtils {
         AcceptedResponse acceptedResponse = new AcceptedResponse();
         acceptedResponse.setCorrelationId(normalizeItemsRequest.getCorrelationId());
         return acceptedResponse;
+    }
+
+    public List<NormalizeResult> toResultItem(List<NormalizedAddress> normalizedAddresses) {
+        return normalizedAddresses.stream().map(normalizedAddress -> {
+            NormalizeResult result = new NormalizeResult();
+            result.setId(normalizedAddress.getId().split("#")[1]);
+            if (normalizedAddress.getNRisultatoNorm() == 0 || normalizedAddress.getFPostalizzabile() == 0) {
+                result.setError(decodeErrorErroreNorm(normalizedAddress.getNErroreNorm()));
+            } else {
+                result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
+            }
+            return result;
+        }).toList();
+    }
+
+    private String decodeErrorErroreNorm(Integer nErroreNorm) {
+        //TODO: attendere decodifiche da postel
+        return "ERRORE";
+    }
+
+    private AnalogAddress toAnalogAddress(NormalizedAddress normalizedAddress) {
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow(normalizedAddress.getSViaCompletaSpedizione());
+        analogAddress.setAddressRow2(normalizedAddress.getSCivicoAltro());
+        analogAddress.setCap(normalizedAddress.getSCap());
+        analogAddress.setCity(normalizedAddress.getSComuneSpedizione());
+        analogAddress.setCity2(normalizedAddress.getSFrazioneSpedizione());
+        analogAddress.setPr(normalizedAddress.getSSiglaProv());
+        analogAddress.setCountry(normalizedAddress.getSStatoSpedizione());
+        return analogAddress;
+    }
+
+
+    public String getCorrelationId(String id) {
+        if (org.springframework.util.StringUtils.hasText(id)) {
+            return id.split("#")[0];
+        }
+        return "noCorrelationId";
     }
 }

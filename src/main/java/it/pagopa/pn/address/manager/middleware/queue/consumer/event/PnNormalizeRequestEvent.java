@@ -4,10 +4,8 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeIte
 import it.pagopa.pn.api.dto.events.GenericEvent;
 import it.pagopa.pn.api.dto.events.StandardEventHeader;
 import lombok.*;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.NotEmpty;
-import java.util.Date;
 
 @Getter
 @Builder
@@ -15,7 +13,7 @@ import java.util.Date;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class PnAddressGatewayEvent implements GenericEvent<StandardEventHeader, PnAddressGatewayEvent.Payload> {
+public class PnNormalizeRequestEvent implements GenericEvent<StandardEventHeader, PnNormalizeRequestEvent.Payload> {
 
     private StandardEventHeader header;
 

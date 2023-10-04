@@ -6,7 +6,6 @@ import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import software.amazon.awssdk.services.sqs.endpoints.internal.Value;
 
 @Getter
 @Configuration

@@ -191,6 +191,42 @@ Parameters:
     Description: 'Physical address validation. Allowed Characters'
     Default: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
 
+  PnAddressManagerInputsQueueName:
+    Type: String
+    Description: 'Name for NationalRegistryGatewayInputs'
+
+  PnAddressManagerInputsQueueARN:
+    Type: String
+    Description: 'ARN for NationalRegistryGatewayInputs'
+
+  PnAddressManagerInputsDLQName:
+    Type: String
+    Description: 'Queue name for PnAddressManagerInputsDLQ'
+
+  PnAddressManagerInputsDLQARN:
+    Type: String
+    Description: 'DLQ ARN for PnAddressManagerInputs'
+
+  BatchRequestTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table BatchRequest'
+
+  PostelBatchTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table PostelBatch'
+
+  CountryTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table addressManagerCountry'
+
+  CapTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table AddressManagerCap'
+
+  ApiKeyTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table AddressManagerApiKey'
+
 Resources:
 
   # PN-address-manager microservice
@@ -224,6 +260,9 @@ Resources:
         ContainerEnvEntry6: !Sub 'PN_ADDRESS_MANAGER_CAP_CSV=${CapCsv}'
         ContainerEnvEntry7: !Sub 'PN_ADDRESS_MANAGER_ENABLE_PATTERN_VALIDATION=${EnablePatternValidation}'
         ContainerEnvEntry8: !Sub 'PN_ADDRESS_MANAGER_VALIDATION_PATTERN=${PhysicalAddressValidationCharsValue}'
+        ContainerEnvEntry9: !Sub 'PN_ADDRESS_MANAGER_TOPICS_GATEWAYEVENTS=${PnAddressManagerInputsQueueName}'
+        ContainerEnvEntry10: !Sub 'PN_ADDRESS_MANAGER_INPUT_QUEUE_NAME=${PnAddressManagerInputsQueueName}'
+        ContainerEnvEntry11: !Sub 'PN_ADDRESS_MANAGER_INPUT_DLQ_QUEUE_NAME=${PnAddressManagerInputsDLQName}'
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -268,6 +307,32 @@ Resources:
               - events:PutEvents
             Resource:
               - !Ref AddressManagerEventBusArn
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+              - sqs:GetQueueUrl
+              - sqs:ChangeMessageVisibility
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ReceiveMessage
+            Resource:
+              - !Ref PnAddressManagerInputsDLQARN
+              - !Ref PnAddressManagerInputsQueueARN
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+              - dynamodb:PutItem
+            Resource:
+              - !Ref CountryTableArn
+              - !Ref CapTableArn
+              - !Ref ApiKeyTableArn
+              - !Ref BatchRequestTableArn
+              - !Ref PostelBatchTableArn
+              - !Sub '${BatchRequestTableArn}/index/*'
+              - !Sub '${PostelBatchTableArn}/index/*'
 
   ###################
   ### EventBridge ###

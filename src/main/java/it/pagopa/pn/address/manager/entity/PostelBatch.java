@@ -18,13 +18,13 @@ import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.*;
 public class PostelBatch {
 
     @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_BATCH_ID)
+            @DynamoDbAttribute(COL_BATCH_ID),
+            @DynamoDbPartitionKey
     }))
     private String batchId;
 
     @Getter(onMethod = @__({
-            @DynamoDbPartitionKey,
-            @DynamoDbAttribute(PK),
+            @DynamoDbAttribute(COL_FILE_KEY),
     }))
     private String fileKey;
 

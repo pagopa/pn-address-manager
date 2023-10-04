@@ -6,8 +6,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class PostelBatchConstant {
 
-    public static final String PK = "fileKey";
-
     public static final String COL_FILE_KEY = "fileKey";
     public static final String COL_RETRY = "retry";
     public static final String COL_BATCH_ID = "batchId";
@@ -17,5 +15,5 @@ public final class PostelBatchConstant {
     public static final String COL_RESERVATION_ID = "reservationId";
     public static final String COL_LAST_RESERVED = "lastReserved";
     public static final String COL_TIMESTAMP = "timeStamp";
-    public static final String GSI_S = "status-lastReserved-index";
+    public static final String GSI_S = "status-index";
 }

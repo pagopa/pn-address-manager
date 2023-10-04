@@ -58,7 +58,7 @@ public class AddressConverter {
     @NotNull
     private static SlaveIn getSlaveIn(DeduplicatesRequest deduplicatesRequest) {
         SlaveIn slaveIn = new SlaveIn();
-        slaveIn.setId(deduplicatesRequest.getCorrelationId()); // id??
+        slaveIn.setId(deduplicatesRequest.getCorrelationId());
         slaveIn.setProvincia(deduplicatesRequest.getTargetAddress().getPr());
         slaveIn.setLocalita(deduplicatesRequest.getTargetAddress().getCity());
         slaveIn.setIndirizzo(deduplicatesRequest.getTargetAddress().getAddressRow() + " " + deduplicatesRequest.getTargetAddress().getAddressRow2());

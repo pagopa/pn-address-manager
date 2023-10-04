@@ -55,7 +55,7 @@ class NormalizeAddressServiceTest {
         when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
-        StepVerifier.create(normalizeAddressService.normalizeAddressAsync("xApiKey", "cxId", normalizeItemsRequest))
+        StepVerifier.create(normalizeAddressService.normalizeAddress("xApiKey", "cxId", normalizeItemsRequest))
                 .expectNext(acceptedResponse).verifyComplete();
     }
 
@@ -68,7 +68,7 @@ class NormalizeAddressServiceTest {
         when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
-        StepVerifier.create(normalizeAddressService.normalizeAddressAsync("xApiKey", "cxId", normalizeItemsRequest))
+        StepVerifier.create(normalizeAddressService.normalizeAddress("xApiKey", "cxId", normalizeItemsRequest))
                 .expectNext(acceptedResponse).verifyComplete();
     }
 }

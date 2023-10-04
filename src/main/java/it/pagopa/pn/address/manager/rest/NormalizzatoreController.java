@@ -39,7 +39,7 @@ public class NormalizzatoreController implements NormalizzatoreApi {
     @Override
     public Mono<ResponseEntity<CallbackResponseData>> callbackNormalizedAddress(String pnAddressManagerCxId, String xApiKey, Mono<CallbackRequestData> callbackRequestData, final ServerWebExchange exchange) {
         return callbackRequestData
-                .flatMap(v -> normalizzatoreService.callbackNormalizedAddress(v, pnAddressManagerCxId))
+                .flatMap(requestData -> normalizzatoreService.callbackNormalizedAddress(requestData, pnAddressManagerCxId))
                 .map(callbackResponseData -> ResponseEntity.ok().body(callbackResponseData))
                 .publishOn(scheduler);
     }

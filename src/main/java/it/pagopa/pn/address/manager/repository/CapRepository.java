@@ -1,8 +1,9 @@
 package it.pagopa.pn.address.manager.repository;
 
-import it.pagopa.pn.address.manager.entity.CAPModel;
+import it.pagopa.pn.address.manager.entity.CapModel;
 import reactor.core.publisher.Mono;
 
 public interface CapRepository {
-    Mono<CAPModel> findByCap(String cap);
+
+    Mono<CapModel> findValidCap(String cap);
 }

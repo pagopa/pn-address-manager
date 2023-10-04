@@ -30,6 +30,7 @@ import lombok.Data;
 })
 @JsonTypeName("NormalizedAddress")
 public class NormalizedAddress {
+
     public static final String JSON_PROPERTY_ID = "id";
     private String id;
 
@@ -43,7 +44,7 @@ public class NormalizedAddress {
     private String sSiglaProv;
 
     public static final String JSON_PROPERTY_F_POSTALIZZABILE = "fPostalizzabile";
-    private String fPostalizzabile;
+    private Integer fPostalizzabile;
 
     public static final String JSON_PROPERTY_S_STATO_UFF = "sStatoUff";
     private String sStatoUff;

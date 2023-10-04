@@ -1,8 +1,8 @@
 package it.pagopa.pn.address.manager.repository;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
@@ -22,10 +22,8 @@ import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
 @Component
 public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRepository {
 
+    private final PnAddressManagerConfig pnAddressManagerConfig;
     private final DynamoDbAsyncTable<BatchRequest> table;
-
-    private final int maxRetry;
-    private final int retryAfter;
 
     private static final String STATUS_ALIAS = "#status";
     private static final String STATUS_PLACEHOLDER = ":status";
@@ -36,11 +34,9 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     private static final String LAST_RESERVED_EQ = LAST_RESERVED_ALIAS + " = " + LAST_RESERVED_PLACEHOLDER;
 
     public AddressBatchRequestRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                                             @Value("${pn.address.manager.postel.batch.request.table.max-retry}") int maxRetry,
-                                             @Value("${pn.address.manager.postel.batch.request.recovery.after}") int retryAfter) {
+                                             PnAddressManagerConfig pnAddressManagerConfig) {
         this.table = dynamoDbEnhancedAsyncClient.table("pn-address-manager-batch-request", TableSchema.fromClass(BatchRequest.class));
-        this.maxRetry = maxRetry;
-        this.retryAfter = retryAfter;
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
     }
 
     @Override
@@ -162,14 +158,14 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(maxRetry)).build());
+        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getPostel().getBatchRequestMaxRetry())).build());
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, AttributeValue.builder()
-                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(retryAfter).toString())
+                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getPostel().getBatchRequestRecoveryAfter()).toString())
                 .build());
 
         String expression = "#retry < :retry AND (:lastReserved > #lastReserved OR attribute_not_exists(#lastReserved))";
 
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(keyBuilder(BatchStatus.WORKING.getValue()));
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(keyBuilder(BatchStatus.TAKEN_CHARGE.getValue()));
 
         QueryEnhancedRequest queryEnhancedRequest = QueryEnhancedRequest.builder()
                 .queryConditional(queryConditional)
@@ -185,7 +181,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         Key key = Key.builder()
                 .partitionValue(BatchStatus.NOT_SENT.getValue())
                 .sortValue(AttributeValue.builder()
-                        .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(retryAfter).toString())
+                        .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getPostel().getBatchRequestRecoveryAfter()).toString())
                         .build())
                 .build();
 

@@ -1,41 +1,41 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import it.pagopa.pn.address.manager.client.PostelClient;
-import it.pagopa.pn.address.manager.client.safestorage.PnSafeStorageClient;
-import it.pagopa.pn.address.manager.client.safestorage.UploadDownloadClient;
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
-import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.address.manager.model.InternalCodeSqsDto;
-import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
+import it.pagopa.pn.address.manager.model.NormalizeRequestList;
+import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
-import org.springframework.util.Base64Utils;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.function.Tuple2;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
-import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
 
+import static it.pagopa.pn.address.manager.constant.BatchStatus.NOT_WORKED;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
@@ -45,39 +45,35 @@ public class AddressBatchRequestService {
     private final AddressBatchRequestRepository addressBatchRequestRepository;
     private final PostelBatchRepository postelBatchRepository;
     private final AddressConverter addressConverter;
-    private final ObjectMapper objectMapper;
-    private final CsvService csvService;
     private final SqsService sqsService;
-    private final PnSafeStorageClient pnSafeStorageClient;
-    private final UploadDownloadClient uploadDownloadClient;
     private final PostelClient postelClient;
-    private final int maxRetry;
+    private final SafeStorageService safeStorageService;
+    private final PnAddressManagerConfig pnAddressManagerConfig;
+    private final EventService eventService;
 
-    private final int maxBatchRequestSize;
+    private final AddressUtils addressUtils;
 
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
                                       PostelBatchRepository postelBatchRepository,
                                       AddressConverter addressConverter,
-                                      ObjectMapper objectMapper, CsvService csvService,
-                                      SqsService sqsService, PnSafeStorageClient pnSafeStorageClient,
-                                      UploadDownloadClient uploadDownloadClient,
+                                      SqsService sqsService,
                                       PostelClient postelClient,
-                                      @Value("${pn.address.manager.postel.batch.request.max-retry}") int maxRetry,
-                                      @Value("${pn.address.manager.postel.batch.request.max-size}") int maxBatchRequestSize) {
+                                      SafeStorageService safeStorageService,
+                                      PnAddressManagerConfig pnAddressManagerConfig,
+                                      EventService eventService,
+                                      AddressUtils addressUtils) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.addressConverter = addressConverter;
-        this.objectMapper = objectMapper;
-        this.csvService = csvService;
+        this.safeStorageService = safeStorageService;
         this.sqsService = sqsService;
-        this.pnSafeStorageClient = pnSafeStorageClient;
-        this.uploadDownloadClient = uploadDownloadClient;
         this.postelClient = postelClient;
-        this.maxRetry = maxRetry;
-        this.maxBatchRequestSize = maxBatchRequestSize;
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
+        this.eventService = eventService;
+        this.addressUtils = addressUtils;
     }
 
-    @Scheduled(fixedDelayString = "${pn.address.manager.postel.batch.request.delay}")
+    @Scheduled(fixedDelayString = "${pn.address-manager.postel.batch-request-delay}")
     public void batchAddressRequest() {
         log.trace("ADDRESS MANAGER -> POSTEL - batchPecRequest start");
         Page<BatchRequest> page;
@@ -97,28 +93,9 @@ public class AddressBatchRequestService {
         log.trace("ADDRESS MANAGER -> POSTEL - batchPecRequest end");
     }
 
-    @Scheduled(fixedDelayString = "${pn.address.manager.postel.batch.request.recovery.delay}")
-    public void recoveryBatchRequest() {
-        log.trace("ADDRESS MANAGER -> POSTEL - recoveryBatchRequest start");
-        addressBatchRequestRepository.getBatchRequestToRecovery()
-                .flatMapIterable(requests -> requests)
-                .doOnNext(request -> {
-                    request.setStatus(BatchStatus.NOT_WORKED.getValue());
-                    request.setBatchId(BatchStatus.NO_BATCH_ID.getValue());
-                })
-                .flatMap(request -> addressBatchRequestRepository.resetBatchRequestForRecovery(request)
-                        .doOnError(ConditionalCheckFailedException.class,
-                                e -> log.info("ADDRESS MANAGER -> POSTEL - conditional check failed - skip recovery correlationId: {}", request.getCorrelationId(), e))
-                        .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty()))
-                .count()
-                .doOnNext(c -> batchAddressRequest())
-                .subscribe(c -> log.info("ADDRESS MANAGER -> POSTEL - executed batch recovery on {} requests", c),
-                        e -> log.error("ADDRESS MANAGER -> POSTEL - failed execution of batch request recovery", e));
-        log.trace("ADDRESS MANAGER -> POSTEL - recoveryBatchRequest end");
-    }
 
     private Page<BatchRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
-        return addressBatchRequestRepository.getBatchRequestByNotBatchId(lastEvaluatedKey, maxBatchRequestSize)
+        return addressBatchRequestRepository.getBatchRequestByNotBatchId(lastEvaluatedKey, pnAddressManagerConfig.getPostel().getBatchRequestMaxSize())
                 .blockOptional()
                 .orElseThrow(() -> {
                     log.warn("ADDRESS MANAGER -> POSTEL - can not get batch request - DynamoDB Mono<Page> is null");
@@ -130,8 +107,9 @@ public class AddressBatchRequestService {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         return Flux.fromStream(items.stream())
                 .doOnNext(item -> {
-                    item.setStatus(BatchStatus.TAKEN_CHARGE.getValue());
+                    MDC.put("AWS_messageId", item.getAwsMessageId());
                     item.setBatchId(batchId);
+                    item.setStatus(BatchStatus.TAKEN_CHARGE.name());
                     item.setLastReserved(now);
                 })
                 .flatMap(item -> addressBatchRequestRepository.setNewBatchIdToBatchRequest(item)
@@ -140,79 +118,47 @@ public class AddressBatchRequestService {
                         .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty()))
                 .collectList()
                 .filter(requests -> !requests.isEmpty())
-                .zipWhen(this::callSelfStorageCreateFileAndUpload)
-                .flatMap(t -> createPostelBatch(t.getT2().getKey(), batchId)
-                            .onErrorResume(v -> incrementAndCheckRetry(t.getT1(), v, batchId).then(Mono.error(v)))
-                            .flatMap(response -> postelClient.activatePostel(t.getT2().getKey())
-                            .thenReturn(t.getT1())
-                )
-                .doOnNext(requests -> log.info("ADDRESS MANAGER -> POSTEL - batchId {} - call activation service", batchId))
-                .doOnError(e -> log.error("ADDRESS MANAGER -> POSTEL - batchId {} - failed to execute batch", batchId, e))
-                .onErrorResume(e -> Mono.empty())
-                .then());
+                .zipWhen(safeStorageService::callSelfStorageCreateFileAndUpload)
+                .flatMap(t -> activatePostelBatch(t, batchId));
     }
 
-    private Mono<FileCreationResponseDto> callSelfStorageCreateFileAndUpload(List<BatchRequest> requests) {
-
-        FileCreationRequestDto fileCreationRequestDto = new FileCreationRequestDto();
-        fileCreationRequestDto.setContentType("text/csv");
-        fileCreationRequestDto.setStatus("PRELOADED");
-        fileCreationRequestDto.setDocumentType("PN_ADDRESSES_RAW"); // costante configurabile dall'esterno
-
-
-        List<String> normalizeRequestList = requests.stream().map(BatchRequest::getAddresses).toList();
-
-        List<NormalizeRequest> normalizeRequests = normalizeRequestList.stream()
-                        .map(v-> {
-                            try {
-                                return objectMapper.readValue(v, NormalizeRequest.class);
-                            } catch (JsonProcessingException e) {
-                                throw new PnAddressManagerException("", "", 500, ""); // TODO: valorizzare i campi
-                            }
-                        }).toList();
-
-        List<NormalizeRequestPostelInput> normalizeRequestPostelInputList = normalizeRequestToPostelCsvRequest(normalizeRequests);
-
-        String csvContent = csvService.writeItemsOnCsvToString(normalizeRequestPostelInputList);
-        String sha256 = computeSha256(csvContent.getBytes());
-
-        return pnSafeStorageClient.createFile(fileCreationRequestDto, "cxId")
-                .doOnNext(fileCreationResponseDto -> uploadDownloadClient.uploadContent(csvContent, fileCreationResponseDto, sha256))
-                .doOnError(e -> {
-                    log.error("ADDRESS MANAGER -> POSTEL - failed to create file", e);
-                    incrementAndCheckRetry(requests, e, requests.get(0).getBatchId()).then(Mono.error(e));
-                });
+    private Mono<Void> activatePostelBatch(Tuple2<List<BatchRequest>, FileCreationResponseDto> t, String batchId) {
+        return createPostelBatch(t.getT2().getKey(), batchId)
+                .onErrorResume(v -> incrementAndCheckRetry(t.getT1(), v, batchId).then(Mono.error(v)))
+                .flatMap(response -> postelClient.activatePostel(t.getT2().getKey())
+                        .map(activatePostelResponse -> {
+                            log.info("ADDRESS MANAGER -> POSTEL - batchId {} - called activation service", batchId);
+                            return updatePostelBatch(response, BatchStatus.WORKING);
+                        })
+                        .doOnError(e -> log.error("ADDRESS MANAGER -> POSTEL - batchId {} - failed to execute batch", batchId, e))
+                        .onErrorResume(e -> Mono.empty())
+                        .then());
     }
 
-    private List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(List<NormalizeRequest> normalizeRequestList) {
-        return normalizeRequestList.stream()
-                .map(v -> {
-                    NormalizeRequestPostelInput normalizeRequestPostelInput = new NormalizeRequestPostelInput();
-                    normalizeRequestPostelInput.setCap(v.getAddress().getCap());
-                    normalizeRequestPostelInput.setLocalita(v.getAddress().getCity());
-                    normalizeRequestPostelInput.setProvincia(v.getAddress().getPr());
-                    normalizeRequestPostelInput.setIndirizzo(v.getAddress().getAddressRow());
-                    normalizeRequestPostelInput.setStato(v.getAddress().getCountry());
-                    normalizeRequestPostelInput.setLocalitaAggiuntiva("???");
-
-                    return normalizeRequestPostelInput;
-                }).toList();
+    private Mono<Void> updatePostelBatch(PostelBatch postelBatch, BatchStatus status) {
+        log.info("ADDRESS MANAGER -> POSTEL - batchId {} - update PostelBatch with status: {}", postelBatch.getBatchId(), status);
+        postelBatch.setStatus(status.name());
+        return postelBatchRepository.update(postelBatch)
+                .doOnNext(polling -> log.debug("ADDRESS MANAGER -> POSTEL - batchId {} - updated PostelBatch with status: {}", postelBatch.getBatchId(), status))
+                .then();
     }
 
 
-    private Mono<Void> createPostelBatch(String fileKey, String batchId) {
+    private Mono<PostelBatch> createPostelBatch(String fileKey, String batchId) {
         log.info("ADDRESS MANAGER -> POSTEL - batchId {} - creating PostelBatch with fileKey: {}", batchId, fileKey);
         return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(batchId, fileKey))
                 .flatMap(polling -> {
                     log.debug("ADDRESS MANAGER -> POSTEL - batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey);
-                    return setBatchRequestStatusToWorking(batchId);
-                })
-                .doOnNext(polling -> log.debug("ADDRESS MANAGER -> POSTEL - batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey))
-                .doOnError(e -> log.warn("ADDRESS MANAGER -> POSTEL - batchId {} - failed to create PostelBatch with fileKey: {}", batchId, fileKey, e))
-                .then();
+                    return setBatchRequestStatusToWorking(batchId)
+                            .map(batchRequests -> {
+                                log.debug("ADDRESS MANAGER -> POSTEL - batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey);
+                                return polling;
+                            })
+                            .doOnError(e -> log.warn("ADDRESS MANAGER -> POSTEL - batchId {} - failed to create PostelBatch with fileKey: {}", batchId, fileKey, e));
+                });
     }
 
-    private Mono<Void> setBatchRequestStatusToWorking(String batchId) {
+    private Mono<List<BatchRequest>> setBatchRequestStatusToWorking(String batchId) {
         return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batchId, BatchStatus.TAKEN_CHARGE)
                 .doOnNext(requests -> log.debug("ADDRESS MANAGER -> POSTEL - batchId {} - updating {} requests in status {}", batchId, requests.size(), BatchStatus.WORKING))
                 .flatMapIterable(requests -> requests)
@@ -220,33 +166,18 @@ public class AddressBatchRequestService {
                 .flatMap(addressBatchRequestRepository::update)
                 .doOnNext(r -> log.debug("ADDRESS MANAGER -> POSTEL - correlationId {} - set status in {}", r.getCorrelationId(), r.getStatus()))
                 .doOnError(e -> log.warn("ADDRESS MANAGER -> POSTEL - batchId {} - failed to set request in status {}", batchId, BatchStatus.WORKING, e))
-                .collectList()
-                .then();
-    }
-
-    private String computeSha256(byte[] content) {
-
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] encodedHash = digest.digest(content);
-            return bytesToBase64(encodedHash);
-        } catch (Exception e) {
-            throw new PnAddressManagerException("", "", 500, ""); // TODO: valorizzare
-        }
-    }
-
-    private static String bytesToBase64(byte[] hash) {
-        return Base64Utils.encodeToString(hash);
+                .collectList();
     }
 
 
-    private Mono<Void> incrementAndCheckRetry(List<BatchRequest> requests, Throwable throwable, String batchId) {
+    protected Mono<Void> incrementAndCheckRetry(List<BatchRequest> requests, Throwable throwable, String batchId) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         return Flux.fromStream(requests.stream())
                 .doOnNext(r -> {
                     int nextRetry = (r.getRetry() != null) ? (r.getRetry() + 1) : 1;
                     r.setRetry(nextRetry);
-                    if (nextRetry >= maxRetry || (throwable instanceof PnAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())) {
+                    if (nextRetry >= pnAddressManagerConfig.getPostel().getBatchRequestMaxRetry()
+                            || (throwable instanceof PnAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())) {
                         r.setStatus(BatchStatus.ERROR.getValue());
                         r.setLastReserved(now);
                         log.debug("ADDRESS MANAGER -> POSTEL - batchId {} - request {} status in {} (retry: {})", batchId, r.getCorrelationId(), r.getStatus(), r.getRetry());
@@ -260,35 +191,36 @@ public class AddressBatchRequestService {
                 .filter(l -> !l.isEmpty())
                 .flatMap(l -> {
                     log.debug("ADDRESS MANAGER -> POSTEL - there is at least one request in ERROR - call batch to send to SQS");
-                    return sendListToDlqQueue(l);
+                    return sqsService.sendListToDlqQueue(l);
                 });
     }
 
-    public Mono<Void> sendListToDlqQueue(List<BatchRequest> batchRequests) {
+    public Mono<Void> updateBatchRequest(List<BatchRequest> batchRequests, String batchId) {
         return Flux.fromIterable(batchRequests)
-                .map(this::sendToDlqQueue)
+                .flatMap(addressBatchRequestRepository::update)
+                .doOnNext(request -> log.debug("Normalize Address - correlationId {} - set status in {}", request.getCorrelationId(), request.getStatus()))
+                .flatMap(this::decodeStatus)
+                .filter(request -> NOT_WORKED.getValue().equalsIgnoreCase(request.getStatus()))
+                .collectList()
+                .filter(l -> !l.isEmpty())
+                .flatMap(batchRequestList -> incrementAndCheckRetry(batchRequestList, null, batchId));
+    }
+
+    public Mono<Void> updateBatchRequestFromBatchId(PostelBatch postelBatch, BatchStatus status) {
+        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(postelBatch.getBatchId(), BatchStatus.WORKING)
+                .doOnNext(requests -> log.debug("Normalize Address - batchId {} - updating {} requests in status {}", postelBatch.getBatchId(), requests.size(), status))
+                .flatMap(batchRequestList -> updateBatchRequest(batchRequestList, postelBatch.getBatchId()))
                 .then();
     }
 
-    public Mono<Void> sendToDlqQueue(BatchRequest batchRequest) {
-        InternalCodeSqsDto internalCodeSqsDto = toInternalCodeSqsDto(batchRequest);
-        return sqsService.pushToInputDlqQueue(internalCodeSqsDto, batchRequest.getClientId())
-                .then();
+
+    private Mono<BatchRequest> decodeStatus(BatchRequest request) {
+        return switch (BatchStatus.fromValue(request.getStatus())) {
+            case WORKED -> eventService.sendEvent(request.getMessage(), request.getClientId())
+                    .thenReturn(request);
+            case ERROR -> sqsService.sendToDlqQueue(request)
+                    .thenReturn(request);
+            default -> Mono.just(request);
+        };
     }
-
-    private InternalCodeSqsDto toInternalCodeSqsDto(BatchRequest batchRequest) {
-        NormalizeItemsRequest normalizeItemsRequest;
-        try {
-           normalizeItemsRequest = objectMapper.readValue(batchRequest.getAddresses(), NormalizeItemsRequest.class);
-        } catch (JsonProcessingException e) {
-            throw new PnAddressManagerException("", "", 500, ""); // TODO: valorizzare
-        }
-
-        return InternalCodeSqsDto.builder()
-                .xApiKey(batchRequest.getXApiKey())
-                .normalizeItemsRequest(normalizeItemsRequest)
-                .pnAddressManagerCxId(batchRequest.getCxId())
-                .build();
-    }
-
 }
