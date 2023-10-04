@@ -1,14 +1,12 @@
 package it.pagopa.pn.address.manager.utils;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.service.CsvService;
@@ -35,6 +33,9 @@ class AddressUtilsTest {
 
     @Mock
     private PnAddressManagerConfig pnAddressManagerConfig;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     @BeforeAll
     void setUp() {
@@ -71,7 +72,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertTrue(addressUtils.compareAddress(base, base, true));
     }
 
@@ -84,7 +85,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertTrue(addressUtils.compareAddress(base, base, false));
     }
 
@@ -93,7 +94,7 @@ class AddressUtilsTest {
         AnalogAddress base = new AnalogAddress();
         base.setCity("42");
         AnalogAddress target = new AnalogAddress();
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertFalse(addressUtils.compareAddress(base, target, true));
     }
 
@@ -106,7 +107,7 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("42");
         base.setCap("00010");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeAddress(base,"1"));
     }
 
@@ -119,7 +120,7 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("RM  ");
         base.setCap("00010");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeAddress(base,"1"));
     }
 
@@ -133,7 +134,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCap("ARUBA");
         base.setCountry("ARUBA");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeAddress(base, "1"));
     }
 
@@ -142,7 +143,7 @@ class AddressUtilsTest {
      */
     @Test
     void testNormalizeAddresses3() {
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
 
         NormalizeRequest normalizeRequest = new NormalizeRequest();
         normalizeRequest.address(new AnalogAddress());
@@ -159,7 +160,7 @@ class AddressUtilsTest {
     @Test
     void testNormalizeAddresses4() {
 
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
         when(normalizeRequest.getAddress()).thenReturn(new AnalogAddress());
         when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
@@ -182,7 +183,7 @@ class AddressUtilsTest {
      */
     @Test
     void testNormalizeAddresses6() {
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00010");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -206,7 +207,7 @@ class AddressUtilsTest {
 
     @Test
     void testNormalizeAddresses7() {
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00010");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -228,7 +229,7 @@ class AddressUtilsTest {
     }
     @Test
     void testNormalizeAddresses8() {
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00015");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -255,7 +256,7 @@ class AddressUtilsTest {
     @Test
     void testNormalizeAddresses9() {
 
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getAddressRow2()).thenReturn("42 Main St");
         when(analogAddress.getCap()).thenReturn("Cap");

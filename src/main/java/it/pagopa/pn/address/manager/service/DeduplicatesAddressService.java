@@ -1,13 +1,14 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.client.PagoPaClient;
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
+import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -16,24 +17,30 @@ import reactor.core.publisher.Mono;
 public class DeduplicatesAddressService {
 
     private final AddressUtils addressUtils;
-    private final boolean flagCsv;
     private final PagoPaClient pagoPaClient;
     private final AddressConverter addressConverter;
+    private final PnAddressManagerConfig pnAddressManagerConfig;
+    private final ApiKeyRepository apiKeyRepository;
 
-    public DeduplicatesAddressService(AddressUtils addressUtils, @Value("${pn.address.manager.flag.csv}") boolean flagCsv, PagoPaClient pagoPaClient, AddressConverter addressConverter){
+    public DeduplicatesAddressService(AddressUtils addressUtils,
+                                      PagoPaClient pagoPaClient,
+                                      AddressConverter addressConverter,
+                                      PnAddressManagerConfig pnAddressManagerConfig,
+                                      ApiKeyRepository apiKeyRepository){
         this.addressUtils = addressUtils;
-        this.flagCsv = flagCsv;
         this.pagoPaClient = pagoPaClient;
         this.addressConverter = addressConverter;
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
+        this.apiKeyRepository = apiKeyRepository;
     }
 
     public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request) {
-        if(flagCsv){
+        if(Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())){
             return Mono.just(createDeduplicatesResponseByDeduplicatesRequest(request));
         }
         return pagoPaClient
                     .deduplicaOnline(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
-                    .map(addressConverter::createDeduplicatesResponseFromDeduplicaResponse);
+                    .map(risultatoDeduplica -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, request.getCorrelationId()));
     }
 
     private DeduplicatesResponse createDeduplicatesResponseByDeduplicatesRequest(DeduplicatesRequest request){
@@ -46,4 +53,7 @@ public class DeduplicatesAddressService {
         return deduplicatesResponse;
     }
 
+    public void checkApiKey(String xApiKey) {
+        apiKeyRepository.findById(xApiKey);
+    }
 }

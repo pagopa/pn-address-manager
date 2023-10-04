@@ -1,17 +1,27 @@
 package it.pagopa.pn.address.manager.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
+import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.model.CapModel;
+import it.pagopa.pn.address.manager.model.NormalizeRequestList;
+import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.service.CsvService;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Base64Utils;
 
+import java.security.MessageDigest;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -24,15 +34,21 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 public class AddressUtils {
 
     private static final String ERROR_DURING_VERIFY_CSV = "Error during verify csv";
+    private static final String CONTENT_TYPE = "text/csv";
+    private static final String SAFE_STORAGE_STATUS = "PRELOADED";
+    private static final String DOCUMENT_TYPE = "PN_ADDRESSES_RAW";
+
     private final List<CapModel> capList;
     private final Map<String, String> countryMap;
 
     private final PnAddressManagerConfig pnAddressManagerConfig;
+    private final ObjectMapper objectMapper;
 
-    public AddressUtils(CsvService csvService, PnAddressManagerConfig pnAddressManagerConfig) {
+    public AddressUtils(CsvService csvService, PnAddressManagerConfig pnAddressManagerConfig, ObjectMapper objectMapper) {
         this.capList = csvService.capList();
         this.countryMap = csvService.countryMap();
         this.pnAddressManagerConfig = pnAddressManagerConfig;
+        this.objectMapper = objectMapper;
     }
 
     public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress, boolean isItalian) {
@@ -99,18 +115,15 @@ public class AddressUtils {
             normalizedAddressResponse.setError("Address contains invalid characters");
             return normalizedAddressResponse;
         }
-        if (Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())) {
-            try {
-                verifyAddressInCsv(analogAddress, normalizedAddressResponse);
-            } catch (PnAddressManagerException e) {
-                log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, e.getDescription());
-                log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
-                normalizedAddressResponse.setError(e.getDescription());
-            }
-        } else {
-            //TODO: verify with postel
-            normalizedAddressResponse.setError("TODO: verify with postel");
+
+        try {
+            verifyAddressInCsv(analogAddress, normalizedAddressResponse);
+        } catch (PnAddressManagerException e) {
+            log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, e.getDescription());
+            log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
+            normalizedAddressResponse.setError(e.getDescription());
         }
+
         log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, true);
         return normalizedAddressResponse;
     }
@@ -162,5 +175,91 @@ public class AddressUtils {
         normalizeResult.setError(response.getError());
         normalizeResult.setNormalizedAddress(response.getNormalizedAddress());
         return normalizeResult;
+    }
+
+    public List<NormalizeRequestPostelInput> toNormalizeRequestPostelInput(List<NormalizeRequest> normalizeRequestList, String correlationId) {
+        return normalizeRequestList.stream()
+                .map(v -> {
+                    NormalizeRequestPostelInput normalizeRequestPostelInput = new NormalizeRequestPostelInput();
+                    normalizeRequestPostelInput.setIdCodiceCliente(correlationId + "#" + v.getId());
+                    normalizeRequestPostelInput.setCap(v.getAddress().getCap());
+                    normalizeRequestPostelInput.setLocalita(v.getAddress().getCity());
+                    normalizeRequestPostelInput.setProvincia(v.getAddress().getPr());
+                    normalizeRequestPostelInput.setIndirizzo(v.getAddress().getAddressRow());
+                    normalizeRequestPostelInput.setStato(v.getAddress().getCountry());
+                    normalizeRequestPostelInput.setLocalitaAggiuntiva("???");
+
+                    return normalizeRequestPostelInput;
+                }).toList();
+    }
+
+    public List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(BatchRequest batchRequest) {
+        NormalizeRequestList normalizeRequestList = toObject(batchRequest.getAddresses(), NormalizeRequestList.class);
+        return toNormalizeRequestPostelInput(normalizeRequestList.getNormalizeRequests(), batchRequest.getCorrelationId());
+    }
+
+    public String computeSha256(byte[] content) {
+
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] encodedHash = digest.digest(content);
+            return bytesToBase64(encodedHash);
+        } catch (Exception e) {
+            throw new PnAddressManagerException("", "", 500, ""); // TODO: valorizzare
+        }
+    }
+
+    private static String bytesToBase64(byte[] hash) {
+        return Base64Utils.encodeToString(hash);
+    }
+
+    public String toJson(Object obj) {
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new PnInternalException(ERROR_MESSAGE_ADDRESS_MANAGER_HANDLEEVENTFAILED, ERROR_CODE_ADDRESS_MANAGER_HANDLEEVENTFAILED, e);
+        }
+    }
+
+    public <T> T toObject(String json, Class<T> newClass) {
+        try {
+            return objectMapper.readValue(json, newClass);
+        } catch (JsonProcessingException e) {
+            throw new PnInternalException(ERROR_MESSAGE_ADDRESS_MANAGER_HANDLEEVENTFAILED, ERROR_CODE_ADDRESS_MANAGER_HANDLEEVENTFAILED, e);
+        }
+    }
+
+    public FileCreationRequestDto getFileCreationRequest() {
+        FileCreationRequestDto fileCreationRequestDto = new FileCreationRequestDto();
+        fileCreationRequestDto.setContentType(CONTENT_TYPE);
+        fileCreationRequestDto.setStatus(SAFE_STORAGE_STATUS);
+        fileCreationRequestDto.setDocumentType(DOCUMENT_TYPE);
+        return fileCreationRequestDto;
+    }
+
+    public BatchRequest createNewStartBatchRequest() {
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        BatchRequest batchRequest = new BatchRequest();
+        batchRequest.setBatchId(BatchStatus.NO_BATCH_ID.getValue());
+        batchRequest.setStatus(BatchStatus.NOT_WORKED.getValue());
+        batchRequest.setRetry(0);
+        batchRequest.setLastReserved(now);
+        batchRequest.setCreatedAt(now);
+        batchRequest.setTtl(now.plusSeconds(pnAddressManagerConfig.getPostel().getBatchTtl()).toEpochSecond(ZoneOffset.UTC));
+        log.trace("New Batch Request: {}", batchRequest);
+        return batchRequest;
+    }
+
+    public NormalizeItemsResult normalizeRequestToResult(NormalizeItemsRequest normalizeItemsRequest) {
+        NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
+        normalizeItemsResult.setCorrelationId(normalizeItemsRequest.getCorrelationId());
+        normalizeItemsResult.setResultItems(normalizeAddresses(normalizeItemsRequest.getRequestItems()));
+        return normalizeItemsResult;
+    }
+
+    public AcceptedResponse mapToAcceptedResponse(NormalizeItemsRequest normalizeItemsRequest) {
+        AcceptedResponse acceptedResponse = new AcceptedResponse();
+        acceptedResponse.setCorrelationId(normalizeItemsRequest.getCorrelationId());
+        return acceptedResponse;
     }
 }

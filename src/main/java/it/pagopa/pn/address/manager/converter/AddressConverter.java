@@ -1,100 +1,124 @@
 package it.pagopa.pn.address.manager.converter;
 
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.*;
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
-import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
+
 @Component
 public class AddressConverter {
 
-    private final long postelTtl;
+    private final PnAddressManagerConfig pnAddressManagerConfig;
 
-    private final String authKey;
-
-    public AddressConverter(@Value("${pn.address.manager.batch.ttl}") long batchTtl,
-                            @Value("${pn.address.manager.postel.authKey}") String authKey) {
-        this.postelTtl = batchTtl;
-        this.authKey = authKey;
+    public AddressConverter(PnAddressManagerConfig pnAddressManagerConfig) {
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
     }
-    public InputDeduplica createDeduplicaRequestFromDeduplicatesRequest(DeduplicatesRequest deduplicatesRequest){
+
+    public InputDeduplica createDeduplicaRequestFromDeduplicatesRequest(DeduplicatesRequest deduplicatesRequest) {
         InputDeduplica inputDeduplica = new InputDeduplica();
-        inputDeduplica.setConfigIn(new ConfigIn());
-        inputDeduplica.setMasterIn(new MasterIn());
-        inputDeduplica.setSlaveIn(new SlaveIn());
 
-        inputDeduplica.getConfigIn().setAuthKey(authKey);
-        inputDeduplica.getConfigIn().setConfigurazioneDeduplica(""); // configurazione deduplica?
-        inputDeduplica.getConfigIn().setConfigurazioneNorm(""); // configurazione normalizzazione?
+        ConfigIn configIn = new ConfigIn();
+        configIn.setAuthKey(pnAddressManagerConfig.getPostel().getAuthKey());
+        configIn.setConfigurazioneDeduplica(""); // configurazione deduplica?
+        configIn.setConfigurazioneNorm(""); // configurazione normalizzazione?
+        inputDeduplica.setConfigIn(configIn);
 
-        inputDeduplica.getSlaveIn().setId("001SLAVE"); // id??
-        inputDeduplica.getSlaveIn().setProvincia(deduplicatesRequest.getTargetAddress().getPr());
-        inputDeduplica.getSlaveIn().setLocalita(deduplicatesRequest.getTargetAddress().getCity());
-        // AddressRow2 come lo trattiamo??
-        inputDeduplica.getSlaveIn().setIndirizzo(deduplicatesRequest.getTargetAddress().getAddressRow() + " " + deduplicatesRequest.getTargetAddress().getAddressRow2());
-        inputDeduplica.getSlaveIn().setCap(deduplicatesRequest.getTargetAddress().getCap());
-        inputDeduplica.getSlaveIn().setLocalitaAggiuntiva(deduplicatesRequest.getTargetAddress().getCity2());
-        inputDeduplica.getSlaveIn().setStato(deduplicatesRequest.getTargetAddress().getCountry());
+        SlaveIn slaveIn = getSlaveIn(deduplicatesRequest);
+        inputDeduplica.setSlaveIn(slaveIn);
 
-        inputDeduplica.getMasterIn().setId("001MASTER"); // id??
-        inputDeduplica.getMasterIn().setProvincia(deduplicatesRequest.getBaseAddress().getPr());
-        inputDeduplica.getMasterIn().setLocalita(deduplicatesRequest.getBaseAddress().getCity());
-        inputDeduplica.getMasterIn().setIndirizzo(deduplicatesRequest.getBaseAddress().getAddressRow() + " " + deduplicatesRequest.getBaseAddress().getAddressRow2());
-        inputDeduplica.getMasterIn().setCap(deduplicatesRequest.getBaseAddress().getCap());
-        inputDeduplica.getMasterIn().setLocalitaAggiuntiva(deduplicatesRequest.getBaseAddress().getCity2());
-        inputDeduplica.getMasterIn().setStato(deduplicatesRequest.getBaseAddress().getCountry());
+        MasterIn masterIn = getMasterIn(deduplicatesRequest);
+        inputDeduplica.setMasterIn(masterIn);
 
         return inputDeduplica;
     }
 
-    public DeduplicatesResponse createDeduplicatesResponseFromDeduplicaResponse(RisultatoDeduplica risultatoDeduplica){
+    @NotNull
+    private static MasterIn getMasterIn(DeduplicatesRequest deduplicatesRequest) {
+        MasterIn masterIn = new MasterIn();
+        masterIn.setId(deduplicatesRequest.getCorrelationId()); // id??
+        masterIn.setProvincia(deduplicatesRequest.getBaseAddress().getPr());
+        masterIn.setLocalita(deduplicatesRequest.getBaseAddress().getCity());
+        masterIn.setIndirizzo(deduplicatesRequest.getBaseAddress().getAddressRow() + " " + deduplicatesRequest.getBaseAddress().getAddressRow2());
+        masterIn.setCap(deduplicatesRequest.getBaseAddress().getCap());
+        masterIn.setLocalitaAggiuntiva(deduplicatesRequest.getBaseAddress().getCity2());
+        masterIn.setStato(deduplicatesRequest.getBaseAddress().getCountry());
+        return masterIn;
+    }
+
+    @NotNull
+    private static SlaveIn getSlaveIn(DeduplicatesRequest deduplicatesRequest) {
+        SlaveIn slaveIn = new SlaveIn();
+        slaveIn.setId(deduplicatesRequest.getCorrelationId()); // id??
+        slaveIn.setProvincia(deduplicatesRequest.getTargetAddress().getPr());
+        slaveIn.setLocalita(deduplicatesRequest.getTargetAddress().getCity());
+        slaveIn.setIndirizzo(deduplicatesRequest.getTargetAddress().getAddressRow() + " " + deduplicatesRequest.getTargetAddress().getAddressRow2());
+        slaveIn.setCap(deduplicatesRequest.getTargetAddress().getCap());
+        slaveIn.setLocalitaAggiuntiva(deduplicatesRequest.getTargetAddress().getCity2());
+        slaveIn.setStato(deduplicatesRequest.getTargetAddress().getCountry());
+        return slaveIn;
+    }
+
+    public DeduplicatesResponse createDeduplicatesResponseFromDeduplicaResponse(RisultatoDeduplica risultatoDeduplica, String correlationId) {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
+        deduplicatesResponse.setCorrelationId(correlationId);
 
-        deduplicatesResponse.setEqualityResult(true);   // ci arriva una stringa che descrive il risultato del confronto,
-                                                        // come dobbiamo valutarla?
-        deduplicatesResponse.setError(risultatoDeduplica.getRisultatoDedu());
-        deduplicatesResponse.setCorrelationId("correlationId"); // come lo valorizziamo?
+        //TODO: VERIFICARE CHE LA RISPOSTA SIA 0 O 1
+        deduplicatesResponse.setEqualityResult(risultatoDeduplica.getRisultatoDedu() != null
+                && !risultatoDeduplica.getRisultatoDedu().equalsIgnoreCase("0"));
 
-        AnalogAddress target = getAnalogAddress(risultatoDeduplica);
+        deduplicatesResponse.setError(decodeErrorDedu(risultatoDeduplica.getErroreDedu()));
 
-        deduplicatesResponse.setNormalizedAddress(target);
+        getAnalogAddress(risultatoDeduplica, deduplicatesResponse);
 
         return deduplicatesResponse;
     }
 
+    private String decodeErrorDedu(Integer erroreDedu) {
+        if(erroreDedu != null) {
+            //TODO: CHIEDERE INFORMAZIONI SULLA DECODIFICA DEL CODICE ERRORE DEDU
+            return "TODO";
+        }else{
+            return null;
+        }
+    }
+
     @NotNull
-    private static AnalogAddress getAnalogAddress (RisultatoDeduplica risultatoDeduplica) {
+    private static DeduplicatesResponse getAnalogAddress(RisultatoDeduplica risultatoDeduplica, DeduplicatesResponse deduplicatesResponse) {
+
+        if (risultatoDeduplica.getSlaveOut() != null) {
+            if(StringUtils.hasText(risultatoDeduplica.getSlaveOut().getfPostalizzabile())
+            && risultatoDeduplica.getSlaveOut().getfPostalizzabile().equalsIgnoreCase("0")){
+                //TODO: GESTIONE ERRORE NORMALIZZAZIONE
+            }
+            AnalogAddress analogAddress = getAddress(risultatoDeduplica.getSlaveOut());
+            deduplicatesResponse.setNormalizedAddress(analogAddress);
+            return deduplicatesResponse;
+        } else {
+            throw new PnInternalException(ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL, ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL);
+        }
+    }
+
+    @NotNull
+    private static AnalogAddress getAddress(SlaveOut slaveOut) {
         AnalogAddress target = new AnalogAddress();
-
-        target.setAddressRow(risultatoDeduplica.getMasterOut().getsViaCompletaSpedizione());
-        target.setAddressRow2(""); // addresRow2?
-        target.setCity(risultatoDeduplica.getMasterOut().getsComuneSpedizione());
-        target.setCity2(""); // city2?
-        target.setCap(risultatoDeduplica.getMasterOut().getsCap());
-        target.setPr(risultatoDeduplica.getMasterOut().getsSiglaProv());
-        target.setCountry(risultatoDeduplica.getMasterOut().getsStatoSpedizione());
+        target.setAddressRow(slaveOut.getsViaCompletaSpedizione());
+        target.setAddressRow2(slaveOut.getsCivicoAltro());
+        target.setCity(slaveOut.getsComuneSpedizione());
+        target.setCity2(slaveOut.getsFrazioneSpedizione());
+        target.setCap(slaveOut.getsCap());
+        target.setPr(slaveOut.getsSiglaProv());
+        target.setCountry(slaveOut.getsStatoSpedizione());
         return target;
-    }
-    public AcceptedResponse normalizeItemsRequestToAcceptedResponse(NormalizeItemsRequest normalizeItemsRequest) {
-        AcceptedResponse acceptedResponse = new AcceptedResponse();
-        acceptedResponse.setCorrelationId(normalizeItemsRequest.getCorrelationId());
-        return acceptedResponse;
-    }
-
-
-    public NormalizeResult normalizedAddressResponsetoNormalizeResult(NormalizedAddressResponse response) {
-        NormalizeResult normalizeResult = new NormalizeResult();
-        normalizeResult.setId(response.getId());
-        normalizeResult.setError(response.getError());
-        normalizeResult.setNormalizedAddress(response.getNormalizedAddress());
-        return normalizeResult;
     }
 
     public PostelBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey) {
@@ -105,7 +129,7 @@ public class AddressConverter {
         batchPolling.setStatus(BatchStatus.NOT_WORKED.getValue());
         batchPolling.setRetry(0);
         batchPolling.setCreatedAt(now);
-        batchPolling.setTtl(now.plusSeconds(postelTtl).toEpochSecond(ZoneOffset.UTC));
+        batchPolling.setTtl(now.plusSeconds(pnAddressManagerConfig.getPostel().getBatchTtl()).toEpochSecond(ZoneOffset.UTC));
         return batchPolling;
     }
 }

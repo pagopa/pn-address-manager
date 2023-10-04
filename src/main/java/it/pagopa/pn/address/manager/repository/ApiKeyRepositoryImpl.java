@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.repository;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,8 +21,8 @@ public class ApiKeyRepositoryImpl implements ApiKeyRepository {
     private final DynamoDbAsyncTable<ApiKeyModel> table;
 
     public ApiKeyRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient,
-                                @Value("${pn.address.manager.dynamodb.tablename.apiKey}") String tableName) {
-        this.table = dynamoDbEnhancedClient.table(tableName, TableSchema.fromBean(ApiKeyModel.class));
+                                PnAddressManagerConfig pnAddressManagerConfig) {
+        this.table = dynamoDbEnhancedClient.table(pnAddressManagerConfig.getDynamoDB().getTableNameApiKey(), TableSchema.fromBean(ApiKeyModel.class));
     }
 
     @Override

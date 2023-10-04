@@ -49,4 +49,8 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
     public static final String ERROR_MESSAGE_JSON_PROCESSING = "There was an error processing the JSON";
 
     public static final String ERROR_CODE_ADDRESS_MANAGER_HANDLEEVENTFAILED = "ERROR_ADDRESS_MANAGER_HANDLEEVENTFAILED";
+    public static final String ERROR_MESSAGE_ADDRESS_MANAGER_HANDLEEVENTFAILED = "Error during handle normalize request";
+
+    public static final String ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL = "ERROR_ADDRESS_MANAGER_NORMALIZEDADDRESSEMPTY";
+    public static final String ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL = "Normalized Address from postel is empty";
 }
