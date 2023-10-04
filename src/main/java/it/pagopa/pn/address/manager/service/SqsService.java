@@ -6,8 +6,6 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeIte
 import it.pagopa.pn.address.manager.model.InternalCodeSqsDto;
 import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.CallbackRequestData;
-import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.CallbackResponseData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;

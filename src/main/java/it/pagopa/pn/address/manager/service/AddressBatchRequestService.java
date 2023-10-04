@@ -1,6 +1,5 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import it.pagopa.pn.address.manager.client.PostelClient;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
@@ -9,16 +8,11 @@ import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.address.manager.model.NormalizeRequestList;
-import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;

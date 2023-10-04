@@ -1,9 +1,11 @@
 package it.pagopa.pn.address.manager.service;
 
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.model.CapModel;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
@@ -18,19 +20,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @ExtendWith(MockitoExtension.class)
 class CsvServiceTest {
 
+    @Mock
+    PnAddressManagerConfig pnAddressManagerConfig;
+
     @Test
     void testCountryMap() {
-        CsvService csvService = new CsvService("Mock-Lista-Nazioni.csv", "Mock-ListaCLP.csv", new ResourceLoader() {
-            @Override
-            public Resource getResource(String location) {
-                return null;
-            }
-
-            @Override
-            public ClassLoader getClassLoader() {
-                return null;
-            }
-        }, pnAddressManagerConfig);
+        CsvService csvService = new CsvService(pnAddressManagerConfig);
         Map<String, String> expectedCountryMap = new HashMap<>();
         expectedCountryMap.put("AFGHANISTAN","AFGHANISTAN");
         expectedCountryMap.put("AFRICA DEL SUD","SUDAFRICA");
@@ -42,17 +37,7 @@ class CsvServiceTest {
 
     @Test
     void testCapMap(){
-        CsvService csvService = new CsvService("Mock-Lista-Nazioni.csv", "Mock-ListaCLP.csv", new ResourceLoader() {
-            @Override
-            public Resource getResource(String location) {
-                return null;
-            }
-
-            @Override
-            public ClassLoader getClassLoader() {
-                return null;
-            }
-        }, pnAddressManagerConfig);
+        CsvService csvService = new CsvService( pnAddressManagerConfig);
 
         List<CapModel> expectedCapMap = new ArrayList<>();
         expectedCapMap.add(new CapModel("00100", "ROMA", "RM"));
