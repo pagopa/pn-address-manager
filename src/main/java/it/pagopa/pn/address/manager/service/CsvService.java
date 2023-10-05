@@ -61,6 +61,7 @@ public class CsvService {
         }
     }
 
+    /*
     private <T> List<T> readItemsFromCsv(Class<T> csvClass, File filePath, int skipLines) {
         List<T> items = new ArrayList<>();
         try (FileReader fileReader = new FileReader(filePath)) {
@@ -75,6 +76,7 @@ public class CsvService {
         }
         return items;
     }
+     */
 
     public <T> List<T> readItemsFromCsv(Class<T> csvClass, byte[] file, int skipLines) {
         StringReader stringReader = new StringReader(Arrays.toString(file));
