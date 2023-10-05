@@ -356,20 +356,6 @@ components:
           enum:
             - OK
             - KO
-    ActvatePostelRequest:
-      type: object
-      properties:
-        fileKey:
-          type: string
-
-    ActvatePostelResponse:
-      type: object
-      properties:
-        response:
-          type: string
-          enum:
-            - OK
-            - KO
 
     OperationResultCodeResponse:
       required:

@@ -19,6 +19,7 @@ import org.springframework.util.Base64Utils;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -191,7 +192,11 @@ public class AddressUtils {
     }
 
     public List<NormalizeRequest> getNormalizeRequestFromBatchRequest(BatchRequest batchRequest){
-        return toObject(batchRequest.getAddresses(), NormalizeRequestList.class).getNormalizeRequests();
+        NormalizeRequestList normalizeRequestList = toObject(batchRequest.getAddresses(), NormalizeRequestList.class);
+        if(normalizeRequestList != null){
+            return normalizeRequestList.getRequestItems();
+        }
+        return Collections.emptyList();
     }
 
     public List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(BatchRequest batchRequest) {
@@ -245,7 +250,7 @@ public class AddressUtils {
         batchRequest.setRetry(0);
         batchRequest.setLastReserved(now);
         batchRequest.setCreatedAt(now);
-        batchRequest.setTtl(now.plusSeconds(pnAddressManagerConfig.getPostel().getBatchTtl()).toEpochSecond(ZoneOffset.UTC));
+        batchRequest.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
         log.trace("New Batch Request: {}", batchRequest);
         return batchRequest;
     }

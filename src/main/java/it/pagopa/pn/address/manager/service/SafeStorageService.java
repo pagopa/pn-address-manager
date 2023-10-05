@@ -1,7 +1,7 @@
 package it.pagopa.pn.address.manager.service;
 
-import it.pagopa.pn.address.manager.client.safestorage.PnSafeStorageClient;
-import it.pagopa.pn.address.manager.client.safestorage.UploadDownloadClient;
+import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
+import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
@@ -27,8 +27,6 @@ public class SafeStorageService {
     private final AddressUtils addressUtils;
 
     private final PnAddressManagerConfig pnAddressManagerConfig;
-
-    private final AddressBatchRequestService addressBatchRequestService;
     private final NormalizzatoreConverter normalizzatoreConverter;
 
     public SafeStorageService(CsvService csvService,
@@ -36,14 +34,12 @@ public class SafeStorageService {
                               UploadDownloadClient uploadDownloadClient,
                               AddressUtils addressUtils,
                               PnAddressManagerConfig pnAddressManagerConfig,
-                              AddressBatchRequestService addressBatchRequestService,
                               NormalizzatoreConverter normalizzatoreConverter) {
         this.csvService = csvService;
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.uploadDownloadClient = uploadDownloadClient;
         this.addressUtils = addressUtils;
         this.pnAddressManagerConfig = pnAddressManagerConfig;
-        this.addressBatchRequestService = addressBatchRequestService;
         this.normalizzatoreConverter = normalizzatoreConverter;
     }
 
@@ -52,21 +48,22 @@ public class SafeStorageService {
         FileCreationRequestDto fileCreationRequestDto = addressUtils.getFileCreationRequest();
         List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
         requests.forEach(batchRequest ->
-            listToConvert.addAll(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest)));
+                listToConvert.addAll(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest)));
 
         String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
         String sha256 = addressUtils.computeSha256(csvContent.getBytes());
 
         return pnSafeStorageClient.createFile(fileCreationRequestDto, pnAddressManagerConfig.getPagoPaCxId())
                 .doOnNext(fileCreationResponseDto -> uploadDownloadClient.uploadContent(csvContent, fileCreationResponseDto, sha256))
-                .doOnError(e -> {
+                .onErrorResume(e -> {
                     log.error("ADDRESS MANAGER -> POSTEL - failed to create file", e);
-                    addressBatchRequestService.incrementAndCheckRetry(requests, e, requests.get(0).getBatchId()).then(Mono.error(e));
+                    return Mono.error(e);
                 });
     }
 
     public Mono<FileDownloadResponse> getFile(String fileKey, String pnAddressManagerCxId) {
         return pnSafeStorageClient.getFile(fileKey, pnAddressManagerCxId)
                 .map(normalizzatoreConverter::fileDownloadResponseDtoToFileDownloadResponse);
+
     }
 }

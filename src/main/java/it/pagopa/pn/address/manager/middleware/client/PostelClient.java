@@ -1,12 +1,11 @@
-package it.pagopa.pn.address.manager.client;
+package it.pagopa.pn.address.manager.middleware.client;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.ActivatePostelRequest;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.ActivatePostelResponse;
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.InputDeduplica;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.RequestActivatePostel;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.ResponseActivatePostel;
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.RisultatoDeduplica;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
-import it.pagopa.pn.address.manager.msclient.generated.postel.v1.ApiClient;
 import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
 import lombok.CustomLog;
 import org.springframework.stereotype.Component;
@@ -27,8 +26,8 @@ public class PostelClient {
 	}
 
 	public Mono<RisultatoDeduplica> deduplica(InputDeduplica inputDeduplica) {
-		log.logInvokingExternalService(POSTEL, "Calling Deduplica");
-		return postelApi.deduplicaPost(inputDeduplica)
+		log.logInvokingExternalService(POSTEL, "Calling DeduplicaNormalizzaRest");
+		return postelApi.pagoPaDeduplicaRestPagoPaDeduplicaRestNormalizzaRestPost(inputDeduplica)
 				.onErrorMap(throwable -> {
 					if (throwable instanceof WebClientResponseException ex) {
 						throw new PnAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
@@ -38,9 +37,9 @@ public class PostelClient {
 				});
 	}
 
-	public Mono<ActivatePostelResponse> activatePostel(String key) {
+	public Mono<ResponseActivatePostel> activatePostel(String key) {
 		log.logInvokingExternalService(POSTEL, "Calling Activate Postel");
-		ActivatePostelRequest activatePostelRequest = new ActivatePostelRequest();
+		RequestActivatePostel activatePostelRequest = new RequestActivatePostel();
 		activatePostelRequest.setFileKey(key);
 		return postelApi.activatePostel(activatePostelRequest)
 				.onErrorMap(throwable -> {

@@ -21,15 +21,14 @@ public class ApiKeyRepositoryImpl implements ApiKeyRepository {
 
     public ApiKeyRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient,
                                 PnAddressManagerConfig pnAddressManagerConfig) {
-        this.table = dynamoDbEnhancedClient.table(pnAddressManagerConfig.getDynamoDB().getTableNameApiKey(), TableSchema.fromBean(ApiKeyModel.class));
+        this.table = dynamoDbEnhancedClient.table(pnAddressManagerConfig.getDao().getApiKeyTableName(), TableSchema.fromBean(ApiKeyModel.class));
     }
 
     @Override
-    public Mono<ApiKeyModel> findById(String id){
+    public Mono<ApiKeyModel> findById(String apiKey){
         Key key = Key.builder()
-                .partitionValue(id)
+                .partitionValue(apiKey)
                 .build();
-        return Mono.fromFuture(table.getItem(key))
-                .switchIfEmpty(Mono.error(new PnAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Api Key not found")));
+        return Mono.fromFuture(table.getItem(key));
     }
 }

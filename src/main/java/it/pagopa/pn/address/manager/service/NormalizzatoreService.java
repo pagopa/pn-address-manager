@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import it.pagopa.pn.address.manager.client.safestorage.PnSafeStorageClient;
+import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.PostelBatch;

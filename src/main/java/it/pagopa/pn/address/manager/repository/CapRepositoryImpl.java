@@ -21,7 +21,7 @@ public class CapRepositoryImpl implements CapRepository {
 
     public CapRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedClient,
                              PnAddressManagerConfig pnAddressManagerConfig) {
-        this.table = dynamoDbEnhancedClient.table(pnAddressManagerConfig.getDynamoDB().getTableNameCap(), TableSchema.fromBean(CapModel.class));
+        this.table = dynamoDbEnhancedClient.table(pnAddressManagerConfig.getDao().getCapTableName(), TableSchema.fromBean(CapModel.class));
     }
 
     @Override

@@ -13,8 +13,6 @@ public enum BatchStatus {
     WORKING("WORKING"),
     WORKED("WORKED"),
     ERROR("ERROR"),
-    SENT("SENT"),
-    NOT_SENT("NOT_SENT"),
     TAKEN_CHARGE("TAKEN_CHARGE");
 
 

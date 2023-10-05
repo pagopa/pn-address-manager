@@ -7,5 +7,6 @@ import java.util.List;
 
 @Data
 public class NormalizeRequestList {
-    private List<NormalizeRequest> normalizeRequests;
+    private String correlationId;
+    private List<NormalizeRequest> requestItems;
 }

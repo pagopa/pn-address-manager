@@ -225,6 +225,16 @@ Outputs:
     Value: !Sub '${PostelBatchTable.Arn}'
   BatchRequestTableArn:
     Value: !Sub '${BatchRequestTable.Arn}'
+  ApiKeyTableName:
+    Value: !Ref ApiKeyTable
+  CapTableName:
+    Value: !Ref CapTable
+  CountryTableName:
+    Value: !Ref CountryTable
+  PostelBatchTableName:
+    Value: !Ref PostelBatchTable
+  BatchRequestTableName:
+    Value: !Ref BatchRequestTable
   EcsLogGroup:
     Value: !GetAtt PnAddressManagerLogGroup.Outputs.LogGroupName
   AddressManagerEventBusArn:

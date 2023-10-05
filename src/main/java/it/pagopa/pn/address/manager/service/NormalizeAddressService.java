@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCallbackEvent;
@@ -12,8 +13,11 @@ import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.APIKEY_DOES_NOT_EXISTS;
 
 
 @Slf4j
@@ -52,12 +56,14 @@ public class NormalizeAddressService {
 
     public Mono<AcceptedResponse> normalizeAddress(String xApiKey, String cxId, NormalizeItemsRequest normalizeItemsRequest) {
         return checkApiKey(xApiKey)
+                .switchIfEmpty(Mono.error(new PnAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Api Key not found")))
                 .flatMap(apiKeyModel -> sqsService.pushToInputQueue(InternalCodeSqsDto.builder()
                                 .xApiKey(xApiKey)
                                 .pnAddressManagerCxId(cxId)
                                 .normalizeItemsRequest(normalizeItemsRequest)
                                 .build(), cxId, AM_NORMALIZE_INPUT_EVENTTYPE)
-                        .map(sendMessageResponse -> addressUtils.mapToAcceptedResponse(normalizeItemsRequest)));
+                        .map(sendMessageResponse -> addressUtils.mapToAcceptedResponse(normalizeItemsRequest)))
+                .doOnError(Mono::error);
     }
 
     public Mono<Void> handleRequest(PnNormalizeRequestEvent.Payload payload) {

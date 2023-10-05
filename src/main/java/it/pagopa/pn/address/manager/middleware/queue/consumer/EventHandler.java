@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 @Component
-@ConfigurationProperties(prefix = "pn.address.manager.event")
+@ConfigurationProperties(prefix = "pn.address-manager.event")
 public class EventHandler {
     private Map<String, String> handler;
 }

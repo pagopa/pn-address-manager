@@ -1,4 +1,4 @@
-package it.pagopa.pn.address.manager.client.safestorage;
+package it.pagopa.pn.address.manager.middleware.client.safestorage;
 
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
@@ -21,7 +21,8 @@ public class UploadDownloadClient {
     public UploadDownloadClient() {
         this.webClient = WebClient.builder()
                 .clientConnector(new ReactorClientHttpConnector())
-                .build();    }
+                .build();
+    }
 
     public Mono<String> uploadContent(String content, FileCreationResponseDto fileCreationResponse, String sha256) {
         try {

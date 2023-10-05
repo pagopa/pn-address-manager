@@ -28,7 +28,7 @@ public class AddressConverter {
         InputDeduplica inputDeduplica = new InputDeduplica();
 
         ConfigIn configIn = new ConfigIn();
-        configIn.setAuthKey(pnAddressManagerConfig.getPostel().getAuthKey());
+        configIn.setAuthKey(pnAddressManagerConfig.getNormalizer().getPostelAuthKey());
         configIn.setConfigurazioneDeduplica(""); // configurazione deduplica?
         configIn.setConfigurazioneNorm(""); // configurazione normalizzazione?
         inputDeduplica.setConfigIn(configIn);
@@ -129,7 +129,7 @@ public class AddressConverter {
         batchPolling.setStatus(BatchStatus.NOT_WORKED.getValue());
         batchPolling.setRetry(0);
         batchPolling.setCreatedAt(now);
-        batchPolling.setTtl(now.plusSeconds(pnAddressManagerConfig.getPostel().getBatchTtl()).toEpochSecond(ZoneOffset.UTC));
+        batchPolling.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
         return batchPolling;
     }
 }

@@ -1,4 +1,4 @@
-package it.pagopa.pn.address.manager.client;
+package it.pagopa.pn.address.manager.middleware.client;
 
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.MediaType;

@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
 
     public AddressBatchRequestRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                              PnAddressManagerConfig pnAddressManagerConfig) {
-        this.table = dynamoDbEnhancedAsyncClient.table("pn-address-manager-batch-request", TableSchema.fromClass(BatchRequest.class));
+        this.table = dynamoDbEnhancedAsyncClient.table(pnAddressManagerConfig.getDao().getBatchRequestTableName(), TableSchema.fromClass(BatchRequest.class));
         this.pnAddressManagerConfig = pnAddressManagerConfig;
     }
 
@@ -62,19 +63,6 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         QueryEnhancedRequest queryEnhancedRequest = queryEnhancedRequestBuilder.build();
         // modificare il GSI di modo che contenga solo il batch id, eliminare status e lastReserved e tutte le altre
         // colonne legate al flusso di recovery
-        return Mono.from(table.index(GSI_BL).query(queryEnhancedRequest));
-    }
-
-    @Override
-    public Mono<Page<BatchRequest>> getBatchRequestByBatchId(Map<String, AttributeValue> lastKey, String batchId) {
-        QueryEnhancedRequest.Builder queryEnhancedRequestBuilder = QueryEnhancedRequest.builder()
-                .queryConditional(QueryConditional.keyEqualTo(keyBuilder(batchId)));
-
-        if (!CollectionUtils.isEmpty(lastKey)) {
-            queryEnhancedRequestBuilder.exclusiveStartKey(lastKey);
-        }
-
-        QueryEnhancedRequest queryEnhancedRequest = queryEnhancedRequestBuilder.build();
         return Mono.from(table.index(GSI_BL).query(queryEnhancedRequest));
     }
 
@@ -119,7 +107,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         expressionNames.put("#sendStatus", COL_SEND_STATUS);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":sendStatus", AttributeValue.builder().s(BatchStatus.NOT_SENT.getValue()).build());
+        expressionValues.put(":sendStatus", AttributeValue.builder().s(BatchSendStatus.NOT_SENT.getValue()).build());
         expressionValues.put(":zero", AttributeValue.builder().n("0").build());
 
         String expression = "(attribute_not_exists(#reservationId) OR size(#reservationId) = :zero) AND #sendStatus = :sendStatus";
@@ -158,9 +146,9 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getPostel().getBatchRequestMaxRetry())).build());
+        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxRetry())).build());
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, AttributeValue.builder()
-                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getPostel().getBatchRequestRecoveryAfter()).toString())
+                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getRecoveryAfter()).toString())
                 .build());
 
         String expression = "#retry < :retry AND (:lastReserved > #lastReserved OR attribute_not_exists(#lastReserved))";
@@ -179,9 +167,9 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     @Override
     public Mono<Page<BatchRequest>> getBatchRequestToSend(Map<String, AttributeValue> lastKey, int limit) {
         Key key = Key.builder()
-                .partitionValue(BatchStatus.NOT_SENT.getValue())
+                .partitionValue(BatchSendStatus.NOT_SENT.getValue())
                 .sortValue(AttributeValue.builder()
-                        .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getPostel().getBatchRequestRecoveryAfter()).toString())
+                        .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getRecoveryAfter()).toString())
                         .build())
                 .build();
 

@@ -1,4 +1,4 @@
-package it.pagopa.pn.address.manager.client;
+package it.pagopa.pn.address.manager.middleware.client;
 
 import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
 import it.pagopa.pn.commons.pnclients.CommonBaseClient;

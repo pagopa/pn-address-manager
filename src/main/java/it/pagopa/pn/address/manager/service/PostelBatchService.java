@@ -1,7 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import it.pagopa.pn.address.manager.client.safestorage.UploadDownloadClient;
-import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.CapModel;
@@ -35,8 +34,6 @@ public class PostelBatchService {
     private final AddressUtils addressUtils;
     private final UploadDownloadClient uploadDownloadClient;
 
-    private final PnAddressManagerConfig pnAddressManagerConfig;
-
     private final AddressBatchRequestService addressBatchRequestService;
     private final CapRepository capRepository;
     private final CountryRepository countryRepository;
@@ -46,7 +43,6 @@ public class PostelBatchService {
                               CsvService csvService,
                               AddressUtils addressUtils,
                               UploadDownloadClient uploadDownloadClient,
-                              PnAddressManagerConfig pnAddressManagerConfig,
                               AddressBatchRequestService addressBatchRequestService,
                               CapRepository capRepository,
                               CountryRepository countryRepository) {
@@ -55,7 +51,6 @@ public class PostelBatchService {
         this.csvService = csvService;
         this.addressUtils = addressUtils;
         this.uploadDownloadClient = uploadDownloadClient;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
         this.addressBatchRequestService = addressBatchRequestService;
         this.capRepository = capRepository;
         this.countryRepository = countryRepository;
@@ -72,7 +67,6 @@ public class PostelBatchService {
                             .collectList()
                             .flatMap(batchRequestList -> addressBatchRequestService.updateBatchRequest(batchRequestList, postelBatch.getBatchId()));
                 })
-                .onErrorResume(throwable -> incrementAndCheckRetry(postelBatch))
                 .then();
     }
 
@@ -88,20 +82,6 @@ public class PostelBatchService {
             batchRequest.setStatus(BatchStatus.NOT_WORKED.name());
         }
         return batchRequest;
-    }
-
-    private Mono<Void> incrementAndCheckRetry(PostelBatch postelBatch) {
-        int nextRetry = postelBatch.getRetry() != null ? postelBatch.getRetry() + 1 : 1;
-        postelBatch.setRetry(nextRetry);
-        if (nextRetry >= pnAddressManagerConfig.getPostel().getBatchRequestMaxRetry()) {
-            postelBatch.setStatus(BatchStatus.ERROR.getValue());
-            log.debug("NormalizeAddress - batchId {} - status in {} (retry: {})", postelBatch.getBatchId(), postelBatch.getStatus(), postelBatch.getRetry());
-        }
-        return postelBatchRepository.update(postelBatch)
-                .doOnNext(p -> log.debug("IniPEC - batchId {} -  retry incremented", postelBatch.getBatchId()))
-                .doOnError(e -> log.warn("IniPEC - batchId {} -  failed to increment retry", postelBatch.getBatchId(), e))
-                .filter(batch -> BatchStatus.ERROR.getValue().equals(batch.getStatus()))
-                .flatMap(batch -> addressBatchRequestService.updateBatchRequestFromBatchId(batch, BatchStatus.ERROR));
     }
 
     public Mono<PostelBatch> findPostelBatch(String fileKey) {

@@ -9,6 +9,17 @@
     "CountriesCsv": "PagoPA-Lista-Nazioni.csv",
     "CapCsv": "PagoPA-ListaCLP.csv",
     "EnablePatternValidation": "true",
-    "PhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-@_"
+    "PhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-@_",
+    "PnSafeStorageBasePath": "",
+    "PostelBasePath": "",
+    "PnAddressManagerNormalizerBatchRequestTtl": "1209600",
+    "PnAddressManagerNormalizerBatchRequestDelay": "30000",
+    "PnAddressManagerNormalizerBatchRequestRecoveryDelay": "30000",
+    "PnAddressManagerNormalizerBatchRequestRecoveryAfter": "3600",
+    "PnAddressManagerNormalizerBatchRequestMaxRetry": "3",
+    "PnAddressManagerNormalizerBatchRequestMaxSize": "100",
+    "PnAddressManagerNormalizerEventBridgeRecoveryDelay": "30000",
+    "PnAddressManagerNormalizerPostelRecoveryDelay": "30000",
+    "PostelAuthKey": ""
   }
 }
