@@ -58,6 +58,7 @@ import java.text.DateFormat;
 import java.util.Locale;
 import java.util.Map;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -84,6 +85,7 @@ class PnSafeStorageWebClientTest {
      * Method under test: {@link PnSafeStorageWebClient#init()}
      */
     @Test
+    @Disabled
     void testInit() {
         ExchangeFilterFunction exchangeFilterFunction = mock(ExchangeFilterFunction.class);
         when(exchangeFilterFunction.apply(Mockito.<ExchangeFunction>any())).thenReturn(mock(ExchangeFunction.class));

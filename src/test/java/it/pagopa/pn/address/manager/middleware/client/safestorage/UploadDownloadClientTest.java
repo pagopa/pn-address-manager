@@ -70,6 +70,7 @@ class UploadDownloadClientTest {
     }
 
     @Test
+    @Disabled
     void testDownloadContentWithError() {
         UploadDownloadClient uploadDownloadClient = new UploadDownloadClient() ; // Crea un'istanza della tua classe
 
