@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.middleware.queue.consumer;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.utils.MDCUtils;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.cloud.function.context.MessageRoutingCallback;
