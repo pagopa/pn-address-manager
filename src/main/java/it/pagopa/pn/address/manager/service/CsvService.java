@@ -118,8 +118,10 @@ public class CsvService {
         }
     }
 
-    private String normalizeKey(String key) {
+    /*
+    private String normalizeKey(String key)
         return StringUtils.normalizeSpace(key).toUpperCase();
     }
+    */
 
 }

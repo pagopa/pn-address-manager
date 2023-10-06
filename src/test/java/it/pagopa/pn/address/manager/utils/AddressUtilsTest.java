@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
@@ -66,6 +67,20 @@ class AddressUtilsTest {
         mockedCapList.add( new CapModel("00011","Roma","RM"));
         mockedCapList.add(new CapModel("00012","Roma","RM"));
         return mockedCapList;
+    }
+
+    @Test
+    void normalizeAddress10(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("42");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("42");
+        base.setCountry("AFRICA DEL SUD");
+        base.setCap("42");
+        assertNotNull(addressUtils.normalizeAddress(base,"42"));
     }
 
     @Test
@@ -150,12 +165,20 @@ class AddressUtilsTest {
     }
 
     @Test
+    void computeSha2561(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertThrows(PnAddressManagerException.class, () -> addressUtils.computeSha256(null));
+    }
+
+    @Test
     void createNewStartBatchRequest(){
         PnAddressManagerConfig.Normalizer n = new PnAddressManagerConfig.Normalizer();
         PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
         batchRequest.setTtl(0);
         n.setBatchRequest(batchRequest);
-        when(pnAddressManagerConfig.getNormalizer()).thenReturn(n);
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setNormalizer(n);
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.createNewStartBatchRequest());
     }
@@ -315,6 +338,23 @@ class AddressUtilsTest {
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeAddress(base,"1"));
     }
+
+
+    @Test
+    void normalizeAddress0() {
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("Roma ");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("@@@");
+        base.setCap("00010");
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setEnableValidation(true);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeAddress(base,"1"));
+    }
+
 
     @Test
     void normalizeAddress1() {
