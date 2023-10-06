@@ -2,7 +2,9 @@ package it.pagopa.pn.address.manager.service;
 
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.model.CapModel;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -67,6 +69,23 @@ class CsvServiceTest {
         assertDoesNotThrow(() -> csvService.writeItemsOnCsvToString(capModels));
     }
 
+    @Test
+    void testCountryMapNull() {
+        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.Csv csv = new PnAddressManagerConfig.Csv();
+        csv.setPathCap("Mock-ListaCLP1.csv");
+        csv.setPathCountry("Mock-Lista-Nazioni1.csv");
+        pnAddressManagerConfig.setCsv(csv);
+        CsvService csvService = new CsvService(pnAddressManagerConfig);
+        Map<String, String> expectedCountryMap = new HashMap<>();
+        expectedCountryMap.put("AFGHANISTAN","AFGHANISTAN");
+        expectedCountryMap.put("AFRICA DEL SUD","SUDAFRICA");
+        expectedCountryMap.put("AFRIQUE DU SUD","SUDAFRICA");
+
+        Assertions.assertThrows(PnAddressManagerException.class, csvService::countryMap);
+
+    }
+
 
     @Test
     void testCountryMap() {
@@ -102,5 +121,22 @@ class CsvServiceTest {
         List<CapModel> actualCapMap = csvService.capList();
 
         assertEquals(expectedCapMap, actualCapMap);
+    }
+
+    @Test
+    void testCapMapNull(){
+        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.Csv csv = new PnAddressManagerConfig.Csv();
+        csv.setPathCap("Mock-ListaCLP1.csv");
+        csv.setPathCountry("Mock-Lista-Nazioni1.csv");
+        pnAddressManagerConfig.setCsv(csv);
+
+        CsvService csvService = new CsvService( pnAddressManagerConfig);
+
+        List<CapModel> expectedCapMap = new ArrayList<>();
+        expectedCapMap.add(new CapModel("00100", "ROMA", "RM"));
+        expectedCapMap.add(new CapModel("20019", "MILANO", "MI"));
+
+        Assertions.assertThrows(PnAddressManagerException.class,csvService::capList);
     }
 }

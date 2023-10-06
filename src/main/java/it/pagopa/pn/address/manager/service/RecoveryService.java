@@ -1,10 +1,10 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -84,7 +84,7 @@ public class RecoveryService {
                         .doOnError(ConditionalCheckFailedException.class,
                                 e -> log.info("Normalizer - conditional check failed - skip recovery  batchId {}", postelBatch.getBatchId(), e))
                         .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty()))
-                .doOnNext(postelBatch -> addressBatchRequestService.callPostelActivationApi(postelBatch))
+                .doOnNext(addressBatchRequestService::callPostelActivationApi)
                 .count()
                 .subscribe(c -> log.info("Normalizer - executed batch recovery on {} polling", c),
                         e -> log.error("Normalizer - failed execution of postel activation recovery", e));
