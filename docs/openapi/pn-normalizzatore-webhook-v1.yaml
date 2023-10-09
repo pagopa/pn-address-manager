@@ -18,7 +18,29 @@ paths:
       summary: Richiesta di callback di avvenuta normalizzazione della lista di address in ingresso
       description: |-
         Operazione che avvisa pn-address-manager dell'avvenuta normalizzazione di una lista di address.
-        //FIXME: inserire campi file safestorage di OUTPUT
+        Il file di output conterrà i seguenti campi, gestiti con logica posizionale:
+        
+          - IDCODICECLIENTE : l’Id del cliente;
+          - NRISULTATONORM : Risultato di normalizzazione (0 : scartato/ 1 : normalizzato,2,3,4,5);
+          - FPOSTALIZZABILE (0 : NON Postalizzabile, 1 : Postalizzabile);
+          - NERRORENORM : Codice di errore;
+          - SSIGLAPROV : Sigla provincia normalizzata;
+          - SSTATOUFF : Stato normalizzato (Valorizzato ITALIA, REPUBBLICA DI SAN MARINO e CITTA’ DEL VATICANO + TUTTI GLI STATI ESTERI);
+          - SSTATOABB : Stato abbreviato normalizzato;
+          - SSTATOSPEDIZIONE : Stato di Spedizione;
+          - SCOMUNEUFF : Comune normalizzato;
+          - SCOMUNEABB : Comune Abbreviato normalizzato;
+          - SCOMUNESPEDIZIONE : Comune di spedizione;
+          - SFRAZIONEUFF : Frazione normalizzata;
+          - SFRAZIONEABB : Frazione Abbreviata normalizzata;
+          - SFRAZIONESPEDIZIONE : Frazione di Spedizione;
+          - SCIVICOALTRO : altri elementi del civico (interno, piano, scala, palazzo …) - VA IN INDIRIZZO 2
+          - SCAP : cap normalizzato;
+          - SPRESSO : informazioni di presso e casella postale (C.P 123, Presso sig. rossi …) -  VA IN NAME 2;
+          - SVIACOMPLETAUFF : via completa normalizzata (DUG+COMPL+TOPONIMO+CIVICO POSTALE) ;
+          - SVIACOMPLETAABB: via completa normalizzata abbreviata (DUG+COMPL+TOPONIMO+CIVICO POSTALE ABBREVIATA) ;
+          - SVIACOMPLETASPEDIZIONE : Indirizzo di Stampa;
+
       tags:
         - Normalizzatore
       parameters:
