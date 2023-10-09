@@ -18,6 +18,7 @@ paths:
       summary: Richiesta di callback di avvenuta normalizzazione della lista di address in ingresso
       description: |-
         Operazione che avvisa pn-address-manager dell'avvenuta normalizzazione di una lista di address.
+        //FIXME: inserire campi file safestorage di OUTPUT
       tags:
         - Normalizzatore
       parameters:
@@ -25,6 +26,7 @@ paths:
         - $ref: '#/components/parameters/xPagopaAddrManApiKey'
       operationId: normalizerCallback
       requestBody:
+        required: true
         content:
           application/json:
             schema:

@@ -1,0 +1,55 @@
+openapi: 3.0.3
+info:
+  title:  API fornite dal normalizzatore
+  version: 1.0.0
+paths:
+  /send-normalizzatore-ingress/v1/normalizzazione:
+    post:
+      operationId: normalizzazione
+      summary: PN richiede la normalizzazione batch
+      description: >-
+        //FIXME: inserire campi file safestorage di INPUT
+      parameters:
+        - $ref: '#/components/parameters/xPagopaAddrManCxId'
+        - $ref: '#/components/parameters/xPagopaAddrManApiKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NormalizzazioneRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NormalizzazioneResponse'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /send-normalizzatore-ingress/v1/deduplica:
+    //FIXME 
+
+components:
+
+
+  parameters: 
+    xPagopaAddrManCxId:
+      $ref: 'parameters-pn-address.yaml#/components/parameters/xPagopaAddrManCxId'
+    xPagopaAddrManApiKey:
+      $ref: 'parameters-pn-address.yaml#/components/parameters/xPagopaAddrManApiKey'
+
+
+  schemas:
+   
