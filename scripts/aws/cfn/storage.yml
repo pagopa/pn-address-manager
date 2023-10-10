@@ -250,12 +250,12 @@ Outputs:
 
   # PnAddressManagerInputs Queue
   PnAddressManagerInputsQueueName:
-    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.QueueName
+    Value: !GetAtt PnAddressManagerInputsQueue.Outputs.QueueName
   PnAddressManagerInputsQueueARN:
-    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.QueueARN
+    Value: !GetAtt PnAddressManagerInputsQueue.Outputs.QueueARN
   PnAddressManagerInputsDLQName:
-    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.DeadLetterQueueName
+    Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueName
   PnAddressManagerInputsDLQURL:
-    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.DeadLetterQueueURL
+    Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueURL
   NationalRegistryGatewayInputsDLQARN:
-    Value: !GetAtt PnPnAddressManagerInputsQueue.Outputs.DeadLetterQueueARN
+    Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueARN
