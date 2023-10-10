@@ -211,6 +211,9 @@ components:
 
     DeduplicaResponse:
       type: object
+      description: >-
+        slaveOut e risultatoDedu: obbligatori in caso di risposta di successo
+        errore: valorizzato in caso di risposta con errore
       properties:
         slaveOut:
           description: risultato delle deduplica //FIXME
