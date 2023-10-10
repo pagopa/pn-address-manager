@@ -3,7 +3,7 @@ info:
   title:  API fornite dal normalizzatore
   version: 1.0.0
 paths:
-  /postel-mock/normalizzazione:
+  /send-normalizzatore-ingress/v1/normalizzazione:
     post:
       operationId: normalizzazione
       summary: PN richiede la normalizzazione batch
@@ -66,7 +66,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/Problem'
 
-  /postel-mock/deduplica:
+  /send-normalizzatore-ingress/v1/deduplica:
     post:
       operationId: deduplica
       summary: PN richiede la deduplica online
@@ -102,21 +102,21 @@ paths:
 components:
 
 
-  parameters:
+  parameters: 
     xPagopaAddrManCxId:
-      name: "pn-address-manager-cx-id"
-      in: header
-      schema:
-        type: string
-      required: true
+        name: "pn-address-manager-cx-id"
+        in: header
+        schema:
+          type: string
+        required: true
     xPagopaAddrManApiKey:
-      name: x-api-key
-      description: Credenziale di accesso
-      in: header
-      required: true
-      schema:
-        type: string
-        x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+        name: x-api-key
+        description: Credenziale di accesso
+        in: header
+        required: true
+        schema:
+          type: string
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
 
 
   schemas:
@@ -191,8 +191,8 @@ components:
     AddressIn:
       type: object
       required:
-        - localita
-        - indirizzo
+       - localita
+       - indirizzo
       properties:
         id:
           type: string

@@ -1,9 +1,11 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.InputDeduplica;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.RequestActivatePostel;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.ResponseActivatePostel;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.RisultatoDeduplica;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaRequest;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaResponse;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.NormalizzazioneRequest;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.NormalizzazioneResponse;
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
 import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
@@ -19,15 +21,18 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 @Component
 public class PostelClient {
 	private final DefaultApi postelApi;
+
+	private final PnAddressManagerConfig pnAddressManagerConfig;
 	private static final String POSTEL = "POSTEL";
 
-	public PostelClient(PostelWebClient postelWebClient) {
+	public PostelClient(PostelWebClient postelWebClient, PnAddressManagerConfig pnAddressManagerConfig) {
 		this.postelApi = new DefaultApi(postelWebClient.init());
+		this.pnAddressManagerConfig = pnAddressManagerConfig;
 	}
 
-	public Mono<RisultatoDeduplica> deduplica(InputDeduplica inputDeduplica) {
+	public Mono<DeduplicaResponse> deduplica(DeduplicaRequest inputDeduplica, String cxId, String xApiKey) {
 		log.logInvokingExternalService(POSTEL, "Calling DeduplicaNormalizzaRest");
-		return postelApi.postelMockPagoPaDeduplicaRestPagoPaDeduplicaRestNormalizzaRestPost(inputDeduplica)
+		return postelApi.deduplica(cxId, xApiKey, inputDeduplica)
 				.onErrorMap(throwable -> {
 					if (throwable instanceof WebClientResponseException ex) {
 						throw new PnAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
@@ -37,11 +42,14 @@ public class PostelClient {
 				});
 	}
 
-	public Mono<ResponseActivatePostel> activatePostel(String key) {
+	public Mono<NormalizzazioneResponse> activatePostel(PostelBatch postelBatch) {
 		log.logInvokingExternalService(POSTEL, "Calling Activate Postel");
-		RequestActivatePostel activatePostelRequest = new RequestActivatePostel();
-		activatePostelRequest.setFileKey(key);
-		return postelApi.activatePostel(activatePostelRequest)
+
+		NormalizzazioneRequest activatePostelRequest = new NormalizzazioneRequest();
+		activatePostelRequest.setRequestId(postelBatch.getBatchId());
+		activatePostelRequest.setUri(postelBatch.getFileKey());
+		activatePostelRequest.setSha256(postelBatch.getSha256());
+		return postelApi.normalizzazione(pnAddressManagerConfig.getPagoPaCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)
 				.onErrorMap(throwable -> {
 					if (throwable instanceof WebClientResponseException ex) {
 						throw new PnAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT

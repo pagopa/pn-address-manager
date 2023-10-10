@@ -305,6 +305,15 @@ Parameters:
     Type: string
     Description: 'Normalize Request Prefix for Postel requestId'
 
+  PnAddressManagerCxId:
+    Type: string
+    Description: 'Address manager cxId'
+
+  PnAddressManagerApiKey:
+    Type: string
+    Description: 'Address manager ApiKey'
+
+
 Resources:
 
   # PN-address-manager microservice
@@ -360,6 +369,8 @@ Resources:
         ContainerEnvEntry33: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYAFTER=${PnAddressManagerNormalizerPostelRecoveryAfter}'
         ContainerEnvEntry34: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_MAXRETRY=${PnAddressManagerNormalizerPostelMaxRetry}'
         ContainerEnvEntry35: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_REQUESTPREFIX=${NormalizerRequestPrefix}'
+        ContainerEnvEntry36: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
+        ContainerEnvEntry37: !Sub 'PN_ADDRESSMANAGER_APIKEY=${PnAddressManagerApiKey}'
 
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName

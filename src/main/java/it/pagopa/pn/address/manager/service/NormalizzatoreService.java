@@ -1,22 +1,30 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.entity.ApiKeyModel;
+import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
-import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
-import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
+import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
 import lombok.CustomLog;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import reactor.core.publisher.Flux;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
-import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.BatchStatus.WORKED;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.APIKEY_DOES_NOT_EXISTS;
 
 @Service
 @CustomLog
@@ -27,85 +35,132 @@ public class NormalizzatoreService {
     private final SqsService sqsService;
     private final SafeStorageService safeStorageService;
     private final PostelBatchRepository postelBatchRepository;
+    private final ApiKeyRepository apiKeyRepository;
+    private final AddressUtils addressUtils;
+
     private static final String AM_POSTEL_CALLBACK_EVENTTYPE = "AM_POSTEL_CALLBACK";
+
+    private static final String CALLBACK_ERROR_LOG = "callbackNormalizedAddress error:{}";
 
     public NormalizzatoreService(PnSafeStorageClient pnSafeStorageClient,
                                  NormalizzatoreConverter normalizzatoreConverter,
                                  PostelBatchService postelBatchService,
                                  SqsService sqsService,
-                                 SafeStorageService safeStorageService, PostelBatchRepository postelBatchRepository) {
+                                 SafeStorageService safeStorageService,
+                                 PostelBatchRepository postelBatchRepository,
+                                 ApiKeyRepository apiKeyRepository,
+                                 AddressUtils addressUtils) {
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.normalizzatoreConverter = normalizzatoreConverter;
         this.postelBatchService = postelBatchService;
         this.sqsService = sqsService;
         this.safeStorageService = safeStorageService;
         this.postelBatchRepository = postelBatchRepository;
+        this.apiKeyRepository = apiKeyRepository;
+        this.addressUtils = addressUtils;
     }
 
-    public Mono<PreLoadResponseData> presignedUploadRequest(PreLoadRequestData request, String pnAddressManagerCxId) {
-        return Flux.fromStream(request.getPreloads().stream())
-                .flatMap(preload -> {
-                    log.info("preloadDocuments contentType:{} preloadIdx:{}", preload.getContentType(), preload.getPreloadIdx());
-                    FileCreationRequestDto fileCreationRequest = normalizzatoreConverter.preLoadRequestToFileCreationRequestDto(preload);
-                    return pnSafeStorageClient.createFile(fileCreationRequest, pnAddressManagerCxId)
-                            .map(v -> normalizzatoreConverter.fileDownloadResponseDtoToFileDownloadResponse(v, preload.getPreloadIdx()));
-                }).collectList()
+    public Mono<PreLoadResponseData> presignedUploadRequest(PreLoadRequestData request, String pnAddressManagerCxId, String xApiKey) {
+        return checkApiKey(pnAddressManagerCxId, xApiKey)
+                .flatMapIterable(apiKeyModel -> request.getPreloads())
+                .flatMap(preLoadRequest -> {
+                    log.info("preloadDocuments contentType:{} preloadIdx:{}", preLoadRequest.getContentType(), preLoadRequest.getPreloadIdx());
+                    return createFile(pnAddressManagerCxId, preLoadRequest);
+                })
+                .collectList()
                 .map(normalizzatoreConverter::collectPreLoadRequestToPreLoadRequestData);
     }
 
-    public Mono<CallbackResponseData> callbackNormalizedAddress(CallbackRequestData callbackRequestData, String pnAddressManagerCxId) {
-        CallbackResponseData callbackResponseData = new CallbackResponseData();
-        return postelBatchService.findPostelBatch(callbackRequestData.getFileKeyInput())
-                .switchIfEmpty(Mono.error(new PnInternalException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND, callbackRequestData.getFileKeyInput()),
-                        ERROR_CODE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND)))
-                .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, pnAddressManagerCxId, callbackResponseData, postelBatch))
-                .doOnError(throwable -> {
-                    log.error("callbackNormalizedAddress error:{}", throwable.getMessage(), throwable);
-                    callbackResponseData.setResponse(CallbackResponseData.ResponseEnum.KO);
+    private Mono<PreLoadResponse> createFile(String pnAddressManagerCxId, PreLoadRequest preLoadRequest) {
+        FileCreationRequestDto fileCreationRequest = normalizzatoreConverter.preLoadRequestToFileCreationRequestDto(preLoadRequest);
+        return pnSafeStorageClient.createFile(fileCreationRequest, pnAddressManagerCxId)
+                .map(fileCreationResponseDto -> {
+                    log.info(ADDRESS_NORMALIZER_ASYNC + "created file with fileKey: [{}]", fileCreationResponseDto.getKey());
+                    return normalizzatoreConverter.fileDownloadResponseDtoToFileDownloadResponse(fileCreationResponseDto, preLoadRequest.getPreloadIdx());
                 })
-                .thenReturn(callbackResponseData);
-    }
-
-    private Mono<CallbackResponseData> checkOutputFileOnFileStorage(CallbackRequestData callbackRequestData, String pnAddressManagerCxId,
-                                                                    CallbackResponseData callbackResponseData, PostelBatch postelBatch) {
-        return getFile(callbackRequestData.getFileKeyOutput(), pnAddressManagerCxId)
-                .map(fileDownloadResponse -> {
-                    log.info("callbackNormalizedAddress fileDownloadResponse:{}", fileDownloadResponse);
-                    if (!fileDownloadResponse.getChecksum().equalsIgnoreCase(""/*callbackRequestData.getCheckSum()*/)) {
-                        callbackResponseData.setResponse(CallbackResponseData.ResponseEnum.KO);
-                        return callbackResponseData;
-                    }
-                    return sendToInternalQueueAndUpdatePostelBatchStatus(callbackRequestData, fileDownloadResponse.getDownload(), postelBatch)
-                            .map(sendMessageResponse -> {
-                                callbackResponseData.setResponse(CallbackResponseData.ResponseEnum.OK);
-                                return callbackResponseData;
-                            });
-                })
-                .thenReturn(callbackResponseData);
-    }
-
-    private Mono<PostelBatch> sendToInternalQueueAndUpdatePostelBatchStatus(CallbackRequestData callbackRequestData, FileDownloadInfo download, PostelBatch postelBatch) {
-        return sendToInputQueue(callbackRequestData, download)
-                .flatMap(sendMessageResponse -> {
-                    postelBatch.setStatus(BatchStatus.WORKED.name());
-                    return postelBatchRepository.update(postelBatch);
+                .onErrorResume(e -> {
+                    log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);
+                    return Mono.error(e);
                 });
     }
 
-    private Mono<SendMessageResponse> sendToInputQueue(CallbackRequestData callbackRequestData, FileDownloadInfo fileDownloadInfo) {
-        PostelCallbackSqsDto postelCallbackSqsDto = PostelCallbackSqsDto.builder()
-                .fileKeyInput(callbackRequestData.getFileKeyInput())
-                .fileKeyOutput(callbackRequestData.getFileKeyOutput())
-                .build();
+    public Mono<OperationResultCodeResponse> callbackNormalizedAddress(NormalizerCallbackRequest callbackRequestData, String pnAddressManagerCxId, String xApiKey) {
+        return checkApiKey(pnAddressManagerCxId, xApiKey)
+                .flatMap(apiKeyModel -> findPostelBatch(callbackRequestData.getRequestId()))
+                .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, pnAddressManagerCxId, postelBatch))
+                .onErrorResume(throwable -> {
+                    log.error(CALLBACK_ERROR_LOG, throwable.getMessage(), throwable);
+                    return Mono.error(throwable);
+                });
+    }
 
-        if (fileDownloadInfo != null) {
-            postelCallbackSqsDto.setFileOutputUrl(fileDownloadInfo.getUrl());
+    private Mono<PostelBatch> findPostelBatch(String idLavorazione) {
+        return postelBatchService.findPostelBatch(idLavorazione)
+                .switchIfEmpty(Mono.error(new PnInternalException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND, idLavorazione),
+                        ERROR_CODE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND)));
+    }
+
+    private Mono<OperationResultCodeResponse> checkOutputFileOnFileStorage(NormalizerCallbackRequest normalizerCallbackRequest, String pnAddressManagerCxId, PostelBatch postelBatch) {
+        OperationResultCodeResponse response = getOperationResultCodeOK();
+        if (!StringUtils.hasText(normalizerCallbackRequest.getError())) {
+            return getFile(normalizerCallbackRequest.getUri(), pnAddressManagerCxId)
+                    .flatMap(fileDownloadResponse -> {
+                        log.info(ADDRESS_NORMALIZER_ASYNC + "callbackNormalizedAddress fileDownloadResponse:{}", fileDownloadResponse);
+                        return verifyCheckSumAndSendToInternalQueue(normalizerCallbackRequest, fileDownloadResponse, postelBatch);
+                    })
+                    .onErrorResume(throwable -> {
+                        log.error(CALLBACK_ERROR_LOG, throwable.getMessage(), throwable);
+                        return Mono.error(throwable);
+                    })
+                    .thenReturn(response);
         }
+        return sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, postelBatch, null)
+                .thenReturn(response);
+    }
 
-        return sqsService.pushToInputQueue(postelCallbackSqsDto, AM_POSTEL_CALLBACK_EVENTTYPE);
+    private OperationResultCodeResponse getOperationResultCodeOK() {
+        OperationResultCodeResponse response = new OperationResultCodeResponse();
+        response.setResultCode("202.00");
+        response.setResultDescription("Richiesta presa in carico");
+        response.setClientResponseTimeStamp(java.util.Date.from(LocalDateTime.now().toInstant(ZoneOffset.UTC)));
+        return response;
+    }
+
+    private Mono<Void> verifyCheckSumAndSendToInternalQueue(NormalizerCallbackRequest callbackRequestData, FileDownloadResponse fileDownloadResponse, PostelBatch postelBatch) {
+        if (!fileDownloadResponse.getChecksum().equalsIgnoreCase(callbackRequestData.getSha256())) {
+            return Mono.error(new PnAddressManagerException(ERROR_CODE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM,
+                    String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM, callbackRequestData.getUri()),
+                    HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM));
+        }
+        return sendToInternalQueueAndUpdatePostelBatchStatus(callbackRequestData, postelBatch, fileDownloadResponse.getDownload().getUrl());
     }
 
     public Mono<FileDownloadResponse> getFile(String fileKey, String pnAddressManagerCxId) {
         return safeStorageService.getFile(fileKey, pnAddressManagerCxId);
+    }
+
+    public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
+        return apiKeyRepository.findById(cxId)
+                .filter(apiKeyModel -> apiKeyModel.getApiKey().equalsIgnoreCase(xApiKey))
+                .switchIfEmpty(Mono.error(new PnAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Api Key not found")));
+
+    }
+
+    private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, PostelBatch postelBatch, String url) {
+        return sqsService.pushToInputQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, url), AM_POSTEL_CALLBACK_EVENTTYPE)
+                .map(sendMessageResponse -> {
+                    postelBatch.setStatus(WORKED.name());
+                    return postelBatch;
+                })
+                .flatMap(postelBatchRepository::update)
+                .map(batch -> {
+                    log.debug("Normalize Address PostelBatch - batchId {} - set Status in {}", postelBatch.getBatchId(), postelBatch.getStatus());
+                    return batch;
+                })
+                .onErrorResume(throwable -> {
+                    log.error(CALLBACK_ERROR_LOG, throwable.getMessage(), throwable);
+                    return Mono.error(throwable);
+                })
+                .then();
     }
 }

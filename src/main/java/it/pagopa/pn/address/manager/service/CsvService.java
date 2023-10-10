@@ -15,8 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.ResourceUtils;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -61,26 +61,10 @@ public class CsvService {
         }
     }
 
-    /*
-    private <T> List<T> readItemsFromCsv(Class<T> csvClass, File filePath, int skipLines) {
-        List<T> items = new ArrayList<>();
-        try (FileReader fileReader = new FileReader(filePath)) {
-            CsvToBeanBuilder<T> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
-            csvToBeanBuilder.withSkipLines(skipLines);
-            csvToBeanBuilder.withType(csvClass);
-
-            List<T> parsedItems = csvToBeanBuilder.build().parse();
-            items.addAll(parsedItems);
-        } catch (IOException e) {
-            throw new PnAddressManagerException(ERROR_ADDRESS_MANAGER_READING_CSV, ERROR_ADDRESS_MANAGER_READING_CSV_DESCRIPTION + e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_READING_CSV_ERROR_CODE);
-        }
-        return items;
-    }
-     */
-
     public <T> List<T> readItemsFromCsv(Class<T> csvClass, byte[] file, int skipLines) {
-        StringReader stringReader = new StringReader(Arrays.toString(file));
+        StringReader stringReader = new StringReader(new String(file, StandardCharsets.UTF_8));
         CsvToBeanBuilder<T> csvToBeanBuilder = new CsvToBeanBuilder<>(stringReader);
+        csvToBeanBuilder.withSeparator(';');
         csvToBeanBuilder.withSkipLines(skipLines);
         csvToBeanBuilder.withType(csvClass);
 
@@ -117,11 +101,5 @@ public class CsvService {
             throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + pnAddressManagerConfig.getCsv().getPathCap(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
     }
-
-    /*
-    private String normalizeKey(String key)
-        return StringUtils.normalizeSpace(key).toUpperCase();
-    }
-    */
 
 }

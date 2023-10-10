@@ -7,6 +7,8 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttri
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
 
+import java.time.LocalDateTime;
+
 
 @Data
 @NoArgsConstructor
@@ -15,4 +17,11 @@ public class CountryModel {
 
     @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute("country")}))
     private String country;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute("startValidity")}))
+    private LocalDateTime startValidity;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute("endValidity")}))
+    private LocalDateTime endValidity;
+
 }

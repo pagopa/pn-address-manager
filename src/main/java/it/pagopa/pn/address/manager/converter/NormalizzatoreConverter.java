@@ -11,19 +11,20 @@ import java.util.List;
 
 @Component
 public class NormalizzatoreConverter {
-	public static final String PN_ADDRESS_TO_NORMALIZE_ATTACHMENTS = "PN_ADDRESS_TO_NORMALIZE_ATTACHMENTS";
+	public static final String PN_ADDRESSES_NORMALIZED = "PN_ADDRESSES_NORMALIZED";
 	public static final String PRELOADED = "PRELOADED";
+	public static final String SAFE_STORAGE_URL_PREFIX = "safestorage://";
 
 	public FileCreationRequestDto preLoadRequestToFileCreationRequestDto (PreLoadRequest preLoadRequest){
 		FileCreationRequestDto fileCreationRequestDto = new FileCreationRequestDto();
 		fileCreationRequestDto.setContentType(preLoadRequest.getContentType());
-		fileCreationRequestDto.setDocumentType(PN_ADDRESS_TO_NORMALIZE_ATTACHMENTS);
+		fileCreationRequestDto.setDocumentType(PN_ADDRESSES_NORMALIZED);
 		fileCreationRequestDto.setStatus(PRELOADED);
 		return fileCreationRequestDto;
 	}
 	public PreLoadResponse fileDownloadResponseDtoToFileDownloadResponse (FileCreationResponseDto fileCreationResponseDto, String preLoadIdx) {
 		PreLoadResponse preLoadResponse = new PreLoadResponse();
-		preLoadResponse.setKey(fileCreationResponseDto.getKey());
+		preLoadResponse.setKey(SAFE_STORAGE_URL_PREFIX + fileCreationResponseDto.getKey());
 		preLoadResponse.setUrl(fileCreationResponseDto.getUploadUrl());
 		preLoadResponse.setHttpMethod(PreLoadResponse.HttpMethodEnum.fromValue(fileCreationResponseDto.getUploadMethod().getValue()));
 		preLoadResponse.setSecret(fileCreationResponseDto.getSecret());

@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.CollectionType;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
@@ -11,6 +12,7 @@ import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.stor
 import it.pagopa.pn.address.manager.model.*;
 import it.pagopa.pn.address.manager.service.CsvService;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.NormalizerCallbackRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -19,7 +21,6 @@ import org.springframework.util.Base64Utils;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -191,12 +192,14 @@ public class AddressUtils {
                 }).toList();
     }
 
-    public List<NormalizeRequest> getNormalizeRequestFromBatchRequest(BatchRequest batchRequest){
-        NormalizeRequestList normalizeRequestList = toObject(batchRequest.getAddresses(), NormalizeRequestList.class);
-        if(normalizeRequestList != null){
-            return normalizeRequestList.getRequestItems();
-        }
-        return Collections.emptyList();
+    public List<NormalizeRequest> getNormalizeRequestFromBatchRequest(BatchRequest batchRequest) {
+        return toObject(batchRequest.getAddresses(),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, NormalizeRequest.class));
+    }
+
+    public List<NormalizeResult> getNormalizeResultFromBatchRequest(BatchRequest batchRequest) {
+        return toObject(batchRequest.getMessage(),
+                objectMapper.getTypeFactory().constructCollectionType(List.class, NormalizeResult.class));
     }
 
     public List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(BatchRequest batchRequest) {
@@ -227,6 +230,14 @@ public class AddressUtils {
     }
 
     public <T> T toObject(String json, Class<T> newClass) {
+        try {
+            return objectMapper.readValue(json, newClass);
+        } catch (JsonProcessingException e) {
+            throw new PnInternalException(ERROR_MESSAGE_ADDRESS_MANAGER_HANDLEEVENTFAILED, ERROR_CODE_ADDRESS_MANAGER_HANDLEEVENTFAILED, e);
+        }
+    }
+
+    public <T> T toObject(String json, CollectionType newClass) {
         try {
             return objectMapper.readValue(json, newClass);
         } catch (JsonProcessingException e) {
@@ -271,11 +282,16 @@ public class AddressUtils {
     public List<NormalizeResult> toResultItem(List<NormalizedAddress> normalizedAddresses) {
         return normalizedAddresses.stream().map(normalizedAddress -> {
             NormalizeResult result = new NormalizeResult();
-            result.setId(normalizedAddress.getId().split("#")[1]);
-            if (normalizedAddress.getNRisultatoNorm() == 0 || normalizedAddress.getFPostalizzabile() == 0) {
-                result.setError(decodeErrorErroreNorm(normalizedAddress.getNErroreNorm()));
-            } else {
-                result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
+            String[] index = normalizedAddress.getId().split("#");
+            if(index.length == 2) {
+                result.setId(index[1]);
+                log.info("Address with correlationId: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1],
+                        normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
+                if (normalizedAddress.getFPostalizzabile() == 0) {
+                    result.setError(decodeErrorErroreNorm(normalizedAddress.getNErroreNorm()));
+                } else {
+                    result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
+                }
             }
             return result;
         }).toList();
@@ -304,5 +320,14 @@ public class AddressUtils {
             return id.split("#")[0];
         }
         return "noCorrelationId";
+    }
+
+    public PostelCallbackSqsDto getPostelCallbackSqsDto(NormalizerCallbackRequest callbackRequest, String url) {
+        return PostelCallbackSqsDto.builder()
+                .requestId(callbackRequest.getRequestId())
+                .outputFileKey(callbackRequest.getUri())
+                .outputFileUrl(url)
+                .error(callbackRequest.getError())
+                .build();
     }
 }

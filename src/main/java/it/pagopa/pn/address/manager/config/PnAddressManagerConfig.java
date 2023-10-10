@@ -23,9 +23,10 @@ public class PnAddressManagerConfig {
     private Dao dao = new Dao();
     private Normalizer normalizer;
     private String pagoPaCxId;
-    private String postelBasePath = "http://localhost:8082";
+    private String apiKey;
+    private String postelBasePath;
     private String healthCheckPath;
-    private String safeStorageBasePath = "http://localhost:8080";
+    private String safeStorageBasePath;
 
     @Data
     public static class Normalizer{
@@ -42,6 +43,7 @@ public class PnAddressManagerConfig {
         private Integer delay;
         private Integer recoveryAfter;
         private Integer recoveryDelay;
+        private String requestPrefix;
     }
 
     @Data
@@ -57,11 +59,11 @@ public class PnAddressManagerConfig {
 
     @Data
     public static class Dao{
-        private String apiKeyTableName = "pn-address-manager-apikey";
-        private String capTableName = "pn-address-manager-cap";
-        private String postelBatchTableName = "pn-address-manager-postel-batch";
-        private String batchRequestTableName = "pn-address-manager-batch-request";
-        private String countryTableName = "pn-address-manager-country";
+        private String apiKeyTableName;
+        private String capTableName;
+        private String postelBatchTableName;
+        private String batchRequestTableName;
+        private String countryTableName;
     }
 
     @Data

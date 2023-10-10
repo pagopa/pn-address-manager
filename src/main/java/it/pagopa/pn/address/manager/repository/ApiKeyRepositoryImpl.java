@@ -25,9 +25,9 @@ public class ApiKeyRepositoryImpl implements ApiKeyRepository {
     }
 
     @Override
-    public Mono<ApiKeyModel> findById(String apiKey){
+    public Mono<ApiKeyModel> findById(String cxId){
         Key key = Key.builder()
-                .partitionValue(apiKey)
+                .partitionValue(cxId)
                 .build();
         return Mono.fromFuture(table.getItem(key));
     }

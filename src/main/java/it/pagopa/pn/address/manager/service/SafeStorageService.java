@@ -4,23 +4,19 @@ import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageC
 import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
 
 @Service
 @Slf4j
 public class SafeStorageService {
-    private final CsvService csvService;
     private final PnSafeStorageClient pnSafeStorageClient;
     private final UploadDownloadClient uploadDownloadClient;
 
@@ -29,13 +25,13 @@ public class SafeStorageService {
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private final NormalizzatoreConverter normalizzatoreConverter;
 
-    public SafeStorageService(CsvService csvService,
-                              PnSafeStorageClient pnSafeStorageClient,
+    private static final String SAFE_STORAGE_URL_PREFIX = "safestorage://";
+
+    public SafeStorageService(PnSafeStorageClient pnSafeStorageClient,
                               UploadDownloadClient uploadDownloadClient,
                               AddressUtils addressUtils,
                               PnAddressManagerConfig pnAddressManagerConfig,
                               NormalizzatoreConverter normalizzatoreConverter) {
-        this.csvService = csvService;
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.uploadDownloadClient = uploadDownloadClient;
         this.addressUtils = addressUtils;
@@ -43,26 +39,22 @@ public class SafeStorageService {
         this.normalizzatoreConverter = normalizzatoreConverter;
     }
 
-    public Mono<FileCreationResponseDto> callSelfStorageCreateFileAndUpload(List<BatchRequest> requests) {
+    public Mono<FileCreationResponseDto> callSelfStorageCreateFileAndUpload(String csvContent, String sha256) {
 
         FileCreationRequestDto fileCreationRequestDto = addressUtils.getFileCreationRequest();
-        List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
-        requests.forEach(batchRequest ->
-                listToConvert.addAll(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest)));
-
-        String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
-        String sha256 = addressUtils.computeSha256(csvContent.getBytes());
 
         return pnSafeStorageClient.createFile(fileCreationRequestDto, pnAddressManagerConfig.getPagoPaCxId())
-                .doOnNext(fileCreationResponseDto -> uploadDownloadClient.uploadContent(csvContent, fileCreationResponseDto, sha256))
+                .flatMap(fileCreationResponseDto -> uploadDownloadClient.uploadContent(csvContent, fileCreationResponseDto, sha256)
+                        .thenReturn(fileCreationResponseDto))
                 .onErrorResume(e -> {
-                    log.error("ADDRESS MANAGER -> POSTEL - failed to create file", e);
+                    log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);
                     return Mono.error(e);
                 });
     }
 
     public Mono<FileDownloadResponse> getFile(String fileKey, String pnAddressManagerCxId) {
-        return pnSafeStorageClient.getFile(fileKey, pnAddressManagerCxId)
+        String finalFileKey = fileKey.replace(SAFE_STORAGE_URL_PREFIX, "");
+        return pnSafeStorageClient.getFile(finalFileKey, pnAddressManagerCxId)
                 .map(normalizzatoreConverter::fileDownloadResponseDtoToFileDownloadResponse);
 
     }

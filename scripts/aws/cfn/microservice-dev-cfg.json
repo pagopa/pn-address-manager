@@ -21,6 +21,8 @@
     "PnAddressManagerNormalizerEventBridgeRecoveryDelay": "30000",
     "PnAddressManagerNormalizerPostelRecoveryDelay": "30000",
     "PostelAuthKey": "test",
-    "NormalizerRequestPrefix": ""
+    "NormalizerRequestPrefix": "",
+    "PnAddressManagerCxId": "pn-address-manager",
+    "PnAddressManagerApiKey": ""
   }
 }

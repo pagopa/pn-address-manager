@@ -29,6 +29,11 @@ public class PostelBatch {
     private String fileKey;
 
     @Getter(onMethod = @__({
+            @DynamoDbAttribute(COL_SHA256)
+    }))
+    private String sha256;
+
+    @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_RETRY)
     }))
     private Integer retry;

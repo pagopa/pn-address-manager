@@ -12,10 +12,10 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbParti
 @DynamoDbBean
 public class ApiKeyModel {
 
-    @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute("apikey")}))
+    @Getter(onMethod=@__({@DynamoDbPartitionKey, @DynamoDbAttribute("cxId")}))
+    private String cxId;
+
+    @Getter(onMethod=@__({@DynamoDbAttribute("apikey")}))
     private String apiKey;
 
-    public ApiKeyModel(ApiKeyModel model) {
-        apiKey = model.apiKey;
-    }
 }

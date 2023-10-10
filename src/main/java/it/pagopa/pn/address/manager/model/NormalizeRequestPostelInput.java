@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.model;
 
 import com.opencsv.bean.CsvBindByName;
+import com.opencsv.bean.CsvBindByPosition;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -12,36 +13,36 @@ import lombok.ToString;
 public class NormalizeRequestPostelInput {
 
     @CsvBindByName(column = "IdCodiceCliente")
-    //id del cliente
+    @CsvBindByPosition(position = 0)
     private String idCodiceCliente;
 
     @ToString.Exclude
     @CsvBindByName(column = "Provincia")
-    //Sigla Provincia
+    @CsvBindByPosition(position = 1)
     private String provincia;
 
     @ToString.Exclude
     @CsvBindByName(column = "Cap")
-    //cap
+    @CsvBindByPosition(position = 2)
     private String cap;
 
     @ToString.Exclude
     @CsvBindByName(column = "localita", required = true)
-    //ocalità/comune
+    @CsvBindByPosition(position = 3)
     private String localita;
 
     @ToString.Exclude
     @CsvBindByName(column = "localitaAggiuntiva")
-    //frazione
+    @CsvBindByPosition(position = 4)
     private String localitaAggiuntiva;
 
     @ToString.Exclude
     @CsvBindByName(column = "indirizzo", required = true)
-    //svia
+    @CsvBindByPosition(position = 5)
     private String indirizzo;
 
     @ToString.Exclude
     @CsvBindByName(column = "stato")
-    //stato
+    @CsvBindByPosition(position = 6)
     private String stato;
 }

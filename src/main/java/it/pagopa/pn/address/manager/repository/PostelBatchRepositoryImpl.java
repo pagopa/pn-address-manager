@@ -19,13 +19,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.*;
+import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.COL_LAST_RESERVED;
+import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.COL_RETRY;
+import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.GSI_S;
 
 @Component
 public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
     private final DynamoDbAsyncTable<PostelBatch> table;
     private final PnAddressManagerConfig pnAddressManagerConfig;
+
+    private static final String LAST_RESERVED_ALIAS = "#lastReserved";
+    private static final String LAST_RESERVED_PLACEHOLDER = ":lastReserved";
 
     public PostelBatchRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                      PnAddressManagerConfig pnAddressManagerConfig,
@@ -40,8 +45,8 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     }
 
     @Override
-    public Mono<PostelBatch> findByFileKey(String fileKey) {
-        return Mono.fromFuture(table.getItem(r -> r.key(keyBuilder(fileKey))));
+    public Mono<PostelBatch> findByBatchId(String batchId) {
+        return Mono.fromFuture(table.getItem(r -> r.key(keyBuilder(batchId))));
     }
 
     @Override
@@ -77,17 +82,17 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     public Mono<List<PostelBatch>> getPostelBatchToRecover() {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#retry", COL_RETRY);
-        expressionNames.put("#lastReserved", COL_LAST_RESERVED);
+        expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getNormalizer().getPostel().getMaxRetry())).build());
-        expressionValues.put(":lastReserved", AttributeValue.builder()
-                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getRecoveryAfter()).toString())
+        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxRetry())).build());
+        expressionValues.put(LAST_RESERVED_PLACEHOLDER, AttributeValue.builder()
+                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getRecoveryAfter()).toString())
                 .build());
 
         String expression = "#retry < :retry AND (:lastReserved > #lastReserved OR attribute_not_exists(#lastReserved))";
 
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(keyBuilder(BatchStatus.NOT_WORKED.getValue()));
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(keyBuilder(BatchStatus.TAKEN_CHARGE.getValue()));
 
         QueryEnhancedRequest queryEnhancedRequest = QueryEnhancedRequest.builder()
                 .queryConditional(queryConditional)

@@ -10,6 +10,7 @@ public final class PostelBatchConstant {
     public static final String COL_RETRY = "retry";
     public static final String COL_BATCH_ID = "batchId";
 
+    public static final String COL_SHA256 = "sha256";
     public static final String COL_TTL = "ttl";
     public static final String COL_STATUS = "status";
     public static final String COL_RESERVATION_ID = "reservationId";

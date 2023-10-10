@@ -8,7 +8,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class PostelCallbackSqsDto {
-    private String fileKeyInput;
-    private String fileKeyOutput;
-    private String fileOutputUrl;
+    private String requestId;
+    private String outputFileKey;
+    private String outputFileUrl;
+    private String error;
+
 }

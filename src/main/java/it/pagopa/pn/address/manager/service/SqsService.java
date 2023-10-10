@@ -67,24 +67,24 @@ public class SqsService {
         log.info(PUSHING_MESSAGE, pnAddressManagerCxId, msg.getNormalizeItemsRequest().getCorrelationId());
         log.debug(INSERTING_MSG_WITH_DATA, msg, pnAddressManagerConfig.getSqs().getInputQueueName());
         log.info(INSERTING_MSG_WITHOUT_DATA, pnAddressManagerConfig.getSqs().getInputQueueName());
-        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getInputQueueName(),eventType);
+        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getInputQueueName(),eventType, msg.getNormalizeItemsRequest().getCorrelationId());
     }
 
     public Mono<SendMessageResponse> pushToInputQueue(PostelCallbackSqsDto msg, String eventType) {
-        log.info("pushing message from Postel with InputFileKey: [{}] and OutputFileKey: [{}]", msg.getFileKeyInput(), msg.getFileKeyOutput());
+        log.info("pushing message from Postel with BatchId: [{}] and OutputFileKey: [{}]", msg.getRequestId(), msg.getOutputFileKey());
         log.debug(INSERTING_MSG_WITH_DATA, msg, pnAddressManagerConfig.getSqs().getInputQueueName());
         log.info(INSERTING_MSG_WITHOUT_DATA, pnAddressManagerConfig.getSqs().getInputQueueName());
-        return push(addressUtils.toJson(msg), "postel", pnAddressManagerConfig.getSqs().getInputQueueName(),eventType);
+        return push(addressUtils.toJson(msg), "postel", pnAddressManagerConfig.getSqs().getInputQueueName(),eventType, msg.getRequestId());
     }
 
     public Mono<SendMessageResponse> pushToInputDlqQueue(InternalCodeSqsDto msg, String pnAddressManagerCxId) {
         log.info(PUSHING_MESSAGE, pnAddressManagerCxId, msg.getNormalizeItemsRequest().getCorrelationId());
         log.debug(INSERTING_MSG_WITH_DATA, msg, pnAddressManagerConfig.getSqs().getInputDlqQueueName());
         log.info(INSERTING_MSG_WITHOUT_DATA, pnAddressManagerConfig.getSqs().getInputDlqQueueName());
-        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getInputDlqQueueName(), "AM_NORMALIZE_INPUT");
+        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getInputDlqQueueName(), "AM_NORMALIZE_INPUT", msg.getNormalizeItemsRequest().getCorrelationId());
     }
 
-    public Mono<SendMessageResponse> push(String msg, String pnAddressManagerCxId, String queueName, String eventType) {
+    public Mono<SendMessageResponse> push(String msg, String pnAddressManagerCxId, String queueName, String eventType, String correlationId) {
         GetQueueUrlRequest getQueueRequest = GetQueueUrlRequest.builder()
                 .queueName(queueName)
                 .build();
@@ -92,19 +92,20 @@ public class SqsService {
 
         SendMessageRequest sendMsgRequest = SendMessageRequest.builder()
                 .queueUrl(queueUrl)
-                .messageAttributes(buildMessageAttributeMap(pnAddressManagerCxId, eventType))
+                .messageAttributes(buildMessageAttributeMap(pnAddressManagerCxId, eventType, correlationId))
                 .messageBody(msg)
                 .build();
 
         return Mono.just(sqsClient.sendMessage(sendMsgRequest));
     }
 
-    private Map<String, MessageAttributeValue> buildMessageAttributeMap(String pnAddressManagerCxId, String eventType) {
+    private Map<String, MessageAttributeValue> buildMessageAttributeMap(String pnAddressManagerCxId, String eventType, String correlationId) {
         Map<String, MessageAttributeValue> attributes = new HashMap<>();
         if (StringUtils.hasText(pnAddressManagerCxId)) {
             attributes.put("clientId", MessageAttributeValue.builder().stringValue(pnAddressManagerCxId).dataType("String").build());
         }
         attributes.put("eventType", MessageAttributeValue.builder().stringValue(eventType).dataType("String").build());
+        attributes.put("requestId", MessageAttributeValue.builder().stringValue(correlationId).dataType("String").build());
         return attributes;
     }
 }

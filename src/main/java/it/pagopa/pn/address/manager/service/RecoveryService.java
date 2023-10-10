@@ -8,6 +8,7 @@ import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -24,6 +25,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESSMANAGER_BATCHREQUEST;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
@@ -126,8 +130,10 @@ public class RecoveryService {
                 .blockOptional()
                 .orElseThrow(() -> {
                     log.warn("Address Manager - can not get batch request - DynamoDB Mono<Page> is null");
-                    //TODO: FIX EXCEPTION
-                    return new PnAddressManagerException("AddressManager - can not get batch request", "", 1, "");
+                    return new PnAddressManagerException(ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST,
+                            ADDRESS_NORMALIZER_ASYNC + ERROR_MESSAGE_ADDRESSMANAGER_BATCHREQUEST ,
+                            HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                            ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST);
                 });
     }
 

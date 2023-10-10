@@ -61,8 +61,6 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         }
 
         QueryEnhancedRequest queryEnhancedRequest = queryEnhancedRequestBuilder.build();
-        // modificare il GSI di modo che contenga solo il batch id, eliminare status e lastReserved e tutte le altre
-        // colonne legate al flusso di recovery
         return Mono.from(table.index(GSI_BL).query(queryEnhancedRequest));
     }
 
