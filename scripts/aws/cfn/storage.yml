@@ -78,7 +78,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-normalizeAddressRequest'
+      TableName: !Sub '${ProjectName}-addressManager-PNRequest'
       AttributeDefinitions:
         - AttributeName: "correlationId"
           AttributeType: "S"
@@ -96,7 +96,7 @@ Resources:
         - AttributeName: "correlationId"
           KeyType: "HASH"
         - AttributeName: "createdAt"
-          KeyType: "SORT"
+          KeyType: "RANGE"
       GlobalSecondaryIndexes:
         - IndexName: "batchId-lastReserved-index"
           KeySchema:
@@ -132,7 +132,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-postelBatch'
+      TableName: !Sub '${ProjectName}-addressManager-NormalizzatoreBatch'
       AttributeDefinitions:
         - AttributeName: "batchId"
           AttributeType: "S"
@@ -146,8 +146,6 @@ Resources:
           KeySchema:
             - AttributeName: status
               KeyType: HASH
-            - AttributeName: lastReserved
-              KeyType: RANGE
           Projection:
             ProjectionType: ALL
       TimeToLiveSpecification:
@@ -162,7 +160,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-addressManagerCountry'
+      TableName: !Sub '${ProjectName}-addressManager-Country'
       AttributeDefinitions:
         - AttributeName: "country"
           AttributeType: "S"
@@ -181,7 +179,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-addressManagerCap'
+      TableName: !Sub '${ProjectName}-addressManager-Cap'
       AttributeDefinitions:
         - AttributeName: "cap"
           AttributeType: "S"
@@ -200,7 +198,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-addressManagerApikey'
+      TableName: !Sub '${ProjectName}-addressManager-AnagraficaClient'
       AttributeDefinitions:
         - AttributeName: "cxId"
           AttributeType: "S"
