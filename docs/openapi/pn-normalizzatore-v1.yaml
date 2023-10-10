@@ -2,6 +2,8 @@ openapi: 3.0.3
 info:
   title:  API fornite dal normalizzatore
   version: 1.0.0
+  description: >-
+    FIXME Conferma path servizi
 paths:
   /send-normalizzatore-ingress/v1/normalizzazione:
     post:
@@ -150,14 +152,14 @@ components:
       type: object
       required:
         - requestId
+      description: >-
+        error valorizzato solo in caso di mancata accettazione
       properties:
         requestId:
           type: string
           minLength: 1
           maxLength: 250
           description: id lavorazione
-        stato:
-          type: string
         error:
           type: string
           description: >-
@@ -174,7 +176,7 @@ components:
         configIn:
           $ref: '#/components/schemas/ConfigIn'
         masterIn:
-          description: Indirizzo base con cui deduplicare lo slave //FIXME
+          description: Indirizzo base con cui deduplicare lo slave
           $ref: '#/components/schemas/AddressIn'
         slaveIn:
           description: Indirizzo oggetto della deduplica
@@ -216,7 +218,7 @@ components:
         errore: valorizzato in caso di risposta con errore
       properties:
         slaveOut:
-          description: risultato delle deduplica //FIXME
+          description: risultato delle deduplica
           $ref: '#/components/schemas/AddressOut'
         risultatoDedu:
           type: boolean
@@ -233,7 +235,9 @@ components:
 
     AddressOut:
       type: object
-      # FIXME elencare i parametri obbligatori
+      required:
+       - nRisultatoNorm
+       - fPostalizzabile
       properties:
         id:
           type: string
