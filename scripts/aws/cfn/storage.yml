@@ -27,6 +27,10 @@ Parameters:
   LogRetention:
     Type: Number
     Default: 14
+  
+  AlarmSNSTopicName:
+    Type: String
+
 
 Resources:
   # Log group
