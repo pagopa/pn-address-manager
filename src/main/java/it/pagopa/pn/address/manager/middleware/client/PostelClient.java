@@ -27,7 +27,7 @@ public class PostelClient {
 
 	public Mono<RisultatoDeduplica> deduplica(InputDeduplica inputDeduplica) {
 		log.logInvokingExternalService(POSTEL, "Calling DeduplicaNormalizzaRest");
-		return postelApi.pagoPaDeduplicaRestPagoPaDeduplicaRestNormalizzaRestPost(inputDeduplica)
+		return postelApi.postelMockPagoPaDeduplicaRestPagoPaDeduplicaRestNormalizzaRestPost(inputDeduplica)
 				.onErrorMap(throwable -> {
 					if (throwable instanceof WebClientResponseException ex) {
 						throw new PnAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT

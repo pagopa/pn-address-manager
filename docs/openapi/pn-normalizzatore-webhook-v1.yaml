@@ -1,4 +1,4 @@
-openapi: 3.0.1
+openapi: 3.0.3
 info:
   title: Normalizzatore ingress API.
   description: >-
@@ -13,75 +13,42 @@ tags:
     description: API esposte verso il normalizzatore
 
 paths:
-  /normalizzatore-ingress/v1/normalizer-callback:
+  /normalizzatore-ingress/v1/callback:
     post:
       summary: Richiesta di callback di avvenuta normalizzazione della lista di address in ingresso
       description: |-
         Operazione che avvisa pn-address-manager dell'avvenuta normalizzazione di una lista di address.
-        Il file di output conterrà i seguenti campi, gestiti con logica posizionale:
-        
-          - IDCODICECLIENTE : l’Id del cliente;
-          - NRISULTATONORM : Risultato di normalizzazione (0 : scartato/ 1 : normalizzato,2,3,4,5);
-          - FPOSTALIZZABILE (0 : NON Postalizzabile, 1 : Postalizzabile);
-          - NERRORENORM : Codice di errore;
-          - SSIGLAPROV : Sigla provincia normalizzata;
-          - SSTATOUFF : Stato normalizzato (Valorizzato ITALIA, REPUBBLICA DI SAN MARINO e CITTA’ DEL VATICANO + TUTTI GLI STATI ESTERI);
-          - SSTATOABB : Stato abbreviato normalizzato;
-          - SSTATOSPEDIZIONE : Stato di Spedizione;
-          - SCOMUNEUFF : Comune normalizzato;
-          - SCOMUNEABB : Comune Abbreviato normalizzato;
-          - SCOMUNESPEDIZIONE : Comune di spedizione;
-          - SFRAZIONEUFF : Frazione normalizzata;
-          - SFRAZIONEABB : Frazione Abbreviata normalizzata;
-          - SFRAZIONESPEDIZIONE : Frazione di Spedizione;
-          - SCIVICOALTRO : altri elementi del civico (interno, piano, scala, palazzo …) - VA IN INDIRIZZO 2
-          - SCAP : cap normalizzato;
-          - SPRESSO : informazioni di presso e casella postale (C.P 123, Presso sig. rossi …) -  VA IN NAME 2;
-          - SVIACOMPLETAUFF : via completa normalizzata (DUG+COMPL+TOPONIMO+CIVICO POSTALE) ;
-          - SVIACOMPLETAABB: via completa normalizzata abbreviata (DUG+COMPL+TOPONIMO+CIVICO POSTALE ABBREVIATA) ;
-          - SVIACOMPLETASPEDIZIONE : Indirizzo di Stampa;
-
       tags:
         - Normalizzatore
       parameters:
         - $ref: '#/components/parameters/xPagopaAddrManCxId'
         - $ref: '#/components/parameters/xPagopaAddrManApiKey'
-      operationId: normalizerCallback
+      operationId: callbackNormalizedAddress
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NormalizerCallbackRequest'
+              $ref: '#/components/schemas/CallbackRequestData'
       responses:
-        '202':
-          description: >-
-            OK, l'evento è stato registrato
+        '200':
+          description: Risposta di successo
           content:
             application/json:
-              example: { resultCode: '202.00', resultDescription: 'Accepted', clientResponseTimeStamp: '2019-08-24T14:15:22Z'}
               schema:
-                $ref: '#/components/schemas/OperationResultCodeResponse'
+                $ref: '#/components/schemas/CallbackResponseData'
         '400':
           description: Bad Request
           content:
-            application/json:
+            application/problem+json:
               schema:
-                $ref: '#/components/schemas/OperationResultCodeResponse'
-              examples:
-                syntaxError:
-                  summary: 'Errore sintattico'
-                  value: { resultCode: '400.01', resultDescription: 'Syntax Error', errorList: [ 'field requestId is required' ], clientResponseTimeStamp: '2019-08-24T14:15:22Z' }
-                semanticError:
-                  summary: 'Errore semantico'
-                  value: { resultCode: '400.02', resultDescription: 'Semantic Error', errorList: [ 'filekey not exists' ], clientResponseTimeStamp: '2019-08-24T14:15:22Z' }
-
+                $ref: '#/components/schemas/CallbackResponseData'
         '500':
           description: InternalServerError
           content:
             application/problem+json:
               schema:
-                $ref: 'remote-refs.yaml#/components/schemas/Problem'
+                $ref: '#/components/schemas/CallbackResponseData'
 
   /normalizzatore-ingress/v1/attachment-preload:
     put:
@@ -221,35 +188,6 @@ components:
       $ref: 'parameters-pn-address.yaml#/components/parameters/xPagopaAddrManApiKey'
 
   schemas:
-
-    NormalizerCallbackRequest:
-      type: object
-      required:
-        - requestId
-      properties:
-        requestId:
-          type: string
-          minLength: 1
-          maxLength: 250
-          description: id lavorazione
-        uri:
-          type: string
-          minLength: 5
-          maxLength: 2000
-          description: Le coordinate del documento correlato allo stato.
-        sha256:
-          type: string
-          minLength: 40
-          maxLength: 50
-          description: >-
-            sha256, codificato in base 64, del contenuto del file riferenziato dal campo uri
-        error:
-          type: string
-          description: >-
-            identificativo dell'errore
-            - _E01_ //FIXME elencare i casi
-            - _E02_
-
 
     ##########################################################################
     ###                 PRECARICAMENTO FILE SU SAFESTORAGE                 ###
@@ -400,6 +338,24 @@ components:
           description: >-
             Stima del numero di secondi da aspettare prima che il contenuto del 
             documento sia scaricabile.
+
+
+    CallbackRequestData:
+      type: object
+      properties:
+        fileKeyInput:
+          type: string
+        fileKeyOutput:
+          type: string
+
+    CallbackResponseData:
+      type: object
+      properties:
+        response:
+          type: string
+          enum:
+            - OK
+            - KO
 
     OperationResultCodeResponse:
       required:
