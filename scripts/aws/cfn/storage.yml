@@ -74,7 +74,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-addressManagerBatchRequests'
+      TableName: !Sub '${ProjectName}-NormalizeAddressRequest'
       AttributeDefinitions:
         - AttributeName: "correlationId"
           AttributeType: "S"
@@ -132,7 +132,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableName: !Sub '${ProjectName}-addressManagerPostelBatch'
+      TableName: !Sub '${ProjectName}-PostelBatch'
       AttributeDefinitions:
         - AttributeName: "batchId"
           AttributeType: "S"

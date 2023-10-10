@@ -301,6 +301,10 @@ Parameters:
     Type: String
     Description: 'Postel authentication key'
 
+  NormalizerRequestPrefix:
+    Type: string
+    Description: 'Normalize Request Prefix for Postel requestId'
+
 Resources:
 
   # PN-address-manager microservice
@@ -355,6 +359,7 @@ Resources:
         ContainerEnvEntry32: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYDELAY=${PnAddressManagerNormalizerPostelRecoveryDelay}'
         ContainerEnvEntry33: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYAFTER=${PnAddressManagerNormalizerPostelRecoveryAfter}'
         ContainerEnvEntry34: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_MAXRETRY=${PnAddressManagerNormalizerPostelMaxRetry}'
+        ContainerEnvEntry35: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_REQUESTPREFIX=${NormalizerRequestPrefix}'
 
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
