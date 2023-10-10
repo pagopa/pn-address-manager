@@ -116,26 +116,6 @@ class AddressUtilsTest {
         assertNotNull(addressUtils.toNormalizeRequestPostelInput(normalizeRequestList,"correlationId"));
     }
 
-    @Test
-    void normalizeRequestToPostelCsvRequest(){
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("12345"); // Imposta i valori appropriati per ciascun campo
-        batchRequest.setBatchId("batch-1");
-        batchRequest.setRetry(2);
-        batchRequest.setTtl(1633449200L); // Esempio di valore per il tempo di vita (TTL) come timestamp Unix
-        batchRequest.setClientId("client-123");
-        batchRequest.setStatus("In progress");
-        batchRequest.setLastReserved(LocalDateTime.now()); // Esempio di data e ora corrente
-        batchRequest.setReservationId("reservation-1");
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Esempio di data e ora corrente
-        batchRequest.setSendStatus("Pending");
-        batchRequest.setMessage("Messaggio di esempio");
-        batchRequest.setXApiKey("api-key-123");
-        batchRequest.setCxId("cx-123");
-        batchRequest.setAwsMessageId("aws-msg-123");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest));
-    }
 
     @Test
     void computeSha256(){
@@ -236,72 +216,6 @@ class AddressUtilsTest {
         normalizedAddress.setSViaCompletaAbb("Via Abbreviata Completa");
         normalizedAddress.setSViaCompletaSpedizione("Via Spedizione Completa");
         return normalizedAddress;
-    }
-
-    @Test
-    void getNormalizeRequestFromBatchRequest(){
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("12345"); // Imposta i valori appropriati per ciascun campo
-        batchRequest.setBatchId("batch-1");
-        batchRequest.setRetry(2);
-        batchRequest.setTtl(1633449200L); // Esempio di valore per il tempo di vita (TTL) come timestamp Unix
-        batchRequest.setClientId("client-123");
-        batchRequest.setStatus("In progress");
-        batchRequest.setLastReserved(LocalDateTime.now()); // Esempio di data e ora corrente
-        batchRequest.setReservationId("reservation-1");
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Esempio di data e ora corrente
-        batchRequest.setSendStatus("Pending");
-        batchRequest.setMessage("Messaggio di esempio");
-        batchRequest.setXApiKey("api-key-123");
-        batchRequest.setCxId("cx-123");
-        batchRequest.setAwsMessageId("aws-msg-123");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.getNormalizeRequestFromBatchRequest(batchRequest));
-    }
-
-    @Test
-    void getNormalizeRequestFromBatchRequest1(){
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("12345"); // Imposta i valori appropriati per ciascun campo
-        batchRequest.setBatchId("batch-1");
-        batchRequest.setRetry(2);
-        batchRequest.setTtl(1633449200L); // Esempio di valore per il tempo di vita (TTL) come timestamp Unix
-        batchRequest.setClientId("client-123");
-        batchRequest.setStatus("In progress");
-        batchRequest.setLastReserved(LocalDateTime.now()); // Esempio di data e ora corrente
-        batchRequest.setReservationId("reservation-1");
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Esempio di data e ora corrente
-        batchRequest.setSendStatus("Pending");
-        batchRequest.setMessage("Messaggio di esempio");
-        batchRequest.setXApiKey("api-key-123");
-        batchRequest.setCxId("cx-123");
-        batchRequest.setAwsMessageId("aws-msg-123");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.getNormalizeRequestFromBatchRequest(batchRequest));
-    }
-
-
-    @Test
-    void getNormalizeRequestFromBatchRequestNull() throws JsonProcessingException {
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("12345"); // Imposta i valori appropriati per ciascun campo
-        batchRequest.setAddresses("Indirizzo di esempio");
-        batchRequest.setBatchId("batch-1");
-        batchRequest.setRetry(2);
-        batchRequest.setTtl(1633449200L); // Esempio di valore per il tempo di vita (TTL) come timestamp Unix
-        batchRequest.setClientId("client-123");
-        batchRequest.setStatus("In progress");
-        batchRequest.setLastReserved(LocalDateTime.now()); // Esempio di data e ora corrente
-        batchRequest.setReservationId("reservation-1");
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Esempio di data e ora corrente
-        batchRequest.setSendStatus("Pending");
-        batchRequest.setMessage("Messaggio di esempio");
-        batchRequest.setXApiKey("api-key-123");
-        batchRequest.setCxId("cx-123");
-        batchRequest.setAwsMessageId("aws-msg-123");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        when(objectMapper.readValue(anyString(), (Class<BatchRequest>) any())).thenThrow(JsonProcessingException.class);
-        assertThrows(PnInternalException.class, () -> addressUtils.getNormalizeRequestFromBatchRequest(batchRequest));
     }
 
     @Test

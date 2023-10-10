@@ -6,6 +6,7 @@ import it.pagopa.pn.address.manager.entity.PostelBatch;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.opensaml.xmlsec.signature.P;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
@@ -50,8 +51,10 @@ class PostelBatchRepositoryImplTest {
         PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
         normalizer.setPostel(bR);
         addressManagerConfig.setNormalizer(normalizer);
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setMaxRetry(3);
         when(dynamoDbEnhancedAsyncClient.table(any(), any())).thenReturn(dynamoDbAsyncTable);
-        postelBatchRepository = new PostelBatchRepositoryImpl(dynamoDbEnhancedAsyncClient, addressManagerConfig, addressManagerConfig);
+        postelBatchRepository = new PostelBatchRepositoryImpl(dynamoDbEnhancedAsyncClient, addressManagerConfig);
     }
 
     @Test
@@ -84,12 +87,20 @@ class PostelBatchRepositoryImplTest {
     @Test
     void getBatchRequestToRecovery(){
         PostelBatch batchRequest = getBatchRequest();
+        PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
+        PnAddressManagerConfig.BatchRequest batchRequest1 = new PnAddressManagerConfig.BatchRequest();
+        batchRequest1.setMaxRetry(3);
+        batchRequest1.setRecoveryAfter(1);
+        normalizer.setBatchRequest(batchRequest1);
+        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setNormalizer(normalizer);
         DynamoDbAsyncIndex<Object> index = mock(DynamoDbAsyncIndex.class);
         when(dynamoDbAsyncTable.index(any()))
                 .thenReturn(index);
         when(index.query((QueryEnhancedRequest) any()))
                 .thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(batchRequest)))));
-        StepVerifier.create(postelBatchRepository.getPostelBatchToRecover()).expectNextCount(0);
+        PostelBatchRepository batchRepository = new PostelBatchRepositoryImpl(dynamoDbEnhancedAsyncClient, pnAddressManagerConfig);
+        StepVerifier.create(batchRepository.getPostelBatchToRecover()).expectNextCount(0);
     }
 
 

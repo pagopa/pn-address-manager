@@ -48,13 +48,11 @@ class PostelBatchServiceTest {
     @MockBean
     AddressBatchRequestService addressBatchRequestService;
     @MockBean
-    CapRepository capRepository;
-    @MockBean
-    CountryRepository countryRepository;
+    CapAndCountryService capAndCountryService;
 
     @Test
     void getResponse(){
-        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capRepository, countryRepository);
+        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capAndCountryService);
 
         when(uploadDownloadClient.downloadContent(anyString())).thenReturn(Mono.just("url".getBytes()));
         NormalizedAddress normalizedAddress = new NormalizedAddress();
@@ -70,7 +68,7 @@ class PostelBatchServiceTest {
 
     @Test
     void getResponse1(){
-        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capRepository, countryRepository);
+        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capAndCountryService);
 
         when(uploadDownloadClient.downloadContent(anyString())).thenReturn(Mono.just("url".getBytes()));
         NormalizedAddress normalizedAddress = new NormalizedAddress();
@@ -101,14 +99,13 @@ class PostelBatchServiceTest {
         capModel.setCap("00010");
         capModel.setEndValidity(LocalDateTime.now());
         capModel.setStartValidity(LocalDateTime.now());
-        when(capRepository.findValidCap("00010")).thenReturn(Mono.just(capModel));
         StepVerifier.create(postelBatchService.getResponse("url", postelBatch)).expectError().verify();
     }
 
 
     @Test
     void getResponse2(){
-        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capRepository, countryRepository);
+        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capAndCountryService);
 
         when(uploadDownloadClient.downloadContent(anyString())).thenReturn(Mono.just("url".getBytes()));
         NormalizedAddress normalizedAddress = new NormalizedAddress();
@@ -135,17 +132,6 @@ class PostelBatchServiceTest {
         normalizeResult.setNormalizedAddress(base);
         when(addressUtils.toResultItem(any())).thenReturn(List.of(normalizeResult));
         when(addressUtils.toJson(anyString())).thenReturn("json");
-        CountryModel capModel = new CountryModel();
-        when(countryRepository.findByName(anyString())).thenReturn(Mono.just(capModel));
         StepVerifier.create(postelBatchService.getResponse("url", postelBatch)).expectError().verify();
-    }
-
-
-    @Test
-    void findPostelBatch(){
-        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capRepository, countryRepository);
-        when(postelBatchRepository.findByFileKey(anyString())).thenReturn(Mono.just(new PostelBatch()));
-
-        StepVerifier.create(postelBatchService.findPostelBatch("file")).expectNext(new PostelBatch()).verifyComplete();
     }
 }

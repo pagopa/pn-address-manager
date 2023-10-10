@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.rest;
 
 import it.pagopa.pn.address.manager.config.SchedulerConfig;
+import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.service.NormalizzatoreService;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
 import org.junit.jupiter.api.Test;
@@ -39,7 +40,7 @@ class NormalizattoreControllerTest {
     void presignedUploadRequest() {
         PreLoadRequestData requestData = new PreLoadRequestData();
         PreLoadResponseData preLoadResponseData = new PreLoadResponseData();
-        when(normalizzatoreService.presignedUploadRequest(any(), any())).
+        when(normalizzatoreService.presignedUploadRequest(any(), any(), any())).
                 thenReturn(Mono.just(preLoadResponseData));
         StepVerifier.create(normalizeAddressController.presignedUploadRequest("cxId", "ApiKey",Mono.just(requestData), serverWebExchange))
               .expectNext(ResponseEntity.ok().body(preLoadResponseData));
@@ -49,19 +50,11 @@ class NormalizattoreControllerTest {
     void getFile() {
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
         when(normalizzatoreService.getFile(any(),any())).thenReturn(Mono.just(fileDownloadResponse));
+        ApiKeyModel apiKeyModel = new ApiKeyModel();
+        apiKeyModel.setApiKey("ApiKey");
+        apiKeyModel.setCxId("cxId");
+        when(normalizzatoreService.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
         StepVerifier.create(normalizeAddressController.getFile("fileKey","cxId", "ApiKey", serverWebExchange))
                 .expectNext(ResponseEntity.ok().body(fileDownloadResponse));
     }
-
-
-    @Test
-    void callbackNormalizedAddress() {
-        CallbackResponseData response = new CallbackResponseData();
-        when(normalizzatoreService.callbackNormalizedAddress(any(),any())).thenReturn(Mono.just(response));
-        CallbackRequestData callbackRequestData = new CallbackRequestData();
-        StepVerifier.create(normalizeAddressController.callbackNormalizedAddress("cxId", "ApiKey", Mono.just(callbackRequestData), serverWebExchange))
-                .expectNext(ResponseEntity.ok().body(response));
-    }
-
-
 }

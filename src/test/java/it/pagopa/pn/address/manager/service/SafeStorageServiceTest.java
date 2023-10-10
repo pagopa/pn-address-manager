@@ -45,7 +45,7 @@ class SafeStorageServiceTest {
     void callSelfStorageCreateFileAndUpload(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setPagoPaCxId("cxId");
-        safeStorageService = new SafeStorageService(csvService, pnSafeStorageClient, uploadDownloadClient, addressUtils, pnAddressManagerConfig, normalizzatoreConverter);
+        safeStorageService = new SafeStorageService(pnSafeStorageClient, uploadDownloadClient, addressUtils, pnAddressManagerConfig, normalizzatoreConverter);
         BatchRequest batchRequest = getBatchRequest();
         when(addressUtils.getFileCreationRequest()).thenReturn(new FileCreationRequestDto());
         when(addressUtils.normalizeRequestToPostelCsvRequest(any())).thenReturn(List.of(new NormalizeRequestPostelInput()));
@@ -54,12 +54,12 @@ class SafeStorageServiceTest {
         when(pnSafeStorageClient.createFile(any(),any())).thenReturn(Mono.just(new FileCreationResponseDto()));
         when(uploadDownloadClient.uploadContent(any(),any(),any())).thenReturn(Mono.just("csv"));
 
-        StepVerifier.create(safeStorageService.callSelfStorageCreateFileAndUpload(List.of(batchRequest))).expectNext(new FileCreationResponseDto()).verifyComplete();
+        StepVerifier.create(safeStorageService.callSelfStorageCreateFileAndUpload("content", "sha256")).expectNext(new FileCreationResponseDto()).verifyComplete();
     }
 
     @Test
     void getFile(){
-        safeStorageService = new SafeStorageService(csvService, pnSafeStorageClient, uploadDownloadClient, addressUtils, pnAddressManagerConfig, normalizzatoreConverter);
+        safeStorageService = new SafeStorageService(pnSafeStorageClient, uploadDownloadClient, addressUtils, pnAddressManagerConfig, normalizzatoreConverter);
         when(pnSafeStorageClient.getFile(any(),any())).thenReturn(Mono.just(new FileDownloadResponseDto()));
         when(normalizzatoreConverter.fileDownloadResponseDtoToFileDownloadResponse(any())).thenReturn(new FileDownloadResponse());
         StepVerifier.create(safeStorageService.getFile("file","cx")).expectNext(new FileDownloadResponse()).verifyComplete();
@@ -69,7 +69,7 @@ class SafeStorageServiceTest {
     void callSelfStorageCreateFileAndUploadError(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setPagoPaCxId("cxId");
-        safeStorageService = new SafeStorageService(csvService, pnSafeStorageClient, uploadDownloadClient, addressUtils, pnAddressManagerConfig, normalizzatoreConverter);
+        safeStorageService = new SafeStorageService(pnSafeStorageClient, uploadDownloadClient, addressUtils, pnAddressManagerConfig, normalizzatoreConverter);
         BatchRequest batchRequest = getBatchRequest();
         when(addressUtils.getFileCreationRequest()).thenReturn(new FileCreationRequestDto());
         when(addressUtils.normalizeRequestToPostelCsvRequest(any())).thenReturn(List.of(new NormalizeRequestPostelInput()));
@@ -79,7 +79,7 @@ class SafeStorageServiceTest {
         PnSafeStorageException exception = mock(PnSafeStorageException.class);
         when(uploadDownloadClient.uploadContent(any(),any(),any())).thenThrow(exception);
 
-        StepVerifier.create(safeStorageService.callSelfStorageCreateFileAndUpload(List.of(batchRequest))).expectError().verify();
+        StepVerifier.create(safeStorageService.callSelfStorageCreateFileAndUpload("content", "sha256")).expectError().verify();
     }
 
 

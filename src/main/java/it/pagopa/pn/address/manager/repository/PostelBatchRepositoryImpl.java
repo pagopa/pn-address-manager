@@ -33,9 +33,8 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     private static final String LAST_RESERVED_PLACEHOLDER = ":lastReserved";
 
     public PostelBatchRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
-                                     PnAddressManagerConfig pnAddressManagerConfig,
-                                     PnAddressManagerConfig pnAddressManagerConfig1) {
-        this.pnAddressManagerConfig = pnAddressManagerConfig1;
+                                     PnAddressManagerConfig pnAddressManagerConfig) {
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
         this.table = dynamoDbEnhancedAsyncClient.table(pnAddressManagerConfig.getDao().getPostelBatchTableName(), TableSchema.fromClass(PostelBatch.class));
     }
 
@@ -61,13 +60,13 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     @Override
     public Mono<PostelBatch> resetPostelBatchForRecovery(PostelBatch postelBatch) {
         Map<String, String> expressionNames = new HashMap<>();
-        expressionNames.put("#lastReserved", COL_LAST_RESERVED);
+        expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         AttributeValue lastReserved = AttributeValue.builder()
                 .s(postelBatch.getLastReserved() != null ? postelBatch.getLastReserved().toString() : "")
                 .build();
-        expressionValues.put(":lastReserved", lastReserved);
+        expressionValues.put(LAST_RESERVED_PLACEHOLDER, lastReserved);
 
         String expression = "#lastReserved = :lastReserved OR attribute_not_exists(#lastReserved)";
         UpdateItemEnhancedRequest<PostelBatch> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(PostelBatch.class)

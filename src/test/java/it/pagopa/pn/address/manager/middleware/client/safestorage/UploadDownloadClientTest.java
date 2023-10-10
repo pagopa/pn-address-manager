@@ -8,6 +8,7 @@ import static org.mockito.Mockito.when;
 
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -45,7 +46,7 @@ class UploadDownloadClientTest {
     void testUploadContent2() {
         FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
         when(fileCreationResponse.getSecret()).thenReturn("Secret");
-        when(fileCreationResponse.getUploadUrl()).thenReturn("U://U@[9U]:{UU?U#U");
+        when(fileCreationResponse.getUploadUrl()).thenReturn("http://localhost:8080");
         uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
         verify(fileCreationResponse).getSecret();
         verify(fileCreationResponse).getUploadUrl();
@@ -59,7 +60,7 @@ class UploadDownloadClientTest {
         FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
         when(fileCreationResponse.getSecret()).thenThrow(
                 new PnAddressManagerException("", "The characteristics of someone or something", 2, "An error occurred"));
-        uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
+        Assertions.assertThrows(PnAddressManagerException.class, () -> uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256"));
         verify(fileCreationResponse).getSecret();
     }
 

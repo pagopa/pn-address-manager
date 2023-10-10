@@ -49,7 +49,7 @@ class NormalizzatoreConverterTest {
                 .preLoadRequestToFileCreationRequestDto(new PreLoadRequest());
         assertNull(actualPreLoadRequestToFileCreationRequestDtoResult.getContentType());
         assertEquals(NormalizzatoreConverter.PRELOADED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
-        assertEquals(NormalizzatoreConverter.PN_ADDRESS_TO_NORMALIZE_ATTACHMENTS,
+        assertEquals(NormalizzatoreConverter.PN_ADDRESSES_NORMALIZED,
                 actualPreLoadRequestToFileCreationRequestDtoResult.getDocumentType());
     }
 
@@ -64,7 +64,7 @@ class NormalizzatoreConverterTest {
                 .preLoadRequestToFileCreationRequestDto(preLoadRequest);
         assertEquals("text/plain", actualPreLoadRequestToFileCreationRequestDtoResult.getContentType());
         assertEquals(NormalizzatoreConverter.PRELOADED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
-        assertEquals(NormalizzatoreConverter.PN_ADDRESS_TO_NORMALIZE_ATTACHMENTS,
+        assertEquals(NormalizzatoreConverter.PN_ADDRESSES_NORMALIZED,
                 actualPreLoadRequestToFileCreationRequestDtoResult.getDocumentType());
         verify(preLoadRequest).getContentType();
     }
@@ -83,7 +83,6 @@ class NormalizzatoreConverterTest {
         assertNull(actualFileDownloadResponseDtoToFileDownloadResponseResult.getUrl());
         assertNull(actualFileDownloadResponseDtoToFileDownloadResponseResult.getSecret());
         assertEquals("Pre Load Idx", actualFileDownloadResponseDtoToFileDownloadResponseResult.getPreloadIdx());
-        assertNull(actualFileDownloadResponseDtoToFileDownloadResponseResult.getKey());
     }
 
     /**
@@ -103,7 +102,7 @@ class NormalizzatoreConverterTest {
         assertEquals("https://example.org/example", actualFileDownloadResponseDtoToFileDownloadResponseResult.getUrl());
         assertEquals("Secret", actualFileDownloadResponseDtoToFileDownloadResponseResult.getSecret());
         assertEquals("Pre Load Idx", actualFileDownloadResponseDtoToFileDownloadResponseResult.getPreloadIdx());
-        assertEquals("Key", actualFileDownloadResponseDtoToFileDownloadResponseResult.getKey());
+        assertEquals("safestorage://Key", actualFileDownloadResponseDtoToFileDownloadResponseResult.getKey());
         verify(fileCreationResponseDto).getUploadMethod();
         verify(fileCreationResponseDto).getKey();
         verify(fileCreationResponseDto).getSecret();

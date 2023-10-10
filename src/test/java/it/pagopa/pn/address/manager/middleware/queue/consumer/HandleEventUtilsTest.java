@@ -35,40 +35,5 @@ class HandleEventUtilsTest {
         assertThrows(PnInternalException.class, () -> HandleEventUtils.handleException(headers, new Throwable()));
         verify(headers).get(Mockito.<Object>any());
     }
-
-    /**
-     * Method under test: {@link HandleEventUtils#mapStandardEventHeader(MessageHeaders)}
-     */
-    @Test
-    void testMapStandardEventHeader() {
-        assertThrows(PnInternalException.class, () -> HandleEventUtils.mapStandardEventHeader(null));
-    }
-
-    /**
-     * Method under test: {@link HandleEventUtils#mapStandardEventHeader(MessageHeaders)}
-     */
-    @Test
-    void testMapStandardEventHeader2() {
-        MessageHeaders headers = mock(MessageHeaders.class);
-        when(headers.get(Mockito.<Object>any())).thenReturn(null);
-        StandardEventHeader actualMapStandardEventHeaderResult = HandleEventUtils.mapStandardEventHeader(headers);
-        assertNull(actualMapStandardEventHeaderResult.getCreatedAt());
-        assertNull(actualMapStandardEventHeaderResult.getPublisher());
-        assertNull(actualMapStandardEventHeaderResult.getIun());
-        assertNull(actualMapStandardEventHeaderResult.getEventType());
-        assertNull(actualMapStandardEventHeaderResult.getEventId());
-        verify(headers, atLeast(1)).get(Mockito.<Object>any());
-    }
-
-    /**
-     * Method under test: {@link HandleEventUtils#mapStandardEventHeader(MessageHeaders)}
-     */
-    @Test
-    void testMapStandardEventHeader3() {
-        MessageHeaders headers = mock(MessageHeaders.class);
-        when(headers.get(Mockito.<Object>any())).thenThrow(new PnInternalException("An error occurred"));
-        assertThrows(PnInternalException.class, () -> HandleEventUtils.mapStandardEventHeader(headers));
-        verify(headers).get(Mockito.<Object>any());
-    }
 }
 

@@ -56,9 +56,6 @@ class SqsServiceTest {
         StepVerifier.create(sqsService.pushToInputQueue(internalCodeSqsDto,"cxId","eventType")).expectNext(SendMessageResponse.builder().build()).verifyComplete();
 
         PostelCallbackSqsDto postelCallbackSqsDto = mock(PostelCallbackSqsDto.class);
-        when(postelCallbackSqsDto.getFileKeyInput()).thenReturn("input");
-        when(postelCallbackSqsDto.getFileKeyOutput()).thenReturn("input");
-        when(postelCallbackSqsDto.getFileOutputUrl()).thenReturn("url");
         StepVerifier.create(sqsService.pushToInputQueue(postelCallbackSqsDto, "eventType")).expectNext(SendMessageResponse.builder().build()).verifyComplete();
     }
 

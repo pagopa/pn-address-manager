@@ -32,7 +32,8 @@ public class DeduplicatesAddressService {
                                       PostelClient postelClient,
                                       AddressConverter addressConverter,
                                       PnAddressManagerConfig pnAddressManagerConfig,
-                                      ApiKeyRepository apiKeyRepository, CapAndCountryService capAndCountryService) {
+                                      ApiKeyRepository apiKeyRepository,
+                                      CapAndCountryService capAndCountryService) {
         this.addressUtils = addressUtils;
         this.postelClient = postelClient;
         this.addressConverter = addressConverter;

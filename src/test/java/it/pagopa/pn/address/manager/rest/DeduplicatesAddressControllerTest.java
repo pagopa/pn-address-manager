@@ -53,7 +53,7 @@ class DeduplicatesAddressControllerTest {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setCorrelationId("correlationId");
         deduplicatesResponse.setNormalizedAddress(address);
-        when(deduplicatesAddressService.deduplicates(any(),any())).thenReturn(Mono.just(deduplicatesResponse));
+        when(deduplicatesAddressService.deduplicates(any(),any(), any())).thenReturn(Mono.just(deduplicatesResponse));
         Assertions.assertNotNull(deduplicatesAddressController.deduplicates("cxId","apiKey",Mono.just(deduplicatesRequest),exchange));
     }
 }

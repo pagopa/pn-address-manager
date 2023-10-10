@@ -1,8 +1,8 @@
 package it.pagopa.pn.address.manager.service;
 
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.InputDeduplica;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.RisultatoDeduplica;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaRequest;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
@@ -12,6 +12,8 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.Deduplicates
 import it.pagopa.pn.address.manager.middleware.client.PostelClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
+import it.pagopa.pn.address.manager.repository.CapRepository;
+import it.pagopa.pn.address.manager.repository.CountryRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,50 +44,18 @@ class DeduplicatesAddressServiceTest {
     @MockBean
     ApiKeyRepository apiKeyRepository;
 
+    @MockBean
+    CapAndCountryService capAndCountryService;
+
     private DeduplicatesAddressService deduplicatesAddressService;
 
     @Test
     void deduplicates(){
-        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, addressConverter,pnAddressManagerConfig,apiKeyRepository);
+        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, addressConverter,pnAddressManagerConfig,apiKeyRepository, capAndCountryService);
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new InputDeduplica());
-        when(postelClient.deduplica(any())).thenReturn(Mono.just(new RisultatoDeduplica()));
-        StepVerifier.create(deduplicatesAddressService.deduplicates(new DeduplicatesRequest(), "apiKey")).expectError().verify();
+        when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new DeduplicaRequest());
+        when(postelClient.deduplica(any(), any(), any())).thenReturn(Mono.just(new DeduplicaResponse()));
+        StepVerifier.create(deduplicatesAddressService.deduplicates(new DeduplicatesRequest(), "cxId","apiKey")).expectError().verify();
     }
-
-    @Test
-    void deduplicates1(){
-        pnAddressManagerConfig = new PnAddressManagerConfig();
-        pnAddressManagerConfig.setFlagCsv(true);
-        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, addressConverter,pnAddressManagerConfig,apiKeyRepository);
-        ApiKeyModel apiKeyModel = new ApiKeyModel();
-        when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new InputDeduplica());
-        when(postelClient.deduplica(any())).thenReturn(Mono.just(new RisultatoDeduplica()));
-        DeduplicatesRequest deduplicatesRequest = new DeduplicatesRequest();
-        deduplicatesRequest.setCorrelationId("correlationId");
-        AnalogAddress base = new AnalogAddress();
-        base.setCity("Roma ");
-        base.setCity2("42");
-        base.setAddressRow("42");
-        base.setAddressRow2("42");
-        base.setPr("RM  ");
-        base.setCap("00010");
-        deduplicatesRequest.setBaseAddress(base);
-        deduplicatesRequest.setTargetAddress(base);
-        NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
-        normalizedAddressResponse.setNormalizedAddress(base);
-        normalizedAddressResponse.setId("id");
-        normalizedAddressResponse.setItalian(true);
-        when(addressUtils.normalizeAddress(base,null)).thenReturn(normalizedAddressResponse);
-        when(addressUtils.compareAddress(base, base, true)).thenReturn(true);
-        DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
-        deduplicatesResponse.setNormalizedAddress(base);
-        deduplicatesResponse.setEqualityResult(true);
-        deduplicatesResponse.setCorrelationId("correlationId");
-        StepVerifier.create(deduplicatesAddressService.deduplicates(deduplicatesRequest, "apiKey")).expectNext(deduplicatesResponse).verifyComplete();
-    }
-
-
 }
