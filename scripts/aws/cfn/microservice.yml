@@ -309,10 +309,6 @@ Parameters:
     Type: String
     Description: 'Address manager cxId'
 
-  PnAddressManagerApiKey:
-    Type: String
-    Description: 'Address manager ApiKey'
-
 
 Resources:
 
