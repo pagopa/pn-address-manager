@@ -304,6 +304,7 @@ Parameters:
   NormalizerRequestPrefix:
     Type: String
     Description: 'Normalize Request Prefix for Postel requestId'
+    Default: ''
 
   PnAddressManagerCxId:
     Type: String
@@ -348,8 +349,8 @@ Resources:
         ContainerEnvEntry7: !Sub 'PN_ADDRESSMANAGER_ENABLEPATTERNVALIDATION=${EnablePatternValidation}'
         ContainerEnvEntry8: !Sub 'PN_ADDRESSMANAGER_VALIDATIONPATTERN=${PhysicalAddressValidationCharsValue}'
         ContainerEnvEntry9: !Sub 'PN_ADDRESSMANAGER_TOPICS_GATEWAYEVENTS=${PnAddressManagerInputsQueueName}'
-        ContainerEnvEntry10: !Sub 'PN_ADDRESSMANAGER_INPUTQUEUENAME=${PnAddressManagerInputsQueueName}'
-        ContainerEnvEntry11: !Sub 'PN_ADDRESSMANAGER_INPUTDLQQUEUENAME=${PnAddressManagerInputsDLQName}'
+        ContainerEnvEntry10: !Sub 'PN_ADDRESSMANAGER_SQS_INPUTQUEUENAME=${PnAddressManagerInputsQueueName}'
+        ContainerEnvEntry11: !Sub 'PN_ADDRESSMANAGER_SQS_INPUTDLQQUEUENAME=${PnAddressManagerInputsDLQName}'
         ContainerEnvEntry12: !Sub 'PN_ADDRESSMANAGER_POSTELBASEPATH=${PostelBasePath}'
         ContainerEnvEntry13: !Sub 'PN_ADDRESSMANAGER_SAFESTORAGEBASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
         ContainerEnvEntry14: !Sub 'PN_ADDRESSMANAGER_DAO_APIKEYTABLENAME=${ApiKeyTableName}'
