@@ -41,7 +41,7 @@ public class UploadDownloadClient {
                 .retrieve()
                 .bodyToMono(String.class)
                 .onErrorResume(ee -> {
-                    log.error("uploadContent Exception uploading file", ee);
+                    log.error("Normalize Address - uploadContent Exception uploading file", ee);
                     return Mono.error(new PnAddressManagerException(ee.getMessage(), ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_CODE));
                 });
     }
