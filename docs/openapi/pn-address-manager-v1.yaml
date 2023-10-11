@@ -32,7 +32,7 @@ paths:
       operationId: normalize
       parameters: 
         - $ref: "#/components/parameters/xPagopaAddrManCxId"
-        - $ref: "#/components/parameters/xPagopaAddrManApiKey"
+        - $ref: "#/components/parameters/internalXPagopaAddrManApiKey"
       requestBody:
         content:
           application/json:
@@ -83,7 +83,8 @@ paths:
       operationId: deduplicates
       parameters: 
         - $ref: "#/components/parameters/xPagopaAddrManCxId"
-        - $ref: "#/components/parameters/xPagopaAddrManApiKey"
+        - $ref: "#/components/parameters/internalXPagopaAddrManApiKey"
+          required: false
       requestBody:
         content:
           application/json:
@@ -116,8 +117,8 @@ components:
   parameters: 
     xPagopaAddrManCxId:
       $ref: 'parameters-pn-address.yaml#/components/parameters/xPagopaAddrManCxId'
-    xPagopaAddrManApiKey:
-      $ref: 'parameters-pn-address.yaml#/components/parameters/xPagopaAddrManApiKey'
+    internalXPagopaAddrManApiKey:
+      $ref: 'parameters-pn-address.yaml#/components/parameters/internalXPagopaAddrManApiKey'
 
   schemas: 
     NormalizeItemsRequest:

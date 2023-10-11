@@ -37,7 +37,7 @@ public class DeduplicatesAddressController implements DeduplicatesAddressService
      *         or InternalServerError (status code 500)
      */
     @Override
-    public Mono<ResponseEntity<DeduplicatesResponse>> deduplicates(String pnAddressManagerCxId, String xApiKey, Mono<DeduplicatesRequest> deduplicatesRequest, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<DeduplicatesResponse>> deduplicates(String pnAddressManagerCxId, Mono<DeduplicatesRequest> deduplicatesRequest, String xApiKey, ServerWebExchange exchange) {
         return deduplicatesRequest
                 .flatMap(request -> deduplicatesAddressService.deduplicates(request, pnAddressManagerCxId, xApiKey))
                 .map(deduplicateResponse -> ResponseEntity.ok().body(deduplicateResponse))

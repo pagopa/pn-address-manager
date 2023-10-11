@@ -27,6 +27,8 @@ public class PnSafeStorageClient {
     private final FileUploadApi fileUploadApi;
     private final FileDownloadApi fileDownloadApi;
 
+    private static final String SHA256 = "SHA-256";
+
     public PnSafeStorageClient(PnSafeStorageWebClient pnSafeStorageWebClient) {
 
         this.fileUploadApi = new FileUploadApi(pnSafeStorageWebClient.init());
@@ -57,10 +59,10 @@ public class PnSafeStorageClient {
                 });
     }
 
-    public Mono<FileCreationResponseDto> createFile(FileCreationRequestDto fileCreationRequest, String cxId) {
+    public Mono<FileCreationResponseDto> createFile(FileCreationRequestDto fileCreationRequest, String cxId, String sha256) {
         log.logInvokingExternalService(PnLogger.EXTERNAL_SERVICES.PN_SAFE_STORAGE, "createFile");
         log.info("POST LOG:  cxId{} fileCreationRequest{}", cxId, fileCreationRequest.toString());
-        return this.fileUploadApi.createFile(cxId, fileCreationRequest)
+        return this.fileUploadApi.createFile(cxId, SHA256, sha256, fileCreationRequest)
                 .map(item -> {
                     log.trace("CREATE FILE TOCK {}", new Date().getTime());
                     return item;

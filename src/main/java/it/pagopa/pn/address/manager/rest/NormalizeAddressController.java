@@ -37,7 +37,7 @@ public class NormalizeAddressController implements NormalizeAddressServiceApi {
      * or InternalServerError (status code 500)
      */
     @Override
-    public Mono<ResponseEntity<AcceptedResponse>> normalize(String pnAddressManagerCxId, String xApiKey, Mono<NormalizeItemsRequest> normalizeItemsRequest, final ServerWebExchange exchange) {
+    public Mono<ResponseEntity<AcceptedResponse>> normalize(String pnAddressManagerCxId, Mono<NormalizeItemsRequest> normalizeItemsRequest, String xApiKey, final ServerWebExchange exchange) {
         return normalizeItemsRequest
                 .flatMap(request -> normalizeAddressService.normalizeAddress(xApiKey, pnAddressManagerCxId, request))
                 .map(acceptedResponse -> ResponseEntity.ok().body(acceptedResponse))

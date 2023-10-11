@@ -66,7 +66,7 @@ class NormalizzatoreServiceTest {
         fileCreationResponseDto.setKey("key");
         fileCreationResponseDto.setUploadUrl("url");
         fileCreationResponseDto.setUploadMethod(FileCreationResponseDto.UploadMethodEnum.PUT);
-        when(pnSafeStorageClient.createFile(any(),anyString())).thenReturn(Mono.just(fileCreationResponseDto));
+        when(pnSafeStorageClient.createFile(any(),anyString(), any())).thenReturn(Mono.just(fileCreationResponseDto));
         StepVerifier.create(normalizzatoreService.presignedUploadRequest(preLoadRequestData, "id","id")).expectError().verify();
     }
 
