@@ -12,14 +12,14 @@ import java.util.List;
 @Component
 public class NormalizzatoreConverter {
 	public static final String PN_ADDRESSES_NORMALIZED = "PN_ADDRESSES_NORMALIZED";
-	public static final String PRELOADED = "PRELOADED";
+	public static final String SAVED = "SAVED";
 	public static final String SAFE_STORAGE_URL_PREFIX = "safestorage://";
 
 	public FileCreationRequestDto preLoadRequestToFileCreationRequestDto (PreLoadRequest preLoadRequest){
 		FileCreationRequestDto fileCreationRequestDto = new FileCreationRequestDto();
 		fileCreationRequestDto.setContentType(preLoadRequest.getContentType());
 		fileCreationRequestDto.setDocumentType(PN_ADDRESSES_NORMALIZED);
-		fileCreationRequestDto.setStatus(PRELOADED);
+		fileCreationRequestDto.setStatus(SAVED);
 		return fileCreationRequestDto;
 	}
 	public PreLoadResponse fileDownloadResponseDtoToFileDownloadResponse (FileCreationResponseDto fileCreationResponseDto, String preLoadIdx) {

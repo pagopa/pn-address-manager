@@ -71,7 +71,7 @@ public class NormalizzatoreService {
 
     private Mono<PreLoadResponse> createFile(String pnAddressManagerCxId, PreLoadRequest preLoadRequest) {
         FileCreationRequestDto fileCreationRequest = normalizzatoreConverter.preLoadRequestToFileCreationRequestDto(preLoadRequest);
-        return pnSafeStorageClient.createFile(fileCreationRequest, pnAddressManagerCxId)
+        return pnSafeStorageClient.createFile(fileCreationRequest, pnAddressManagerCxId, preLoadRequest.getSha256())
                 .map(fileCreationResponseDto -> {
                     log.info(ADDRESS_NORMALIZER_ASYNC + "created file with fileKey: [{}]", fileCreationResponseDto.getKey());
                     return normalizzatoreConverter.fileDownloadResponseDtoToFileDownloadResponse(fileCreationResponseDto, preLoadRequest.getPreloadIdx());

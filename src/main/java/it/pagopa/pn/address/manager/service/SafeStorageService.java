@@ -43,7 +43,7 @@ public class SafeStorageService {
 
         FileCreationRequestDto fileCreationRequestDto = addressUtils.getFileCreationRequest();
 
-        return pnSafeStorageClient.createFile(fileCreationRequestDto, pnAddressManagerConfig.getPagoPaCxId())
+        return pnSafeStorageClient.createFile(fileCreationRequestDto, pnAddressManagerConfig.getPagoPaCxId(), sha256)
                 .flatMap(fileCreationResponseDto -> uploadDownloadClient.uploadContent(csvContent, fileCreationResponseDto, sha256)
                         .thenReturn(fileCreationResponseDto))
                 .onErrorResume(e -> {

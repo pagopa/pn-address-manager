@@ -47,7 +47,7 @@ class SafeStorageServiceTest {
         when(addressUtils.normalizeRequestToPostelCsvRequest(any())).thenReturn(List.of(new NormalizeRequestPostelInput()));
         when(csvService.writeItemsOnCsvToString(any())).thenReturn("csv");
         when(addressUtils.computeSha256(any())).thenReturn("csv");
-        when(pnSafeStorageClient.createFile(any(),any())).thenReturn(Mono.just(new FileCreationResponseDto()));
+        when(pnSafeStorageClient.createFile(any(),any(), any())).thenReturn(Mono.just(new FileCreationResponseDto()));
         when(uploadDownloadClient.uploadContent(any(),any(),any())).thenReturn(Mono.just("csv"));
 
         StepVerifier.create(safeStorageService.callSelfStorageCreateFileAndUpload("content", "sha256")).expectNext(new FileCreationResponseDto()).verifyComplete();
@@ -70,7 +70,7 @@ class SafeStorageServiceTest {
         when(addressUtils.normalizeRequestToPostelCsvRequest(any())).thenReturn(List.of(new NormalizeRequestPostelInput()));
         when(csvService.writeItemsOnCsvToString(any())).thenReturn("csv");
         when(addressUtils.computeSha256(any())).thenReturn("csv");
-        when(pnSafeStorageClient.createFile(any(),any())).thenReturn(Mono.just(new FileCreationResponseDto()));
+        when(pnSafeStorageClient.createFile(any(),any(), any())).thenReturn(Mono.just(new FileCreationResponseDto()));
         PnSafeStorageException exception = mock(PnSafeStorageException.class);
         when(uploadDownloadClient.uploadContent(any(),any(),any())).thenThrow(exception);
 

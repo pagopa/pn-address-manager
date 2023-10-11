@@ -53,7 +53,7 @@ class PnSafeStorageClientTest {
         when(responseExchangeFilter.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction2);
         PnSafeStorageClient pnSafeStorageClient = new PnSafeStorageClient(
                 new PnSafeStorageWebClient(responseExchangeFilter, pnAddressManagerConfig));
-        pnSafeStorageClient.createFile(new FileCreationRequestDto(), "42");
+        pnSafeStorageClient.createFile(new FileCreationRequestDto(), "42", "sha256");
         verify(responseExchangeFilter, atLeast(1)).andThen(Mockito.<ExchangeFilterFunction>any());
         verify(exchangeFilterFunction2, atLeast(1)).andThen(Mockito.<ExchangeFilterFunction>any());
         verify(exchangeFilterFunction, atLeast(1)).apply(Mockito.<ExchangeFunction>any());
