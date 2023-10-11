@@ -39,7 +39,7 @@ class NormalizzatoreConverterTest {
         FileCreationRequestDto actualPreLoadRequestToFileCreationRequestDtoResult = normalizzatoreConverter
                 .preLoadRequestToFileCreationRequestDto(new PreLoadRequest());
         assertNull(actualPreLoadRequestToFileCreationRequestDtoResult.getContentType());
-        assertEquals(NormalizzatoreConverter.PRELOADED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
+        assertEquals(NormalizzatoreConverter.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
         assertEquals(NormalizzatoreConverter.PN_ADDRESSES_NORMALIZED,
                 actualPreLoadRequestToFileCreationRequestDtoResult.getDocumentType());
     }
@@ -54,7 +54,7 @@ class NormalizzatoreConverterTest {
         FileCreationRequestDto actualPreLoadRequestToFileCreationRequestDtoResult = normalizzatoreConverter
                 .preLoadRequestToFileCreationRequestDto(preLoadRequest);
         assertEquals("text/plain", actualPreLoadRequestToFileCreationRequestDtoResult.getContentType());
-        assertEquals(NormalizzatoreConverter.PRELOADED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
+        assertEquals(NormalizzatoreConverter.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
         assertEquals(NormalizzatoreConverter.PN_ADDRESSES_NORMALIZED,
                 actualPreLoadRequestToFileCreationRequestDtoResult.getDocumentType());
         verify(preLoadRequest).getContentType();
