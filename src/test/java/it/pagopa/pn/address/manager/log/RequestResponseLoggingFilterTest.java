@@ -1,14 +1,15 @@
 package it.pagopa.pn.address.manager.log;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.codec.support.DefaultServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.mock.http.server.reactive.MockServerHttpResponse;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebFilterChain;
@@ -24,9 +25,6 @@ import java.nio.file.Paths;
 
 import static org.mockito.Mockito.*;
 
-@TestPropertySource(properties = {
-        "pn.apikey.manager.health-check-path=/actuator/health"
-})
 @ContextConfiguration(classes = {RequestResponseLoggingFilter.class})
 @ExtendWith(SpringExtension.class)
 class RequestResponseLoggingFilterTest {
@@ -34,11 +32,15 @@ class RequestResponseLoggingFilterTest {
     @Autowired
     private RequestResponseLoggingFilter requestResponseLoggingFilter;
 
+    @MockBean
+    private PnAddressManagerConfig pnAddressManagerConfig;
+
     /**
      * Method under test: {@link RequestResponseLoggingFilter#filter(ServerWebExchange, WebFilterChain)}
      */
     @Test
     void testFilter() {
+        when(pnAddressManagerConfig.getHealthCheckPath()).thenReturn("/health");
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getURI())
                 .thenReturn(Paths.get(System.getProperty("java.io.tmpdir"), "test.txt").toUri());
@@ -62,6 +64,7 @@ class RequestResponseLoggingFilterTest {
      */
     @Test
     void testFilter2() {
+        when(pnAddressManagerConfig.getHealthCheckPath()).thenReturn("/health");
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getURI())
                 .thenReturn(Paths.get(System.getProperty("java.io.tmpdir"), "test.txt").toUri());
@@ -82,6 +85,7 @@ class RequestResponseLoggingFilterTest {
 
     @Test
     void testFilter3() {
+        when(pnAddressManagerConfig.getHealthCheckPath()).thenReturn("/health");
         ServerHttpRequestDecorator serverHttpRequestDecorator = mock(ServerHttpRequestDecorator.class);
         when(serverHttpRequestDecorator.getURI()).thenReturn(URI.create("/actuator/health"));
         when(serverHttpRequestDecorator.getHeaders()).thenReturn(new HttpHeaders());

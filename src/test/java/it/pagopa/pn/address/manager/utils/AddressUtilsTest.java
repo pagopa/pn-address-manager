@@ -1,18 +1,21 @@
 package it.pagopa.pn.address.manager.utils;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import it.pagopa.pn.address.manager.model.CapModel;
+import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.service.CsvService;
+import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.NormalizerCallbackRequest;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -20,12 +23,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -36,6 +40,9 @@ class AddressUtilsTest {
 
     @Mock
     private PnAddressManagerConfig pnAddressManagerConfig;
+
+    @Mock
+    private ObjectMapper objectMapper;
 
     @BeforeAll
     void setUp() {
@@ -62,6 +69,60 @@ class AddressUtilsTest {
         return mockedCapList;
     }
 
+
+    @Test
+    void getNormalizeRequestFromBatchRequest() throws JsonProcessingException {
+        NormalizeRequest normalizeRequest = getNormalizeRequest();
+        objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(List.of(normalizeRequest));
+
+        BatchRequest batchRequest = new BatchRequest();
+        batchRequest.setAddresses(json);
+        batchRequest.setMessage("message");
+
+        objectMapper.setTypeFactory(TypeFactory.defaultInstance());
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.getNormalizeRequestFromBatchRequest(batchRequest));
+        assertThrows(PnInternalException.class, () -> addressUtils.getNormalizeResultFromBatchRequest(batchRequest));
+    }
+
+    @NotNull
+    private static NormalizeRequest getNormalizeRequest() {
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("123 Main St");
+        analogAddress.setAddressRow2("Apt 4B");
+        analogAddress.setCap("12345");
+        analogAddress.setCity("Sample City");
+        analogAddress.setCity2("Suburb");
+        analogAddress.setPr("CA");
+        analogAddress.setCountry("USA");
+        NormalizeRequest normalizeRequest = new NormalizeRequest();
+        normalizeRequest.setId("id");
+        normalizeRequest.setAddress(analogAddress);
+        return normalizeRequest;
+    }
+
+    @Test
+    void normalizeAddress10(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("42");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("42");
+        base.setCountry("AFRICA DEL SUD");
+        base.setCap("42");
+        assertNotNull(addressUtils.normalizeAddress(base,"42", "correlationid"));
+    }
+
+    @Test
+    void toJson1(){
+        NormalizeRequest normalizeRequest = getNormalizeRequest();
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.toJson(normalizeRequest));
+    }
+
     @Test
     void compareAddress() {
         AnalogAddress base = new AnalogAddress();
@@ -72,8 +133,167 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertTrue(addressUtils.compareAddress(base, base, true));
+    }
+
+    @Test
+    void toObject() throws JsonProcessingException {
+        BatchRequest batchRequest = new BatchRequest();
+        batchRequest.setCorrelationId("correlationId");
+        NormalizeRequest normalizeRequest = new NormalizeRequest();
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("42");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("42");
+        base.setCountry("42");
+        base.setCap("42");
+        normalizeRequest.setAddress(base);
+        normalizeRequest.setId("id");
+        objectMapper = new ObjectMapper();
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        NormalizeRequest normalizeRequest1 = addressUtils.toObject(objectMapper.writeValueAsString(normalizeRequest), NormalizeRequest.class);
+        assertNotNull(normalizeRequest1);
+        assertThrows(PnInternalException.class, () -> addressUtils.toObject("",NormalizeRequest.class));
+    }
+
+    @Test
+    void getPostelCallbackSqsDto(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.getPostelCallbackSqsDto(new NormalizerCallbackRequest(), "url"));
+    }
+
+    @Test
+    void normalizeRequestToPostelCsvRequest() throws JsonProcessingException {
+        BatchRequest batchRequest = new BatchRequest();
+        batchRequest.setCorrelationId("correlationId");
+        NormalizeRequest normalizeRequest = new NormalizeRequest();
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("42");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("42");
+        base.setCountry("42");
+        base.setCap("42");
+        normalizeRequest.setAddress(base);
+        normalizeRequest.setId("id");
+        objectMapper = new ObjectMapper();
+        batchRequest.setAddresses(objectMapper.writeValueAsString(List.of(normalizeRequest)));
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest));
+    }
+
+    @Test
+    void toNormalizeRequestPostelInput(){
+        List<NormalizeRequest> normalizeRequestList = new ArrayList<>();
+        NormalizeRequest normalizeRequest = new NormalizeRequest();
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("42");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("42");
+        base.setCountry("42");
+        base.setCap("42");
+        normalizeRequest.setAddress(base);
+        normalizeRequest.setId("id");
+        normalizeRequestList.add(normalizeRequest);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.toNormalizeRequestPostelInput(normalizeRequestList,"correlationId"));
+    }
+
+
+    @Test
+    void computeSha256(){
+        String inputString = "Hello, World!";
+
+        byte[] content = inputString.getBytes();
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertNotNull(addressUtils.computeSha256(content));
+    }
+
+    @Test
+    void getFileCreationRequest(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.getFileCreationRequest());
+    }
+
+    @Test
+    void computeSha2561(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertThrows(PnAddressManagerException.class, () -> addressUtils.computeSha256(null));
+    }
+
+    @Test
+    void createNewStartBatchRequest(){
+        PnAddressManagerConfig.Normalizer n = new PnAddressManagerConfig.Normalizer();
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setTtl(0);
+        n.setBatchRequest(batchRequest);
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setNormalizer(n);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.createNewStartBatchRequest());
+    }
+
+    @Test
+    void normalizeRequestToResult(){
+        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
+        normalizeItemsRequest.setRequestItems(new ArrayList<>());
+        normalizeItemsRequest.setCorrelationId("correlationId");
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeRequestToResult(normalizeItemsRequest));
+        assertNotNull(addressUtils.mapToAcceptedResponse(normalizeItemsRequest));
+    }
+
+    @Test
+    void getCorrelationId(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.getCorrelationId("prova"));
+        assertNotNull(addressUtils.getCorrelationId(""));
+    }
+
+    @Test
+    void toResultItem(){
+        NormalizedAddress normalizedAddress = getNormalizedAddress(42);
+        NormalizedAddress normalizedAddress1 = getNormalizedAddress(0);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
+        normalizedAddresses.add(normalizedAddress);
+        normalizedAddresses.add(normalizedAddress1);
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses));
+
+    }
+
+    @NotNull
+    private static NormalizedAddress getNormalizedAddress(int nRisultatoNorm) {
+        NormalizedAddress normalizedAddress = new NormalizedAddress();
+        normalizedAddress.setId("1#1");
+        normalizedAddress.setNRisultatoNorm(nRisultatoNorm);
+        normalizedAddress.setNErroreNorm(0);
+        normalizedAddress.setSSiglaProv("MI");
+        normalizedAddress.setFPostalizzabile(1);
+        normalizedAddress.setSStatoUff("Lombardia");
+        normalizedAddress.setSStatoAbb("LO");
+        normalizedAddress.setSStatoSpedizione("Lombardy");
+        normalizedAddress.setSComuneUff("Milano");
+        normalizedAddress.setSComuneAbb("Milan");
+        normalizedAddress.setSComuneSpedizione("Milan City");
+        normalizedAddress.setSFrazioneUff("Frazione Ufficio");
+        normalizedAddress.setSFrazioneAbb("Frazione Abbreviata");
+        normalizedAddress.setSFrazioneSpedizione("Frazione Spedizione");
+        normalizedAddress.setSCivicoAltro("Altro Civico");
+        normalizedAddress.setSCap("20100");
+        normalizedAddress.setSPresso("Presso Qualcuno");
+        normalizedAddress.setSViaCompletaUff("Via Ufficio Completa");
+        normalizedAddress.setSViaCompletaAbb("Via Abbreviata Completa");
+        normalizedAddress.setSViaCompletaSpedizione("Via Spedizione Completa");
+        return normalizedAddress;
     }
 
     @Test
@@ -85,7 +305,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("42");
         base.setCap("42");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertTrue(addressUtils.compareAddress(base, base, false));
     }
 
@@ -94,7 +314,7 @@ class AddressUtilsTest {
         AnalogAddress base = new AnalogAddress();
         base.setCity("42");
         AnalogAddress target = new AnalogAddress();
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertFalse(addressUtils.compareAddress(base, target, true));
     }
 
@@ -107,9 +327,26 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("42");
         base.setCap("00010");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
-        assertNotNull(addressUtils.normalizeAddress(base,"1", "correlationId"));
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeAddress(base,"1", "correlationid"));
     }
+
+
+    @Test
+    void normalizeAddress0() {
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("Roma ");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("@@@");
+        base.setCap("00010");
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setEnableValidation(true);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeAddress(base,"1", "correlationid"));
+    }
+
 
     @Test
     void normalizeAddress1() {
@@ -120,8 +357,8 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("RM  ");
         base.setCap("00010");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
-        assertNotNull(addressUtils.normalizeAddress(base,"1", "correlationId"));
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeAddress(base,"1", "correlationid"));
     }
 
     @Test
@@ -134,31 +371,33 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCap("ARUBA");
         base.setCountry("ARUBA");
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
-        assertNotNull(addressUtils.normalizeAddress(base, "1", "correlationId"));
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeAddress(base, "1", "correlationid"));
     }
 
+    /**
+     * Method under test: {@link AddressUtils#normalizeAddresses(List, String)}
+     */
     @Test
     void testNormalizeAddresses3() {
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
 
         NormalizeRequest normalizeRequest = new NormalizeRequest();
         normalizeRequest.address(new AnalogAddress());
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-
-        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
-        normalizeItemsRequest.setRequestItems(normalizeRequestList);
-        normalizeItemsRequest.setCorrelationId("correlationId");
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeItemsRequest);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
     }
 
+    /**
+     * Method under test: {@link AddressUtils#normalizeAddresses(List, String)}
+     */
     @Test
     void testNormalizeAddresses4() {
 
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         NormalizeRequest normalizeRequest = mock(NormalizeRequest.class);
         when(normalizeRequest.getAddress()).thenReturn(new AnalogAddress());
         when(normalizeRequest.address(any())).thenReturn(new NormalizeRequest());
@@ -167,10 +406,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
-        normalizeItemsRequest.setRequestItems(normalizeRequestList);
-        normalizeItemsRequest.setCorrelationId("correlationId");
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeItemsRequest);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -179,9 +415,12 @@ class AddressUtilsTest {
         verify(normalizeRequest).getId();
     }
 
+    /**
+     * Method under test: {@link AddressUtils#normalizeAddresses(List, String)}
+     */
     @Test
     void testNormalizeAddresses6() {
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00010");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -194,10 +433,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
-        normalizeItemsRequest.setRequestItems(normalizeRequestList);
-        normalizeItemsRequest.setCorrelationId("correlationId");
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeItemsRequest);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -208,7 +444,7 @@ class AddressUtilsTest {
 
     @Test
     void testNormalizeAddresses7() {
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00010");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -220,10 +456,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
-        normalizeItemsRequest.setRequestItems(normalizeRequestList);
-        normalizeItemsRequest.setCorrelationId("correlationId");
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeItemsRequest);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -233,7 +466,7 @@ class AddressUtilsTest {
     }
     @Test
     void testNormalizeAddresses8() {
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getCap()).thenReturn("00015");
         when(analogAddress.getCountry()).thenReturn("ITALIA");
@@ -245,10 +478,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
-        normalizeItemsRequest.setRequestItems(normalizeRequestList);
-        normalizeItemsRequest.setCorrelationId("correlationId");
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeItemsRequest);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -257,10 +487,13 @@ class AddressUtilsTest {
         verify(normalizeRequest).getId();
     }
 
+    /**
+     * Method under test: {@link AddressUtils#normalizeAddresses(List, String)}
+     */
     @Test
     void testNormalizeAddresses9() {
 
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         AnalogAddress analogAddress = mock(AnalogAddress.class);
         when(analogAddress.getAddressRow2()).thenReturn("42 Main St");
         when(analogAddress.getCap()).thenReturn("Cap");
@@ -277,10 +510,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
-        normalizeItemsRequest.setRequestItems(normalizeRequestList);
-        normalizeItemsRequest.setCorrelationId("correlationId");
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeItemsRequest);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         assertEquals("42", resultItems.get(0).getId());
     }

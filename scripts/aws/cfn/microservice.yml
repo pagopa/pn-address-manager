@@ -191,6 +191,130 @@ Parameters:
     Description: 'Physical address validation. Allowed Characters'
     Default: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
 
+  PnAddressManagerInputsQueueName:
+    Type: String
+    Description: 'Name for NationalRegistryGatewayInputs'
+
+  PnAddressManagerInputsQueueARN:
+    Type: String
+    Description: 'ARN for NationalRegistryGatewayInputs'
+
+  PnAddressManagerInputsDLQName:
+    Type: String
+    Description: 'Queue name for PnAddressManagerInputsDLQ'
+
+  PnAddressManagerInputsDLQARN:
+    Type: String
+    Description: 'DLQ ARN for PnAddressManagerInputs'
+
+  BatchRequestTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table BatchRequest'
+
+  PostelBatchTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table PostelBatch'
+
+  CountryTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table addressManagerCountry'
+
+  CapTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table AddressManagerCap'
+
+  ApiKeyTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table AddressManagerApiKey'
+
+  BatchRequestTableName:
+    Type: String
+    Description: 'NAME of DynamoDB table BatchRequest'
+
+  PostelBatchTableName:
+    Type: String
+    Description: 'NAME of DynamoDB table PostelBatch'
+
+  CountryTableName:
+    Type: String
+    Description: 'NAME of DynamoDB table addressManagerCountry'
+
+  CapTableName:
+    Type: String
+    Description: 'NAME of DynamoDB table AddressManagerCap'
+
+  ApiKeyTableName:
+    Type: String
+    Description: 'NAME of DynamoDB table AddressManagerApiKey'
+
+  PnAddressManagerNormalizerBatchRequestTtl:
+    Type: Number
+    Description: 'Postel BatchRequest TTL'
+    Default: 1209600
+
+  PnAddressManagerNormalizerBatchRequestDelay:
+    Type: Number
+    Description: 'Postel batch request delay'
+    Default: 30000
+
+  PnAddressManagerNormalizerBatchRequestRecoveryDelay:
+    Type: Number
+    Description: 'Postel batch request recovery delay'
+    Default: 30000
+
+  PnAddressManagerNormalizerPostelRecoveryDelay:
+    Type: Number
+    Description: 'Postel batch request recovery delay'
+    Default: 30000
+
+  PnAddressManagerNormalizerPostelRecoveryAfter:
+    Type: Number
+    Description: 'Postel Activation recovery after'
+    Default: 3600
+
+  PnAddressManagerNormalizerPostelMaxRetry:
+    Type: Number
+    Description: 'Postel Activation request max retry'
+    Default: 3
+
+  PnAddressManagerNormalizerBatchRequestRecoveryAfter:
+    Type: Number
+    Description: 'Postel batch request recovery after'
+    Default: 3600
+
+  PnAddressManagerNormalizerBatchRequestMaxRetry:
+    Type: Number
+    Description: 'Postel batch request max retry'
+    Default: 3
+
+  PnAddressManagerNormalizerBatchRequestMaxSize:
+    Type: Number
+    Description: 'process postel batch Request max size'
+    Default: 100
+
+  PnAddressManagerNormalizerEventBridgeRecoveryDelay:
+    Type: Number
+    Description: 'EventBridge recovery delay'
+    Default: 30000
+
+  PostelCxId:
+    Type: String
+    Description: 'Postel CxId'
+
+  NormalizerRequestPrefix:
+    Type: String
+    Description: 'Normalize Request Prefix for Postel requestId'
+    Default: ''
+
+  PnAddressManagerCxId:
+    Type: String
+    Description: 'Address manager cxId'
+
+  PostelBasePath:
+    Type: String
+    Description: 'Postel base url'
+    Default: ''
+
 Resources:
 
   # PN-address-manager microservice
@@ -216,14 +340,41 @@ Resources:
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
         ContainerImageURI: !Sub '${ContainerImageUri}'
-        ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
-        ContainerEnvEntry2: !Sub 'PN_ADDRESS_MANAGER_EVENTBUS_NAME=${AddressManagerEventBusName}'
-        ContainerEnvEntry3: !Sub 'PN_ADDRESS_MANAGER_FLAG_CSV=${flagCsv}'
-        ContainerEnvEntry4: !Sub 'PN_ADDRESS_MANAGER_HEALTH_CHECK_PATH=${HealthCheckPath}'
-        ContainerEnvEntry5: !Sub 'PN_ADDRESS_MANAGER_COUNTRIES_CSV=${CountriesCsv}'
-        ContainerEnvEntry6: !Sub 'PN_ADDRESS_MANAGER_CAP_CSV=${CapCsv}'
-        ContainerEnvEntry7: !Sub 'PN_ADDRESS_MANAGER_ENABLE_PATTERN_VALIDATION=${EnablePatternValidation}'
-        ContainerEnvEntry8: !Sub 'PN_ADDRESS_MANAGER_VALIDATION_PATTERN=${PhysicalAddressValidationCharsValue}'
+        ContainerEnvEntry1: !Sub 'AWS_REGION=${AWS::Region}'
+        ContainerEnvEntry2: !Sub 'PN_ADDRESSMANAGER_EVENTBUS=${AddressManagerEventBusName}'
+        ContainerEnvEntry3: !Sub 'PN_ADDRESSMANAGER_FLAGCSV=${flagCsv}'
+        ContainerEnvEntry4: !Sub 'PN_ADDRESSMANAGER_HEALTHCHECKPATH=${HealthCheckPath}'
+        ContainerEnvEntry5: !Sub 'PN_ADDRESSMANAGER_COUNTRIESCSV=${CountriesCsv}'
+        ContainerEnvEntry6: !Sub 'PN_ADDRESSMANAGER_CAPCSV=${CapCsv}'
+        ContainerEnvEntry7: !Sub 'PN_ADDRESSMANAGER_ENABLEPATTERNVALIDATION=${EnablePatternValidation}'
+        ContainerEnvEntry8: !Sub 'PN_ADDRESSMANAGER_VALIDATIONPATTERN=${PhysicalAddressValidationCharsValue}'
+        ContainerEnvEntry9: !Sub 'PN_ADDRESSMANAGER_TOPICS_GATEWAYEVENTS=${PnAddressManagerInputsQueueName}'
+        ContainerEnvEntry10: !Sub 'PN_ADDRESSMANAGER_SQS_INPUTQUEUENAME=${PnAddressManagerInputsQueueName}'
+        ContainerEnvEntry11: !Sub 'PN_ADDRESSMANAGER_SQS_INPUTDLQQUEUENAME=${PnAddressManagerInputsDLQName}'
+        ContainerEnvEntry12: !Sub 'PN_ADDRESSMANAGER_POSTELBASEPATH=${PostelBasePath}'
+        ContainerEnvEntry13: !Sub 'PN_ADDRESSMANAGER_SAFESTORAGEBASEPATH=http://${ApplicationLoadBalancerDomain}:8080'
+        ContainerEnvEntry14: !Sub 'PN_ADDRESSMANAGER_DAO_APIKEYTABLENAME=${ApiKeyTableName}'
+        ContainerEnvEntry15: !Sub 'PN_ADDRESSMANAGER_DAO_CAPTABLENAME=${CapTableName}'
+        ContainerEnvEntry16: !Sub 'PN_ADDRESSMANAGER_DAO_COUNTRYTABLENAME=${CountryTableName}'
+        ContainerEnvEntry17: !Sub 'PN_ADDRESSMANAGER_DAO_POSTELBATCHTABLENAME=${PostelBatchTableName}'
+        ContainerEnvEntry18: !Sub 'PN_ADDRESSMANAGER_DAO_BATCHREQUESTTABLENAME=${BatchRequestTableName}'
+        ContainerEnvEntry24: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_TTL=${PnAddressManagerNormalizerBatchRequestTtl}'
+        ContainerEnvEntry25: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_DELAY=${PnAddressManagerNormalizerBatchRequestDelay}'
+        ContainerEnvEntry26: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYDELAY=${PnAddressManagerNormalizerBatchRequestRecoveryDelay}'
+        ContainerEnvEntry27: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYAFTER=${PnAddressManagerNormalizerBatchRequestRecoveryAfter}'
+        ContainerEnvEntry28: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXRETRY=${PnAddressManagerNormalizerBatchRequestMaxRetry}'
+        ContainerEnvEntry29: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXSIZE=${PnAddressManagerNormalizerBatchRequestMaxSize}'
+        ContainerEnvEntry30: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_EVENTBRIDGERECOVERYDELAY=${PnAddressManagerNormalizerEventBridgeRecoveryDelay}'
+        ContainerEnvEntry31: !Sub 'PN_ADDRESSMANAGER_POSTELCXID=${PostelCxId}'
+        ContainerEnvEntry32: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYDELAY=${PnAddressManagerNormalizerPostelRecoveryDelay}'
+        ContainerEnvEntry33: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYAFTER=${PnAddressManagerNormalizerPostelRecoveryAfter}'
+        ContainerEnvEntry34: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_MAXRETRY=${PnAddressManagerNormalizerPostelMaxRetry}'
+        ContainerEnvEntry35: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_REQUESTPREFIX=${NormalizerRequestPrefix}'
+        ContainerEnvEntry36: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
+        ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
+        ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
+        MicroServiceSecretPrefix: pn-AddressManager-Secrets
+
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds
@@ -268,6 +419,32 @@ Resources:
               - events:PutEvents
             Resource:
               - !Ref AddressManagerEventBusArn
+          - Effect: Allow
+            Action:
+              - sqs:SendMessage
+              - sqs:GetQueueUrl
+              - sqs:ChangeMessageVisibility
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ReceiveMessage
+            Resource:
+              - !Ref PnAddressManagerInputsDLQARN
+              - !Ref PnAddressManagerInputsQueueARN
+          - Effect: Allow
+            Action:
+              - dynamodb:GetItem
+              - dynamodb:Query
+              - dynamodb:Scan
+              - dynamodb:UpdateItem
+              - dynamodb:PutItem
+            Resource:
+              - !Ref CountryTableArn
+              - !Ref CapTableArn
+              - !Ref ApiKeyTableArn
+              - !Ref BatchRequestTableArn
+              - !Ref PostelBatchTableArn
+              - !Sub '${BatchRequestTableArn}/index/*'
+              - !Sub '${PostelBatchTableArn}/index/*'
 
   ###################
   ### EventBridge ###

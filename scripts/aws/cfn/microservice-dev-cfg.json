@@ -1,6 +1,6 @@
 {
   "Parameters" : {
-    "flagCsv": "true",
+    "flagCsv": "false",
     "CpuValue": "2048",
     "MemoryAmount": "4GB",
     "MinTasksNumber": "2",
@@ -9,6 +9,20 @@
     "CountriesCsv": "PagoPA-Lista-Nazioni.csv",
     "CapCsv": "PagoPA-ListaCLP.csv",
     "EnablePatternValidation": "true",
-    "PhysicalAddressValidationCharsValue": "@_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '\\-"
+    "PhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-@_",
+    "PostelBasePath": "http://internal-EcsA-20230406081307135800000004-20484703.eu-south-1.elb.amazonaws.com:8080",
+    "PnAddressManagerNormalizerBatchRequestTtl": "1209600",
+    "PnAddressManagerNormalizerBatchRequestDelay": "120000",
+    "PnAddressManagerNormalizerBatchRequestRecoveryDelay": "30000",
+    "PnAddressManagerNormalizerBatchRequestRecoveryAfter": "3600",
+    "PnAddressManagerNormalizerBatchRequestMaxRetry": "3",
+    "PnAddressManagerNormalizerBatchRequestMaxSize": "1000",
+    "PnAddressManagerNormalizerEventBridgeRecoveryDelay": "30000",
+    "PnAddressManagerNormalizerPostelRecoveryDelay": "30000",
+    "PnAddressManagerNormalizerPostelRecoveryAfter": "3600",
+    "PnAddressManagerNormalizerPostelMaxRetry": "3",
+    "PostelCxId": "pn-cons-000",
+    "NormalizerRequestPrefix": "",
+    "PnAddressManagerCxId": "pn-address-manager"
   }
 }
