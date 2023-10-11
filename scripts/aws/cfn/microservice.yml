@@ -302,15 +302,15 @@ Parameters:
     Description: 'Postel authentication key'
 
   NormalizerRequestPrefix:
-    Type: string
+    Type: String
     Description: 'Normalize Request Prefix for Postel requestId'
 
   PnAddressManagerCxId:
-    Type: string
+    Type: String
     Description: 'Address manager cxId'
 
   PnAddressManagerApiKey:
-    Type: string
+    Type: String
     Description: 'Address manager ApiKey'
 
 
