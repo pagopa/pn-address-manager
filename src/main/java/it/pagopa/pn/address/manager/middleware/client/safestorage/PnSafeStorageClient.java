@@ -36,11 +36,10 @@ public class PnSafeStorageClient {
     }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey, String cxId) {
-        boolean metadataOnly = true;
         log.debug("Req params : {}", fileKey);
         log.trace("GET FILE TICK {}", new Date().getTime());
 
-        return fileDownloadApi.getFile(fileKey, cxId, metadataOnly)
+        return fileDownloadApi.getFile(fileKey, cxId, false)
                 .retryWhen(
                         Retry.backoff(2, Duration.ofMillis(500))
                                 .filter(throwable -> throwable instanceof TimeoutException || throwable instanceof ConnectException)

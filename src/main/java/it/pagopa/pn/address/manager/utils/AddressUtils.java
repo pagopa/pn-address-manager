@@ -34,7 +34,7 @@ public class AddressUtils {
 
     private static final String ERROR_DURING_VERIFY_CSV = "Error during verify csv";
     private static final String CONTENT_TYPE = "text/csv";
-    private static final String SAFE_STORAGE_STATUS = "PRELOADED";
+    private static final String SAFE_STORAGE_STATUS = "SAVED";
     private static final String DOCUMENT_TYPE = "PN_ADDRESSES_RAW";
 
     private final List<CapModel> capList;
@@ -213,7 +213,7 @@ public class AddressUtils {
             byte[] encodedHash = digest.digest(content);
             return bytesToBase64(encodedHash);
         } catch (Exception e) {
-            throw new PnAddressManagerException("", "", 500, ""); // TODO: valorizzare
+            throw new PnInternalException("Error during compute sha245", "ERROR_GENERATE_SHA256");
         }
     }
 

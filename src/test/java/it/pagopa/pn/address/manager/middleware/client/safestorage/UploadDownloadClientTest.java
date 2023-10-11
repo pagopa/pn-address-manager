@@ -32,6 +32,7 @@ class UploadDownloadClientTest {
 		FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
 		when(fileCreationResponse.getSecret()).thenReturn("Secret");
 		when(fileCreationResponse.getUploadUrl()).thenReturn("https://example.org/example");
+		when(fileCreationResponse.getKey()).thenReturn("key");
 		uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
 		verify(fileCreationResponse).getSecret();
 		verify(fileCreationResponse).getUploadUrl();
@@ -41,6 +42,7 @@ class UploadDownloadClientTest {
 		FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
 		when(fileCreationResponse.getSecret()).thenReturn("Secret");
 		when(fileCreationResponse.getUploadUrl()).thenReturn("http://localhost:8080");
+		when(fileCreationResponse.getKey()).thenReturn("key");
 		uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
 		verify(fileCreationResponse).getSecret();
 		verify(fileCreationResponse).getUploadUrl();
@@ -52,6 +54,7 @@ class UploadDownloadClientTest {
 	@Test
 	void testUploadContent3 () {
 		FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
+		when(fileCreationResponse.getUploadUrl()).thenReturn("http://localhost:8080");
 		when(fileCreationResponse.getSecret()).thenThrow(
 				new PnAddressManagerException("", "The characteristics of someone or something", 2, "An error occurred"));
 		Assertions.assertThrows(PnAddressManagerException.class, () -> uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256"));
@@ -69,7 +72,7 @@ class UploadDownloadClientTest {
 		WebClientResponseException webClientResponseException = mock(WebClientResponseException.class);
 		when(webClientResponseException.getMessage()).thenReturn("Error message");
 		when(webClientResponseException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
-		Mono<byte[]> resultMono = uploadDownloadClient.downloadContent(webClientResponseException.getMessage());
+		Mono<byte[]> resultMono = uploadDownloadClient.downloadContent("http://localhost:8080");
 		StepVerifier.create(resultMono)
 				.expectError(PnAddressManagerException.class)
 				.verify();
@@ -78,6 +81,8 @@ class UploadDownloadClientTest {
 	void testUploadContentWithError () {
 		UploadDownloadClient uploadDownloadClient = new UploadDownloadClient();
         FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
+		when(fileCreationResponse.getKey()).thenReturn("key");
+		when(fileCreationResponse.getUploadUrl()).thenReturn("http://localhost:8080");
 		WebClientResponseException webClientResponseException = mock(WebClientResponseException.class);
 		when(webClientResponseException.getMessage()).thenReturn("Error message");
 		when(webClientResponseException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);

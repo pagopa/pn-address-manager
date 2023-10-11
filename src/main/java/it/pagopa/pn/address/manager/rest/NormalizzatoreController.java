@@ -32,7 +32,7 @@ public class NormalizzatoreController implements NormalizzatoreApi {
     @Override
     public Mono<ResponseEntity<FileDownloadResponse>> getFile(String fileKey, String pnAddressManagerCxId, String xApiKey, final ServerWebExchange exchange) {
         return normalizzatoreService.checkApiKey(pnAddressManagerCxId, xApiKey)
-                .flatMap(apiKeyModel -> normalizzatoreService.getFile(fileKey, pnAddressManagerCxId)
+                .flatMap(apiKeyModel -> normalizzatoreService.getFile(fileKey)
                         .map(fileDownloadResponse -> ResponseEntity.ok().body(fileDownloadResponse))
                         .publishOn(scheduler));
     }
