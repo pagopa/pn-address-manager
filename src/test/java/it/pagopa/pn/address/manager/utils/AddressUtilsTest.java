@@ -113,7 +113,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCountry("AFRICA DEL SUD");
         base.setCap("42");
-        assertNotNull(addressUtils.normalizeAddress(base,"42"));
+        assertNotNull(addressUtils.normalizeAddress(base,"42", "correlationid"));
     }
 
     @Test
@@ -328,7 +328,7 @@ class AddressUtilsTest {
         base.setPr("42");
         base.setCap("00010");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.normalizeAddress(base,"1"));
+        assertNotNull(addressUtils.normalizeAddress(base,"1", "correlationid"));
     }
 
 
@@ -344,7 +344,7 @@ class AddressUtilsTest {
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setEnableValidation(true);
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.normalizeAddress(base,"1"));
+        assertNotNull(addressUtils.normalizeAddress(base,"1", "correlationid"));
     }
 
 
@@ -358,7 +358,7 @@ class AddressUtilsTest {
         base.setPr("RM  ");
         base.setCap("00010");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.normalizeAddress(base,"1"));
+        assertNotNull(addressUtils.normalizeAddress(base,"1", "correlationid"));
     }
 
     @Test
@@ -372,11 +372,11 @@ class AddressUtilsTest {
         base.setCap("ARUBA");
         base.setCountry("ARUBA");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.normalizeAddress(base, "1"));
+        assertNotNull(addressUtils.normalizeAddress(base, "1", "correlationid"));
     }
 
     /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
+     * Method under test: {@link AddressUtils#normalizeAddresses(List, String)}
      */
     @Test
     void testNormalizeAddresses3() {
@@ -387,12 +387,12 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
     }
 
     /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
+     * Method under test: {@link AddressUtils#normalizeAddresses(List, String)}
      */
     @Test
     void testNormalizeAddresses4() {
@@ -406,7 +406,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -416,7 +416,7 @@ class AddressUtilsTest {
     }
 
     /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
+     * Method under test: {@link AddressUtils#normalizeAddresses(List, String)}
      */
     @Test
     void testNormalizeAddresses6() {
@@ -433,7 +433,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -456,7 +456,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -478,7 +478,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         NormalizeResult getResult = resultItems.get(0);
         assertEquals("42", getResult.getId());
@@ -488,7 +488,7 @@ class AddressUtilsTest {
     }
 
     /**
-     * Method under test: {@link AddressUtils#normalizeAddresses(List)}
+     * Method under test: {@link AddressUtils#normalizeAddresses(List, String)}
      */
     @Test
     void testNormalizeAddresses9() {
@@ -510,7 +510,7 @@ class AddressUtilsTest {
 
         ArrayList<NormalizeRequest> normalizeRequestList = new ArrayList<>();
         normalizeRequestList.add(normalizeRequest);
-        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList);
+        List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         assertEquals("42", resultItems.get(0).getId());
     }

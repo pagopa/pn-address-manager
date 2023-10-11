@@ -161,9 +161,9 @@ public class AddressUtils {
         }
     }
 
-    public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems) {
+    public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems, String correlationId) {
         return requestItems.stream()
-                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId()))
+                .map(normalizeRequest -> normalizeAddress(normalizeRequest.getAddress(), normalizeRequest.getId(), correlationId))
                 .map(this::toNormalizeResult)
                 .toList();
     }
@@ -269,7 +269,7 @@ public class AddressUtils {
     public NormalizeItemsResult normalizeRequestToResult(NormalizeItemsRequest normalizeItemsRequest) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         normalizeItemsResult.setCorrelationId(normalizeItemsRequest.getCorrelationId());
-        normalizeItemsResult.setResultItems(normalizeAddresses(normalizeItemsRequest.getRequestItems()));
+        normalizeItemsResult.setResultItems(normalizeAddresses(normalizeItemsRequest.getRequestItems(), normalizeItemsRequest.getCorrelationId()));
         return normalizeItemsResult;
     }
 

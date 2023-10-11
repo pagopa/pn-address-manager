@@ -67,7 +67,7 @@ class NormalizeAddressServiceTest {
         normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenReturn("json");
-        when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
+        when(addressUtils.normalizeAddresses(any(), any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         ApiKeyModel apiKeyModel = new ApiKeyModel();
@@ -81,7 +81,7 @@ class NormalizeAddressServiceTest {
         normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenReturn("json");
-        when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
+        when(addressUtils.normalizeAddresses(any(), any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         ApiKeyModel apiKeyModel = new ApiKeyModel();
@@ -98,7 +98,7 @@ class NormalizeAddressServiceTest {
         normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
-        when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
+        when(addressUtils.normalizeAddresses(any(), any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         ApiKeyModel apiKeyModel = new ApiKeyModel();

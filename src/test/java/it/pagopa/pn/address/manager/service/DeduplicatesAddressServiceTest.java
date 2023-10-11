@@ -79,7 +79,7 @@ class DeduplicatesAddressServiceTest {
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
         when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new DeduplicaRequest());
         when(postelClient.deduplica(any(), any(), any())).thenReturn(Mono.just(new DeduplicaResponse()));
-        when(addressUtils.normalizeAddress(any(),any())).thenReturn(new NormalizedAddressResponse());
+        when(addressUtils.normalizeAddress(any(),any(), any())).thenReturn(new NormalizedAddressResponse());
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setEqualityResult(false);
         StepVerifier.create(deduplicatesAddressService.deduplicates(new DeduplicatesRequest(), "cxId","apiKey")).expectNext(deduplicatesResponse).verifyComplete();
