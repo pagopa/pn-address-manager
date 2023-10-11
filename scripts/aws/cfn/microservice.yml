@@ -364,7 +364,7 @@ Resources:
         ContainerEnvEntry27: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYAFTER=${PnAddressManagerNormalizerBatchRequestRecoveryAfter}'
         ContainerEnvEntry28: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXRETRY=${PnAddressManagerNormalizerBatchRequestMaxRetry}'
         ContainerEnvEntry29: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXSIZE=${PnAddressManagerNormalizerBatchRequestMaxSize}'
-        ContainerEnvEntry30: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_EVENTBRIDGE_RECOVERYDELAY=${PnAddressManagerNormalizerEventBridgeRecoveryDelay}'
+        ContainerEnvEntry30: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_EVENTBRIDGERECOVERYDELAY=${PnAddressManagerNormalizerEventBridgeRecoveryDelay}'
         ContainerEnvEntry31: !Sub 'PN_ADDRESSMANAGER_POSTELCXID=${PostelCxId}'
         ContainerEnvEntry32: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYDELAY=${PnAddressManagerNormalizerPostelRecoveryDelay}'
         ContainerEnvEntry33: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYAFTER=${PnAddressManagerNormalizerPostelRecoveryAfter}'

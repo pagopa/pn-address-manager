@@ -19,6 +19,8 @@
     "PnAddressManagerNormalizerBatchRequestMaxSize": "100",
     "PnAddressManagerNormalizerEventBridgeRecoveryDelay": "30000",
     "PnAddressManagerNormalizerPostelRecoveryDelay": "30000",
+    "PnAddressManagerNormalizerPostelRecoveryAfter": "3600",
+    "PnAddressManagerNormalizerPostelMaxRetry": "3",
     "PostelCxId": "pn-cons-000",
     "NormalizerRequestPrefix": "",
     "PnAddressManagerCxId": "pn-address-manager"
