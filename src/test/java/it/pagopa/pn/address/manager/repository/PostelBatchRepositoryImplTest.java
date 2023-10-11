@@ -93,6 +93,9 @@ class PostelBatchRepositoryImplTest {
         batchRequest1.setRecoveryAfter(1);
         normalizer.setBatchRequest(batchRequest1);
         PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.Dao dao = new PnAddressManagerConfig.Dao();
+        dao.setPostelBatchTableName("tabelName");
+        pnAddressManagerConfig.setDao(dao);
         pnAddressManagerConfig.setNormalizer(normalizer);
         DynamoDbAsyncIndex<Object> index = mock(DynamoDbAsyncIndex.class);
         when(dynamoDbAsyncTable.index(any()))
