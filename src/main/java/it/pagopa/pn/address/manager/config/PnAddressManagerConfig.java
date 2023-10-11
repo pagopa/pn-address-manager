@@ -25,6 +25,7 @@ public class PnAddressManagerConfig {
     private String pagoPaCxId;
     private String apiKey;
     private String postelBasePath;
+    private String postelCxId;
     private String healthCheckPath;
     private String safeStorageBasePath;
 
