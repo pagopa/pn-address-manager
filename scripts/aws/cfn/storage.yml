@@ -255,5 +255,5 @@ Outputs:
     Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueName
   PnAddressManagerInputsDLQURL:
     Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueURL
-  NationalRegistryGatewayInputsDLQARN:
+  PnAddressManagerInputsDLQARN:
     Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueARN
