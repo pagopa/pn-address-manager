@@ -20,7 +20,7 @@ public class PnAddressManagerConfig {
     private EventBus eventBus;
     private Csv csv;
     private Sqs sqs;
-    private Dao dao = new Dao();
+    private Dao dao;
     private Normalizer normalizer;
     private String pagoPaCxId;
     private String apiKey;
