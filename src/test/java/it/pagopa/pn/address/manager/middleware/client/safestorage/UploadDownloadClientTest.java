@@ -20,82 +20,73 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
-@ContextConfiguration(classes = {UploadDownloadClient.class})
-@ExtendWith(SpringExtension.class)
+import java.util.Objects;
+
+@ContextConfiguration (classes = {UploadDownloadClient.class})
+@ExtendWith (SpringExtension.class)
 class UploadDownloadClientTest {
-    @Autowired
-    private UploadDownloadClient uploadDownloadClient;
+	@Autowired
+	private UploadDownloadClient uploadDownloadClient;
+	@Test
+	void testUploadContent () {
+		FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
+		when(fileCreationResponse.getSecret()).thenReturn("Secret");
+		when(fileCreationResponse.getUploadUrl()).thenReturn("https://example.org/example");
+		uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
+		verify(fileCreationResponse).getSecret();
+		verify(fileCreationResponse).getUploadUrl();
+	}
+	@Test
+	void testUploadContent2 () {
+		FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
+		when(fileCreationResponse.getSecret()).thenReturn("Secret");
+		when(fileCreationResponse.getUploadUrl()).thenReturn("http://localhost:8080");
+		uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
+		verify(fileCreationResponse).getSecret();
+		verify(fileCreationResponse).getUploadUrl();
+	}
 
-    /**
-     * Method under test: {@link UploadDownloadClient#uploadContent(String, FileCreationResponseDto, String)}
-     */
-    @Test
-    void testUploadContent() {
+	/**
+	 * Method under test: {@link UploadDownloadClient#uploadContent(String, FileCreationResponseDto, String)}
+	 */
+	@Test
+	void testUploadContent3 () {
+		FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
+		when(fileCreationResponse.getSecret()).thenThrow(
+				new PnAddressManagerException("", "The characteristics of someone or something", 2, "An error occurred"));
+		Assertions.assertThrows(PnAddressManagerException.class, () -> uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256"));
+		verify(fileCreationResponse).getSecret();
+	}
+
+	@Test
+	void testDownloadContent () {
+
+		uploadDownloadClient.downloadContent("https://example.org/example");
+	}
+	@Test
+	void testDownloadContentWithError () {
+		UploadDownloadClient uploadDownloadClient = new UploadDownloadClient();
+		WebClientResponseException webClientResponseException = mock(WebClientResponseException.class);
+		when(webClientResponseException.getMessage()).thenReturn("Error message");
+		when(webClientResponseException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
+		Mono<byte[]> resultMono = uploadDownloadClient.downloadContent(webClientResponseException.getMessage());
+		StepVerifier.create(resultMono)
+				.expectError(PnAddressManagerException.class)
+				.verify();
+	}
+	@Test
+	void testUploadContentWithError () {
+		UploadDownloadClient uploadDownloadClient = new UploadDownloadClient();
         FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
-        when(fileCreationResponse.getSecret()).thenReturn("Secret");
-        when(fileCreationResponse.getUploadUrl()).thenReturn("https://example.org/example");
-        uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
-        verify(fileCreationResponse).getSecret();
-        verify(fileCreationResponse).getUploadUrl();
-    }
-
-    /**
-     * Method under test: {@link UploadDownloadClient#uploadContent(String, FileCreationResponseDto, String)}
-     */
-    @Test
-    void testUploadContent2() {
-        FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
-        when(fileCreationResponse.getSecret()).thenReturn("Secret");
-        when(fileCreationResponse.getUploadUrl()).thenReturn("http://localhost:8080");
-        uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
-        verify(fileCreationResponse).getSecret();
-        verify(fileCreationResponse).getUploadUrl();
-    }
-
-    /**
-     * Method under test: {@link UploadDownloadClient#uploadContent(String, FileCreationResponseDto, String)}
-     */
-    @Test
-    void testUploadContent3() {
-        FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
-        when(fileCreationResponse.getSecret()).thenThrow(
-                new PnAddressManagerException("", "The characteristics of someone or something", 2, "An error occurred"));
-        Assertions.assertThrows(PnAddressManagerException.class, () -> uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256"));
-        verify(fileCreationResponse).getSecret();
-    }
-
-    @Test
-    void testDownloadContent() {
-
-        uploadDownloadClient.downloadContent("https://example.org/example");
-    }
-
-    @Test
-    @Disabled
-    void testDownloadContentWithError() {
-        UploadDownloadClient uploadDownloadClient = new UploadDownloadClient() ; // Crea un'istanza della tua classe
-
-        // Simula un errore durante il download restituendo un errore WebClientResponseException
-        WebClientResponseException errorResponse = WebClientResponseException.create(
-                HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(),
-                null,
-                null,
-                null
-        );
-
-        // Passa l'URL di download al metodo downloadContent e simula un errore
-        Mono<byte[]> resultMono = uploadDownloadClient.downloadContent(errorResponse.getMessage());
-
-        // Verifica che il risultato sia un errore di tipo PnAddressManagerException
-        StepVerifier.create(resultMono)
-                .expectErrorMatches(ex -> {
-                    return ex instanceof PnAddressManagerException &&
-                            ex.getMessage().equals(ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_DESCRIPTION) &&
-                            ((PnAddressManagerException)ex).getStatus() == HttpStatus.INTERNAL_SERVER_ERROR.value() &&
-                            ((PnAddressManagerException)ex).getMessage().equals(ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_CODE);
-                })
-                .verify();
-    }
+		WebClientResponseException webClientResponseException = mock(WebClientResponseException.class);
+		when(webClientResponseException.getMessage()).thenReturn("Error message");
+		when(webClientResponseException.getStatusCode()).thenReturn(HttpStatus.INTERNAL_SERVER_ERROR);
+		Mono<String> resultMono = uploadDownloadClient
+				.uploadContent(Objects.requireNonNull
+						(webClientResponseException.getMessage()), fileCreationResponse, null);
+		StepVerifier.create(resultMono)
+				.expectError(PnAddressManagerException.class)
+				.verify();
+	}
 }
 
