@@ -1,7 +1,6 @@
 package it.pagopa.pn.address.manager.log;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;

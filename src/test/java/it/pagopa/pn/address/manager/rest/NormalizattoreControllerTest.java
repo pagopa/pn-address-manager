@@ -49,12 +49,20 @@ class NormalizattoreControllerTest {
     @Test
     void getFile() {
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
-        when(normalizzatoreService.getFile(any(),any())).thenReturn(Mono.just(fileDownloadResponse));
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setApiKey("ApiKey");
         apiKeyModel.setCxId("cxId");
         when(normalizzatoreService.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
+        when(normalizzatoreService.getFile(any(),any())).thenReturn(Mono.just(new FileDownloadResponse()));
         StepVerifier.create(normalizeAddressController.getFile("fileKey","cxId", "ApiKey", serverWebExchange))
                 .expectNext(ResponseEntity.ok().body(fileDownloadResponse));
+    }
+
+    @Test
+    void normalizerCallback(){
+        OperationResultCodeResponse operationResultCodeResponse = new OperationResultCodeResponse();
+        when(normalizzatoreService.callbackNormalizedAddress(any(),any(),any())).thenReturn(Mono.just(operationResultCodeResponse));
+        StepVerifier.create(normalizeAddressController.normalizerCallback("fileKey","cxId", Mono.just(new NormalizerCallbackRequest()), serverWebExchange))
+                .expectNext(ResponseEntity.ok().body(operationResultCodeResponse));
     }
 }

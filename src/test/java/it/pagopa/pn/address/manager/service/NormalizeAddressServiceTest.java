@@ -7,7 +7,6 @@ import it.pagopa.pn.address.manager.config.SchedulerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
@@ -24,6 +23,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
+import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,10 +77,25 @@ class NormalizeAddressServiceTest {
     }
 
     @Test
+    void normalizeAddressAsync1() throws JsonProcessingException {
+        normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
+        List<NormalizeResult> normalize = new ArrayList<>();
+        when(objectMapper.writeValueAsString(any())).thenReturn("json");
+        when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);
+        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
+        normalizeItemsRequest.setCorrelationId("correlationId");
+        ApiKeyModel apiKeyModel = new ApiKeyModel();
+        apiKeyModel.setApiKey("id");
+        apiKeyModel.setCxId("id");
+        when(apiKeyRepository.findById(any())).thenReturn(Mono.just(apiKeyModel));
+        when(sqsService.pushToInputQueue(any(),any(),any())).thenReturn(Mono.just(SendMessageResponse.builder().build()));
+        StepVerifier.create(normalizeAddressService.normalizeAddress("id", "id", normalizeItemsRequest))
+                .expectError().verify();
+    }
+
+    @Test
     void normalizeAddressAsyncError() throws JsonProcessingException {
         normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
-        AcceptedResponse acceptedResponse = new AcceptedResponse();
-        acceptedResponse.setCorrelationId("correlationId");
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
         when(addressUtils.normalizeAddresses(any())).thenReturn(normalize);

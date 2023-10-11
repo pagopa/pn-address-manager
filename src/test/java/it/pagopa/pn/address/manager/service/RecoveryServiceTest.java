@@ -1,11 +1,13 @@
 package it.pagopa.pn.address.manager.service;
 
+import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -64,17 +66,7 @@ class RecoveryServiceTest {
     @Test
     void recoveryBatchSendToEventbridge(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
-        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
-        batchRequest.setRecoveryAfter(3);
-        batchRequest.setMaxRetry(3);
-        batchRequest.setMaxSize(3);
-        PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
-        postel.setMaxRetry(3);
-        postel.setMaxSize(3);
-        postel.setRecoveryAfter(3);
-        PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
-        normalizer.setBatchRequest(batchRequest);
-        normalizer.setPostel(postel);
+        PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
         pnAddressManagerConfig.setNormalizer(normalizer);
         recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, postelBatchRepository);
 
@@ -93,10 +85,26 @@ class RecoveryServiceTest {
         when(addressBatchRequestRepository.setNewReservationIdToBatchRequest(any())).thenReturn(Mono.just(batchRequest2));
 
         when(sqsService.sendToDlqQueue(any())).thenReturn(Mono.empty());
-
+        PutEventsResult putEventsResult = new PutEventsResult();
+        when(eventService.sendEvent(anyString(),anyString())).thenReturn(Mono.just(putEventsResult));
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchSendToEventbridge());
     }
 
+    @NotNull
+    private static PnAddressManagerConfig.Normalizer getNormalizer() {
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setRecoveryAfter(3);
+        batchRequest.setMaxRetry(3);
+        batchRequest.setMaxSize(3);
+        PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
+        postel.setMaxRetry(3);
+        postel.setMaxSize(3);
+        postel.setRecoveryAfter(3);
+        PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
+        normalizer.setBatchRequest(batchRequest);
+        normalizer.setPostel(postel);
+        return normalizer;
+    }
 
     BatchRequest getBatchRequest(){
         BatchRequest batchRequest = new BatchRequest();

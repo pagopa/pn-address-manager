@@ -1,16 +1,12 @@
 package it.pagopa.pn.address.manager.exception;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.UnsupportedEncodingException;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
+
+import java.io.UnsupportedEncodingException;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class PnSafeStorageExceptionTest {
     /**

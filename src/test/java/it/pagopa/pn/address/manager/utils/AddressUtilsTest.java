@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.utils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
@@ -13,6 +14,7 @@ import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.service.CsvService;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.NormalizerCallbackRequest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -21,14 +23,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
@@ -69,6 +69,39 @@ class AddressUtilsTest {
         return mockedCapList;
     }
 
+
+    @Test
+    void getNormalizeRequestFromBatchRequest() throws JsonProcessingException {
+        NormalizeRequest normalizeRequest = getNormalizeRequest();
+        objectMapper = new ObjectMapper();
+        String json = objectMapper.writeValueAsString(List.of(normalizeRequest));
+
+        BatchRequest batchRequest = new BatchRequest();
+        batchRequest.setAddresses(json);
+        batchRequest.setMessage("message");
+
+        objectMapper.setTypeFactory(TypeFactory.defaultInstance());
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.getNormalizeRequestFromBatchRequest(batchRequest));
+        assertThrows(PnInternalException.class, () -> addressUtils.getNormalizeResultFromBatchRequest(batchRequest));
+    }
+
+    @NotNull
+    private static NormalizeRequest getNormalizeRequest() {
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("123 Main St");
+        analogAddress.setAddressRow2("Apt 4B");
+        analogAddress.setCap("12345");
+        analogAddress.setCity("Sample City");
+        analogAddress.setCity2("Suburb");
+        analogAddress.setPr("CA");
+        analogAddress.setCountry("USA");
+        NormalizeRequest normalizeRequest = new NormalizeRequest();
+        normalizeRequest.setId("id");
+        normalizeRequest.setAddress(analogAddress);
+        return normalizeRequest;
+    }
+
     @Test
     void normalizeAddress10(){
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
@@ -84,6 +117,13 @@ class AddressUtilsTest {
     }
 
     @Test
+    void toJson1(){
+        NormalizeRequest normalizeRequest = getNormalizeRequest();
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.toJson(normalizeRequest));
+    }
+
+    @Test
     void compareAddress() {
         AnalogAddress base = new AnalogAddress();
         base.setCity("42");
@@ -95,6 +135,55 @@ class AddressUtilsTest {
         base.setCap("42");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertTrue(addressUtils.compareAddress(base, base, true));
+    }
+
+    @Test
+    void toObject() throws JsonProcessingException {
+        BatchRequest batchRequest = new BatchRequest();
+        batchRequest.setCorrelationId("correlationId");
+        NormalizeRequest normalizeRequest = new NormalizeRequest();
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("42");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("42");
+        base.setCountry("42");
+        base.setCap("42");
+        normalizeRequest.setAddress(base);
+        normalizeRequest.setId("id");
+        objectMapper = new ObjectMapper();
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        NormalizeRequest normalizeRequest1 = addressUtils.toObject(objectMapper.writeValueAsString(normalizeRequest), NormalizeRequest.class);
+        assertNotNull(normalizeRequest1);
+        assertThrows(PnInternalException.class, () -> addressUtils.toObject("",NormalizeRequest.class));
+    }
+
+    @Test
+    void getPostelCallbackSqsDto(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.getPostelCallbackSqsDto(new NormalizerCallbackRequest(), "url"));
+    }
+
+    @Test
+    void normalizeRequestToPostelCsvRequest() throws JsonProcessingException {
+        BatchRequest batchRequest = new BatchRequest();
+        batchRequest.setCorrelationId("correlationId");
+        NormalizeRequest normalizeRequest = new NormalizeRequest();
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("42");
+        base.setCity2("42");
+        base.setAddressRow("42");
+        base.setAddressRow2("42");
+        base.setPr("42");
+        base.setCountry("42");
+        base.setCap("42");
+        normalizeRequest.setAddress(base);
+        normalizeRequest.setId("id");
+        objectMapper = new ObjectMapper();
+        batchRequest.setAddresses(objectMapper.writeValueAsString(List.of(normalizeRequest)));
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest));
     }
 
     @Test
@@ -126,17 +215,6 @@ class AddressUtilsTest {
 
         assertNotNull(addressUtils.computeSha256(content));
     }
-
-
-    @Test
-    void toJson1() throws JsonProcessingException {
-        BatchRequest batchRequest = new BatchRequest();
-        when(objectMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-
-        assertThrows(PnInternalException.class, () -> addressUtils.toJson(batchRequest));
-    }
-
 
     @Test
     void getFileCreationRequest(){

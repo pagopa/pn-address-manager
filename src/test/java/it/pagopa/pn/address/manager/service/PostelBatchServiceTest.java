@@ -3,7 +3,6 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.CapModel;
-import it.pagopa.pn.address.manager.entity.CountryModel;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
@@ -11,8 +10,6 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRes
 import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
-import it.pagopa.pn.address.manager.repository.CapRepository;
-import it.pagopa.pn.address.manager.repository.CountryRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
@@ -51,15 +48,50 @@ class PostelBatchServiceTest {
     CapAndCountryService capAndCountryService;
 
     @Test
+    void resetRelatedBatchRequestForRetry(){
+        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capAndCountryService);
+        PostelBatch postelBatch = new PostelBatch();
+        postelBatch.setBatchId("id");
+        when(postelBatchRepository.update(any())).thenReturn(Mono.just(postelBatch));
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyString(),any())).thenReturn(Mono.just(List.of(new BatchRequest())));
+        StepVerifier.create(postelBatchService.resetRelatedBatchRequestForRetry(postelBatch)).expectError().verify();
+    }
+
+
+    @Test
+    void findPostelBatch(){
+        postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capAndCountryService);
+        when(postelBatchRepository.findByBatchId(anyString())).thenReturn(Mono.just(new PostelBatch()));
+        StepVerifier.create(postelBatchService.findPostelBatch("fileKey")).expectNext(new PostelBatch()).verifyComplete();
+    }
+
+    @Test
     void getResponse(){
         postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capAndCountryService);
 
         when(uploadDownloadClient.downloadContent(anyString())).thenReturn(Mono.just("url".getBytes()));
         NormalizedAddress normalizedAddress = new NormalizedAddress();
         normalizedAddress.setId("id");
-        when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),1)).thenReturn(List.of(normalizedAddress));
+        when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),0)).thenReturn(List.of(normalizedAddress));
         when(addressUtils.getCorrelationId(anyString())).thenReturn("id");
-        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus("id", BatchStatus.WORKING)).thenReturn(Mono.just(List.of(new BatchRequest())));
+        BatchRequest batchRequest = new BatchRequest();
+        batchRequest.setCorrelationId("id");
+        batchRequest.setAddresses("yourAddresses");
+        batchRequest.setBatchId("NO_BATCH_ID");
+        batchRequest.setRetry(1);
+        batchRequest.setTtl(3600L); // Your TTL value in seconds
+        batchRequest.setClientId("yourClientId");
+        batchRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
+        batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
+        batchRequest.setReservationId("yourReservationId");
+        batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
+        batchRequest.setSendStatus("yourSendStatus");
+        batchRequest.setMessage("yourMessage");
+        batchRequest.setXApiKey("yourXApiKey");
+        batchRequest.setCxId("yourCxId");
+        batchRequest.setAwsMessageId("yourAwsMessageId");
+        when(addressUtils.getNormalizeRequestFromBatchRequest(any())).thenReturn(List.of(new NormalizeRequest()));
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus("id", BatchStatus.WORKING)).thenReturn(Mono.just(List.of(batchRequest)));
         when(addressBatchRequestService.updateBatchRequest(anyString(),any())).thenReturn(Mono.empty());
         PostelBatch postelBatch = new PostelBatch();
         postelBatch.setBatchId("id");

@@ -42,7 +42,7 @@ class EventServiceTest {
     }
 
     @Test
-    public void testSendEvent() {
+    void testSendEvent() {
         when(amazonEventBridge.putEventsAsync(any(), any())).thenAnswer(invocation -> {
             AsyncHandler<PutEventsRequest, PutEventsResult> handler = invocation.getArgument(1);
             PutEventsResult putEventsResult = new PutEventsResult();
@@ -51,11 +51,8 @@ class EventServiceTest {
             handler.onSuccess(null, putEventsResult);
             return null;
         });
-
         StepVerifier.create(eventService.sendEvent("Test message", "12345"))
                 .expectNextCount(0);
-
-
     }
 
 }
