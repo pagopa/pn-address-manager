@@ -66,8 +66,8 @@ public class AddressUtils {
         return trimmedBase.equalsIgnoreCase(trimmedTarget);
     }
 
-    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id) {
-        NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress);
+    public NormalizedAddressResponse normalizeAddress(AnalogAddress analogAddress, String id, String correlationId) {
+        NormalizedAddressResponse normalizedAddressResponse = verifyAddress(analogAddress, correlationId);
         normalizedAddressResponse.setId(id);
         if (StringUtils.isBlank(normalizedAddressResponse.getError())) {
             normalizedAddressResponse.setNormalizedAddress(toUpperCase(analogAddress));
@@ -104,13 +104,13 @@ public class AddressUtils {
     }
 
 
-    private NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress) {
+    private NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress, String correlationId) {
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         log.logChecking(PROCESS_VERIFY_ADDRESS);
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableValidation())
                 && !validateAddress(analogAddress)) {
             log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, "Address contains invalid characters");
-            log.error("Error during verifyAddressInCsv: Address contains invalid characters");
+            log.error("Error during verifyAddressInCsv for {}: Address contains invalid characters", correlationId);
             normalizedAddressResponse.setError("Address contains invalid characters");
             return normalizedAddressResponse;
         }
@@ -119,7 +119,7 @@ public class AddressUtils {
             verifyAddressInCsv(analogAddress, normalizedAddressResponse);
         } catch (PnAddressManagerException e) {
             log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, e.getDescription());
-            log.error("Error during verifyAddressInCsv: {}", e.getDescription(), e);
+            log.error("Error during verifyAddressInCsv for {}: {}", correlationId, e.getDescription(), e);
             normalizedAddressResponse.setError(e.getDescription());
         }
 
@@ -143,7 +143,7 @@ public class AddressUtils {
                 || StringUtils.isBlank(analogAddress.getPr())) {
             throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Cap, city and Province are mandatory", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         } else if (!compareWithCapModelObject(analogAddress)) {
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Invalid Address, Cap, City and Province", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
+            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Invalid Address, Cap, City and Province: [" + analogAddress.getCap() + "," + analogAddress.getCity() + "," + analogAddress.getPr() + "]", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         }
     }
 
@@ -157,7 +157,7 @@ public class AddressUtils {
     private void searchCountry(String country, Map<String, String> countryMap) {
         String normalizedCountry = StringUtils.normalizeSpace(country.toUpperCase());
         if (!countryMap.containsKey(normalizedCountry)) {
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Country %s not found", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
+            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Country not found: [%s]", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
         }
     }
 
