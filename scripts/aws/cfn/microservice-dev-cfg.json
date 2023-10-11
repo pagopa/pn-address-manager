@@ -20,9 +20,8 @@
     "PnAddressManagerNormalizerBatchRequestMaxSize": "100",
     "PnAddressManagerNormalizerEventBridgeRecoveryDelay": "30000",
     "PnAddressManagerNormalizerPostelRecoveryDelay": "30000",
-    "PostelAuthKey": "test",
+    "PostelCxId": "",
     "NormalizerRequestPrefix": "",
-    "PnAddressManagerCxId": "pn-address-manager",
-    "PnAddressManagerApiKey": ""
+    "PnAddressManagerCxId": "pn-address-manager"
   }
 }

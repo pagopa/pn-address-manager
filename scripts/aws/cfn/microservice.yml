@@ -297,9 +297,9 @@ Parameters:
     Description: 'EventBridge recovery delay'
     Default: 30000
 
-  PostelAuthKey:
+  PostelCxId:
     Type: String
-    Description: 'Postel authentication key'
+    Description: 'Postel CxId'
 
   NormalizerRequestPrefix:
     Type: String
@@ -364,13 +364,15 @@ Resources:
         ContainerEnvEntry28: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXRETRY=${PnAddressManagerNormalizerBatchRequestMaxRetry}'
         ContainerEnvEntry29: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXSIZE=${PnAddressManagerNormalizerBatchRequestMaxSize}'
         ContainerEnvEntry30: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_EVENTBRIDGE_RECOVERYDELAY=${PnAddressManagerNormalizerEventBridgeRecoveryDelay}'
-        ContainerEnvEntry31: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=${PostelAuthKey}'
+        ContainerEnvEntry31: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELCXID=${PostelCxId}'
         ContainerEnvEntry32: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYDELAY=${PnAddressManagerNormalizerPostelRecoveryDelay}'
         ContainerEnvEntry33: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYAFTER=${PnAddressManagerNormalizerPostelRecoveryAfter}'
         ContainerEnvEntry34: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_MAXRETRY=${PnAddressManagerNormalizerPostelMaxRetry}'
         ContainerEnvEntry35: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_REQUESTPREFIX=${NormalizerRequestPrefix}'
         ContainerEnvEntry36: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
-        ContainerEnvEntry37: !Sub 'PN_ADDRESSMANAGER_APIKEY=${PnAddressManagerApiKey}'
+        ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
+        ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
+        MicroServiceSecretPrefix: pn-AddressManager-Secrets
 
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
