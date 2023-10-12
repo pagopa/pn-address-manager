@@ -263,7 +263,7 @@
 						</goals>
 						<phase>process-resources</phase>
 						<configuration>
-							<inputSpec>${project.basedir}/docs/openapi/api-postel-v1.yaml</inputSpec>
+							<inputSpec>${project.basedir}/docs/openapi/pn-normalizzatore-v1.yaml</inputSpec>
 							<generatorName>java</generatorName>
 							<library>webclient</library>
 							<generateApiDocumentation>false</generateApiDocumentation>
