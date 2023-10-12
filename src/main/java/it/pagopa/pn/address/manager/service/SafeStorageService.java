@@ -43,6 +43,7 @@ public class SafeStorageService {
 
         return pnSafeStorageClient.createFile(fileCreationRequestDto, pnAddressManagerConfig.getPagoPaCxId(), sha256)
                 .flatMap(fileCreationResponseDto -> uploadDownloadClient.uploadContent(csvContent, fileCreationResponseDto, sha256)
+                        .doOnNext(response -> log.info("file {} uploaded", fileCreationResponseDto.getKey()))
                         .thenReturn(fileCreationResponseDto))
                 .onErrorResume(e -> {
                     log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);
