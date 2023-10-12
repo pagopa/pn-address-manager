@@ -159,7 +159,6 @@ class NormalizzatoreConverterTest {
         verify(fileDownloadResponseDto).getKey();
         verify(fileDownloadResponseDto).getVersionId();
         verify(fileDownloadResponseDto).getContentLength();
-        verify(fileDownloadResponseDto).getRetentionUntil();
     }
 
     /**

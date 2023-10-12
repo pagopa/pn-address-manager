@@ -49,7 +49,9 @@ public class NormalizzatoreConverter {
 		fileDownloadResponse.setKey(fileDownloadResponseDto.getKey());
 		fileDownloadResponse.setDocumentType(fileDownloadResponseDto.getDocumentType());
 		fileDownloadResponse.setDocumentStatus(fileDownloadResponseDto.getDocumentStatus());
-		fileDownloadResponse.setRetentionUntil(Date.from(fileDownloadResponseDto.getRetentionUntil().toInstant()));
+		if(fileDownloadResponseDto.getRetentionUntil() != null) {
+			fileDownloadResponse.setRetentionUntil(Date.from(fileDownloadResponseDto.getRetentionUntil().toInstant()));
+		}
 		fileDownloadResponse.setVersionId(fileDownloadResponseDto.getVersionId());
 		fileDownloadResponse.setContentType(fileDownloadResponseDto.getContentType());
 		return fileDownloadResponse;

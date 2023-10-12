@@ -568,7 +568,6 @@ components:
         - checksum
         - documentType
         - documentStatus
-        - retentionUntil
       properties:
         key:
           type: string
