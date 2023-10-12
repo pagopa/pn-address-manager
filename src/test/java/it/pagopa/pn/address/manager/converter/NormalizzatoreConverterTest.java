@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.converter;
 
+import it.pagopa.pn.address.manager.constant.AddressmanagerConstant;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileDownloadInfoDto;
@@ -11,6 +12,7 @@ import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -31,6 +33,7 @@ class NormalizzatoreConverterTest {
     @Autowired
     private NormalizzatoreConverter normalizzatoreConverter;
 
+
     /**
      * Method under test: {@link NormalizzatoreConverter#preLoadRequestToFileCreationRequestDto(PreLoadRequest)}
      */
@@ -39,8 +42,8 @@ class NormalizzatoreConverterTest {
         FileCreationRequestDto actualPreLoadRequestToFileCreationRequestDtoResult = normalizzatoreConverter
                 .preLoadRequestToFileCreationRequestDto(new PreLoadRequest());
         assertNull(actualPreLoadRequestToFileCreationRequestDtoResult.getContentType());
-        assertEquals(NormalizzatoreConverter.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
-        assertEquals(NormalizzatoreConverter.PN_ADDRESSES_NORMALIZED,
+        assertEquals(AddressmanagerConstant.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
+        assertEquals(AddressmanagerConstant.PN_ADDRESSES_NORMALIZED,
                 actualPreLoadRequestToFileCreationRequestDtoResult.getDocumentType());
     }
 
@@ -54,8 +57,8 @@ class NormalizzatoreConverterTest {
         FileCreationRequestDto actualPreLoadRequestToFileCreationRequestDtoResult = normalizzatoreConverter
                 .preLoadRequestToFileCreationRequestDto(preLoadRequest);
         assertEquals("text/plain", actualPreLoadRequestToFileCreationRequestDtoResult.getContentType());
-        assertEquals(NormalizzatoreConverter.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
-        assertEquals(NormalizzatoreConverter.PN_ADDRESSES_NORMALIZED,
+        assertEquals(AddressmanagerConstant.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
+        assertEquals(AddressmanagerConstant.PN_ADDRESSES_NORMALIZED,
                 actualPreLoadRequestToFileCreationRequestDtoResult.getDocumentType());
         verify(preLoadRequest).getContentType();
     }

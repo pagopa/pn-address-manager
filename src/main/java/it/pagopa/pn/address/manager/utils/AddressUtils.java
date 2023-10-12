@@ -25,18 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
 @lombok.CustomLog
 public class AddressUtils {
-
     private static final String ERROR_DURING_VERIFY_CSV = "Error during verify csv";
-    private static final String CONTENT_TYPE = "text/csv";
-    private static final String SAFE_STORAGE_STATUS = "SAVED";
-    private static final String DOCUMENT_TYPE = "PN_ADDRESSES_RAW";
-
     private final List<CapModel> capList;
     private final Map<String, String> countryMap;
 

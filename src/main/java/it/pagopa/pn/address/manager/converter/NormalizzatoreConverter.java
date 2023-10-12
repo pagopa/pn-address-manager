@@ -9,12 +9,9 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
 @Component
 public class NormalizzatoreConverter {
-	public static final String PN_ADDRESSES_NORMALIZED = "PN_ADDRESSES_NORMALIZED";
-	public static final String SAVED = "SAVED";
-	public static final String SAFE_STORAGE_URL_PREFIX = "safestorage://";
-
 	public FileCreationRequestDto preLoadRequestToFileCreationRequestDto (PreLoadRequest preLoadRequest){
 		FileCreationRequestDto fileCreationRequestDto = new FileCreationRequestDto();
 		fileCreationRequestDto.setContentType(preLoadRequest.getContentType());
