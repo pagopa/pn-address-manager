@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
@@ -35,6 +36,7 @@ public class NormalizzatoreService {
     private final PostelBatchRepository postelBatchRepository;
     private final ApiKeyRepository apiKeyRepository;
     private final AddressUtils addressUtils;
+    private final PnAddressManagerConfig pnAddressManagerConfig;
 
     private static final String AM_POSTEL_CALLBACK_EVENTTYPE = "AM_POSTEL_CALLBACK";
 
@@ -47,7 +49,8 @@ public class NormalizzatoreService {
                                  SafeStorageService safeStorageService,
                                  PostelBatchRepository postelBatchRepository,
                                  ApiKeyRepository apiKeyRepository,
-                                 AddressUtils addressUtils) {
+                                 AddressUtils addressUtils,
+                                 PnAddressManagerConfig pnAddressManagerConfig) {
         this.pnSafeStorageClient = pnSafeStorageClient;
         this.normalizzatoreConverter = normalizzatoreConverter;
         this.postelBatchService = postelBatchService;
@@ -56,6 +59,7 @@ public class NormalizzatoreService {
         this.postelBatchRepository = postelBatchRepository;
         this.apiKeyRepository = apiKeyRepository;
         this.addressUtils = addressUtils;
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
     }
 
     public Mono<PreLoadResponseData> presignedUploadRequest(PreLoadRequestData request, String pnAddressManagerCxId, String xApiKey) {
@@ -63,7 +67,7 @@ public class NormalizzatoreService {
                 .flatMapIterable(apiKeyModel -> request.getPreloads())
                 .flatMap(preLoadRequest -> {
                     log.info("preloadDocuments contentType:{} preloadIdx:{}", preLoadRequest.getContentType(), preLoadRequest.getPreloadIdx());
-                    return createFile(pnAddressManagerCxId, preLoadRequest);
+                    return createFile(pnAddressManagerConfig.getPagoPaCxId(), preLoadRequest);
                 })
                 .collectList()
                 .map(normalizzatoreConverter::collectPreLoadRequestToPreLoadRequestData);
@@ -85,7 +89,7 @@ public class NormalizzatoreService {
     public Mono<OperationResultCodeResponse> callbackNormalizedAddress(NormalizerCallbackRequest callbackRequestData, String pnAddressManagerCxId, String xApiKey) {
         return checkApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> findPostelBatch(callbackRequestData.getRequestId()))
-                .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, pnAddressManagerCxId, postelBatch))
+                .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, postelBatch))
                 .onErrorResume(throwable -> {
                     log.error(CALLBACK_ERROR_LOG, throwable.getMessage(), throwable);
                     return Mono.error(throwable);
@@ -98,10 +102,10 @@ public class NormalizzatoreService {
                         ERROR_CODE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND)));
     }
 
-    private Mono<OperationResultCodeResponse> checkOutputFileOnFileStorage(NormalizerCallbackRequest normalizerCallbackRequest, String pnAddressManagerCxId, PostelBatch postelBatch) {
+    private Mono<OperationResultCodeResponse> checkOutputFileOnFileStorage(NormalizerCallbackRequest normalizerCallbackRequest, PostelBatch postelBatch) {
         OperationResultCodeResponse response = getOperationResultCodeOK();
         if (!StringUtils.hasText(normalizerCallbackRequest.getError())) {
-            return getFile(normalizerCallbackRequest.getUri(), pnAddressManagerCxId)
+            return getFile(normalizerCallbackRequest.getUri())
                     .flatMap(fileDownloadResponse -> {
                         log.info(ADDRESS_NORMALIZER_ASYNC + "callbackNormalizedAddress fileDownloadResponse:{}", fileDownloadResponse);
                         return verifyCheckSumAndSendToInternalQueue(normalizerCallbackRequest, fileDownloadResponse, postelBatch);
@@ -133,8 +137,8 @@ public class NormalizzatoreService {
         return sendToInternalQueueAndUpdatePostelBatchStatus(callbackRequestData, postelBatch, fileDownloadResponse.getDownload().getUrl());
     }
 
-    public Mono<FileDownloadResponse> getFile(String fileKey, String pnAddressManagerCxId) {
-        return safeStorageService.getFile(fileKey, pnAddressManagerCxId);
+    public Mono<FileDownloadResponse> getFile(String fileKey) {
+        return safeStorageService.getFile(fileKey, pnAddressManagerConfig.getPagoPaCxId());
     }
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {

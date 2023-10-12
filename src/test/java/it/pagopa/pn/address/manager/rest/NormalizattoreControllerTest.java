@@ -53,7 +53,7 @@ class NormalizattoreControllerTest {
         apiKeyModel.setApiKey("ApiKey");
         apiKeyModel.setCxId("cxId");
         when(normalizzatoreService.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
-        when(normalizzatoreService.getFile(any(),any())).thenReturn(Mono.just(new FileDownloadResponse()));
+        when(normalizzatoreService.getFile(any())).thenReturn(Mono.just(new FileDownloadResponse()));
         StepVerifier.create(normalizeAddressController.getFile("fileKey","cxId", "ApiKey", serverWebExchange))
                 .expectNext(ResponseEntity.ok().body(fileDownloadResponse));
     }

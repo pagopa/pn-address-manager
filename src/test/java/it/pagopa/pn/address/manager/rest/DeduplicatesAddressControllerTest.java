@@ -34,7 +34,7 @@ class DeduplicatesAddressControllerTest {
     private ServerWebExchange exchange;
 
     /**
-     * Method under test: {@link DeduplicatesAddressController#deduplicates(String, Mono, String, ServerWebExchange)}
+     * Method under test: {@link DeduplicatesAddressController#deduplicates(String, String, Mono,ServerWebExchange)}
      */
     @Test
     void testDeduplicates() {
@@ -47,7 +47,7 @@ class DeduplicatesAddressControllerTest {
         deduplicatesResponse.setCorrelationId("correlationId");
         deduplicatesResponse.setNormalizedAddress(address);
         when(deduplicatesAddressService.deduplicates(any(),any(), any())).thenReturn(Mono.just(deduplicatesResponse));
-        Assertions.assertNotNull(deduplicatesAddressController.deduplicates("cxId",Mono.just(deduplicatesRequest),"apiKey",exchange));
+        Assertions.assertNotNull(deduplicatesAddressController.deduplicates("cxId", "apiKey", Mono.just(deduplicatesRequest),exchange));
     }
 }
 

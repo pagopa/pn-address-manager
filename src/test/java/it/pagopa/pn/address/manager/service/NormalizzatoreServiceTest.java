@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
@@ -40,12 +41,13 @@ class NormalizzatoreServiceTest {
     @MockBean PostelBatchRepository postelBatchRepository;
     @MockBean ApiKeyRepository apiKeyRepository;
     @MockBean AddressUtils addressUtils;
+    @MockBean PnAddressManagerConfig pnAddressManagerConfig;
 
     NormalizzatoreService normalizzatoreService;
 
     @BeforeEach
     void setUp(){
-        normalizzatoreService = new NormalizzatoreService(pnSafeStorageClient, normalizzatoreConverter, postelBatchService,sqsService, safeStorageService, postelBatchRepository, apiKeyRepository, addressUtils);
+        normalizzatoreService = new NormalizzatoreService(pnSafeStorageClient, normalizzatoreConverter, postelBatchService,sqsService, safeStorageService, postelBatchRepository, apiKeyRepository, addressUtils, pnAddressManagerConfig);
     }
 
     @Test
