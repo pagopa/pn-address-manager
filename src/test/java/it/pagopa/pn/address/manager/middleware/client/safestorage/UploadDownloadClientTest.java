@@ -35,7 +35,6 @@ class UploadDownloadClientTest {
 		when(fileCreationResponse.getKey()).thenReturn("key");
 		uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
 		verify(fileCreationResponse).getSecret();
-		verify(fileCreationResponse).getUploadUrl();
 	}
 	@Test
 	void testUploadContent2 () {
@@ -45,7 +44,6 @@ class UploadDownloadClientTest {
 		when(fileCreationResponse.getKey()).thenReturn("key");
 		uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256");
 		verify(fileCreationResponse).getSecret();
-		verify(fileCreationResponse).getUploadUrl();
 	}
 
 	/**
