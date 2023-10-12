@@ -34,7 +34,7 @@ public class UploadDownloadClient {
                 .header("Content-Type", "text/csv")
                 .header("x-amz-meta-secret", fileCreationResponse.getSecret())
                 .header("x-amz-checksum-sha256",sha256)
-                .bodyValue(content.getBytes())
+                .bodyValue(content.getBytes(StandardCharsets.UTF_8))
                 .retrieve()
                 .toBodilessEntity()
                 .thenReturn(fileCreationResponse.getKey())
