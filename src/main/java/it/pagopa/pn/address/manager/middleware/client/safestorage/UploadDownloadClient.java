@@ -28,12 +28,13 @@ public class UploadDownloadClient {
 
     public Mono<String> uploadContent(String content, FileCreationResponseDto fileCreationResponse, String sha256) {
         HttpMethod httpMethod = fileCreationResponse.getUploadMethod() == FileCreationResponseDto.UploadMethodEnum.POST ? HttpMethod.POST : HttpMethod.PUT;
+        log.info("start to upload file to: {}", fileCreationResponse.getUploadUrl());
         return webClient.method(httpMethod)
                 .uri(URI.create(fileCreationResponse.getUploadUrl()))
                 .header("Content-Type", "text/csv")
                 .header("x-amz-meta-secret", fileCreationResponse.getSecret())
                 .header("x-amz-checksum-sha256",sha256)
-                .bodyValue(content.getBytes(StandardCharsets.UTF_8))
+                .bodyValue(content.getBytes())
                 .retrieve()
                 .toBodilessEntity()
                 .thenReturn(fileCreationResponse.getKey())

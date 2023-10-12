@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.SAFE_STORAGE_URL_PREFIX;
 
 @Service
 @Slf4j
@@ -24,9 +25,6 @@ public class SafeStorageService {
 
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private final NormalizzatoreConverter normalizzatoreConverter;
-
-    private static final String SAFE_STORAGE_URL_PREFIX = "safestorage://";
-
     public SafeStorageService(PnSafeStorageClient pnSafeStorageClient,
                               UploadDownloadClient uploadDownloadClient,
                               AddressUtils addressUtils,
@@ -45,6 +43,7 @@ public class SafeStorageService {
 
         return pnSafeStorageClient.createFile(fileCreationRequestDto, pnAddressManagerConfig.getPagoPaCxId(), sha256)
                 .flatMap(fileCreationResponseDto -> uploadDownloadClient.uploadContent(csvContent, fileCreationResponseDto, sha256)
+                        .doOnNext(response -> log.info("file {} uploaded", fileCreationResponseDto.getKey()))
                         .thenReturn(fileCreationResponseDto))
                 .onErrorResume(e -> {
                     log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);

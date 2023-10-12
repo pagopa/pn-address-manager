@@ -21,7 +21,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.WORKED;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
@@ -37,9 +37,6 @@ public class NormalizzatoreService {
     private final ApiKeyRepository apiKeyRepository;
     private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
-
-    private static final String AM_POSTEL_CALLBACK_EVENTTYPE = "AM_POSTEL_CALLBACK";
-
     private static final String CALLBACK_ERROR_LOG = "callbackNormalizedAddress error:{}";
 
     public NormalizzatoreService(PnSafeStorageClient pnSafeStorageClient,

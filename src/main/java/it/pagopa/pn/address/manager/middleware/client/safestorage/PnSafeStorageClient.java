@@ -19,6 +19,7 @@ import java.net.ConnectException;
 import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
 
 @CustomLog
 @Component
@@ -26,9 +27,6 @@ public class PnSafeStorageClient {
 
     private final FileUploadApi fileUploadApi;
     private final FileDownloadApi fileDownloadApi;
-
-    private static final String SHA256 = "SHA-256";
-
     public PnSafeStorageClient(PnSafeStorageWebClient pnSafeStorageWebClient) {
 
         this.fileUploadApi = new FileUploadApi(pnSafeStorageWebClient.init());

@@ -19,8 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_SYNC;
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 
@@ -35,9 +34,6 @@ public class NormalizeAddressService {
     private final ApiKeyRepository apiKeyRepository;
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private final PostelBatchService postelBatchService;
-
-    private static final String AM_NORMALIZE_INPUT_EVENTTYPE = "AM_NORMALIZE_INPUT";
-
     public NormalizeAddressService(AddressUtils addressUtils,
                                    EventService eventService,
                                    SqsService sqsService,

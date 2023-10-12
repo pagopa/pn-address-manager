@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.POSTEL;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 
@@ -23,8 +24,6 @@ public class PostelClient {
 	private final DefaultApi postelApi;
 
 	private final PnAddressManagerConfig pnAddressManagerConfig;
-	private static final String POSTEL = "POSTEL";
-
 	public PostelClient(PostelWebClient postelWebClient, PnAddressManagerConfig pnAddressManagerConfig) {
 		this.postelApi = new DefaultApi(postelWebClient.init());
 		this.pnAddressManagerConfig = pnAddressManagerConfig;
