@@ -226,7 +226,7 @@ class AddressUtilsTest {
     void computeSha2561(){
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
 
-        assertThrows(PnAddressManagerException.class, () -> addressUtils.computeSha256(null));
+        assertThrows(PnInternalException.class, () -> addressUtils.computeSha256(null));
     }
 
     @Test
