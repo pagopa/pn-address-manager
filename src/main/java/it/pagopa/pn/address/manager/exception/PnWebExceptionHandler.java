@@ -45,10 +45,6 @@ public class PnWebExceptionHandler implements ErrorWebExceptionHandler {
     private final ExceptionHelper exceptionHelper;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    private static final String LOG_EX = "Error -> statusCode: {}, message: {}, uri: {}";
-    private static final int STATUS_OVER_500 = 500;
-
-
     public PnWebExceptionHandler(ExceptionHelper exceptionHelper) {
         this.exceptionHelper = exceptionHelper;
         objectMapper.findAndRegisterModules();
@@ -66,8 +62,7 @@ public class PnWebExceptionHandler implements ErrorWebExceptionHandler {
         DataBufferFactory bufferFactory = serverWebExchange.getResponse().bufferFactory();
         int status = Objects.requireNonNull(serverWebExchange.getResponse().getStatusCode()).value();
 
-        OperationResultCodeResponse problem;
-        Problem otherProblem;
+        Problem problem;
         if (throwable instanceof MethodArgumentNotValidException exception)
             dataBuffer = setError(bufferFactory, serverWebExchange, exception.getMessage(), SYNTAX_ERROR, SYNTAX_ERROR_CODE, HttpStatus.BAD_REQUEST.value());
         else if (throwable instanceof MissingServletRequestParameterException exception)
@@ -83,9 +78,9 @@ public class PnWebExceptionHandler implements ErrorWebExceptionHandler {
         else if (throwable instanceof PnAddressManagerException exception)
             dataBuffer = setError(bufferFactory, serverWebExchange, exception.getMessage(), SEMANTIC_ERROR, SEMANTIC_ERROR_CODE, HttpStatus.BAD_REQUEST.value());
         else {
-            otherProblem = exceptionHelper.handleException(throwable);
+            problem = exceptionHelper.handleException(throwable);
             try {
-                dataBuffer = bufferFactory.wrap(objectMapper.writeValueAsBytes(otherProblem));
+                dataBuffer = bufferFactory.wrap(objectMapper.writeValueAsBytes(problem));
             } catch (JsonProcessingException e) {
                 log.error("cannot output problem", e);
                 dataBuffer = bufferFactory.wrap(exceptionHelper.generateFallbackProblem().getBytes(StandardCharsets.UTF_8));

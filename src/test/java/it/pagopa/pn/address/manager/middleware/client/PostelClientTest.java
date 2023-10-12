@@ -1,13 +1,5 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaRequest;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
@@ -17,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
+
+import static org.mockito.Mockito.*;
 
 class PostelClientTest {
 

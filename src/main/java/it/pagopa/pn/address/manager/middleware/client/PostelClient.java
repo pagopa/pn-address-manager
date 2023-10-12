@@ -6,8 +6,8 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.NormalizzazioneResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
 import lombok.CustomLog;
 import org.springframework.stereotype.Component;
@@ -15,7 +15,8 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.POSTEL;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_POSTEL_CLIENT;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_POSTEL_CLIENT;
 
 
 @CustomLog

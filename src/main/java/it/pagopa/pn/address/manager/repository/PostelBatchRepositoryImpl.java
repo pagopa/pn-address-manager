@@ -19,9 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.COL_LAST_RESERVED;
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.COL_RETRY;
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.GSI_S;
+import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
 
 @Component
 public class PostelBatchRepositoryImpl implements PostelBatchRepository {

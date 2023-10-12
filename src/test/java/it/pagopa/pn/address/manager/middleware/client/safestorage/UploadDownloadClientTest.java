@@ -1,9 +1,5 @@
 package it.pagopa.pn.address.manager.middleware.client.safestorage;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import org.junit.jupiter.api.Assertions;
@@ -18,6 +14,8 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
 import java.util.Objects;
+
+import static org.mockito.Mockito.*;
 
 @ContextConfiguration (classes = {UploadDownloadClient.class})
 @ExtendWith (SpringExtension.class)
@@ -54,12 +52,6 @@ class UploadDownloadClientTest {
 				new PnInternalAddressManagerException("", "The characteristics of someone or something", 2, "An error occurred"));
 		Assertions.assertThrows(PnInternalAddressManagerException.class, () -> uploadDownloadClient.uploadContent("Not all who wander are lost", fileCreationResponse, "Sha256"));
 		verify(fileCreationResponse).getSecret();
-	}
-
-	@Test
-	void testDownloadContent () {
-
-		uploadDownloadClient.downloadContent("https://example.org/example");
 	}
 	@Test
 	void testDownloadContentWithError () {

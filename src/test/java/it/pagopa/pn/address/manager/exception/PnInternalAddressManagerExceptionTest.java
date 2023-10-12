@@ -1,15 +1,14 @@
 package it.pagopa.pn.address.manager.exception;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import it.pagopa.pn.common.rest.error.v1.dto.Problem;
 import it.pagopa.pn.common.rest.error.v1.dto.ProblemError;
+import org.junit.jupiter.api.Test;
+import org.springframework.http.HttpStatus;
 
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 class PnInternalAddressManagerExceptionTest {
     /**
