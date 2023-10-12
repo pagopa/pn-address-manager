@@ -35,4 +35,10 @@ public class AddressmanagerConstant {
 
     //AddressUtils
     public static final String DOCUMENT_TYPE = "PN_ADDRESSES_RAW";
+
+    //PnWebExceptionHandler
+    public static final String SYNTAX_ERROR = "Syntax error";
+    public static final String SEMANTIC_ERROR = "Semantic error";
+    public static final String SYNTAX_ERROR_CODE = "400.01";
+    public static final String SEMANTIC_ERROR_CODE = "400.02";
 }

@@ -1,7 +1,5 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_POSTEL_CLIENT;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_POSTEL_CLIENT;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -13,19 +11,12 @@ import static org.mockito.Mockito.when;
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaRequest;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
 import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
 import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
-import org.springframework.web.reactive.function.client.WebClientResponseException;
-import reactor.core.publisher.Mono;
-import reactor.test.StepVerifier;
 
 class PostelClientTest {
 

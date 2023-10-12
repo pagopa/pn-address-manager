@@ -6,7 +6,7 @@ import com.opencsv.bean.StatefulBeanToCsvBuilder;
 import com.opencsv.exceptions.CsvDataTypeMismatchException;
 import com.opencsv.exceptions.CsvRequiredFieldEmptyException;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.CountryModel;
 import org.apache.commons.lang3.StringUtils;
@@ -44,7 +44,7 @@ public class CsvService {
             beanToCsv.write(items);
             writer.flush();
         } catch (IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
-            throw new PnAddressManagerException(ERROR_ADDRESS_MANAGER_WRITING_CSV, ERROR_ADDRESS_MANAGER_WRITING_CSV_DESCRIPTION + nameFile, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_WRITING_CSV_ERROR_CODE);
+            throw new PnInternalAddressManagerException(ERROR_ADDRESS_MANAGER_WRITING_CSV, ERROR_ADDRESS_MANAGER_WRITING_CSV_DESCRIPTION + nameFile, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_WRITING_CSV_ERROR_CODE);
         }
     }
 
@@ -57,7 +57,7 @@ public class CsvService {
             beanToCsv.write(items);
             return writer.toString();
         } catch (IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
-            throw new PnAddressManagerException(ERROR_ADDRESS_MANAGER_WRITING_CSV, ERROR_ADDRESS_MANAGER_WRITING_CSV_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_WRITING_CSV_ERROR_CODE);
+            throw new PnInternalAddressManagerException(ERROR_ADDRESS_MANAGER_WRITING_CSV, ERROR_ADDRESS_MANAGER_WRITING_CSV_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_WRITING_CSV_ERROR_CODE);
         }
     }
 
@@ -83,7 +83,7 @@ public class CsvService {
                     .collect(Collectors.toMap(model ->
                             StringUtils.normalizeSpace(model.getName()).toUpperCase(), CountryModel::getIsocode, (o, o2) -> o));
         } catch (IOException e) {
-            throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + pnAddressManagerConfig.getCsv().getPathCountry(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
+            throw new PnInternalAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + pnAddressManagerConfig.getCsv().getPathCountry(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
     }
 
@@ -98,7 +98,7 @@ public class CsvService {
                     .filter(capModel -> !StringUtils.isBlank(capModel.getCap()))
                     .toList();
         } catch (IOException e) {
-            throw new PnAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + pnAddressManagerConfig.getCsv().getPathCap(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
+            throw new PnInternalAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + pnAddressManagerConfig.getCsv().getPathCap(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
     }
 

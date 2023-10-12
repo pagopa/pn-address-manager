@@ -4,7 +4,7 @@ import it.pagopa.pn.address.manager.middleware.client.PostelClient;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
@@ -68,7 +68,7 @@ public class DeduplicatesAddressService {
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
         return apiKeyRepository.findById(cxId)
-                .switchIfEmpty(Mono.error(new PnAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
+                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
 
     }
 }

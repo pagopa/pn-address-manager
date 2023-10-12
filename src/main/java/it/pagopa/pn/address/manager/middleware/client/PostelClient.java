@@ -6,7 +6,7 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.NormalizzazioneResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
 import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
 import lombok.CustomLog;
@@ -34,7 +34,7 @@ public class PostelClient {
 		return postelApi.deduplica(cxId, xApiKey, inputDeduplica)
 				.onErrorMap(throwable -> {
 					if (throwable instanceof WebClientResponseException ex) {
-						throw new PnAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
+						throw new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
 								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_DEDUPLICA_ONLINE_ERROR_CODE);
 					}
 					return throwable;
@@ -51,7 +51,7 @@ public class PostelClient {
 		return postelApi.normalizzazione(pnAddressManagerConfig.getPagoPaCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)
 				.onErrorMap(throwable -> {
 					if (throwable instanceof WebClientResponseException ex) {
-						throw new PnAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
+						throw new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
 								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_ACTIVATE_POSTEL_ERROR_CODE);
 					}
 					return throwable;

@@ -5,17 +5,18 @@ import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
 import lombok.CustomLog;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -95,8 +96,8 @@ public class NormalizzatoreService {
 
     private Mono<PostelBatch> findPostelBatch(String idLavorazione) {
         return postelBatchService.findPostelBatch(idLavorazione)
-                .switchIfEmpty(Mono.error(new PnInternalException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND, idLavorazione),
-                        ERROR_CODE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND)));
+                .switchIfEmpty(Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND, idLavorazione), HttpStatus.BAD_REQUEST.value(),
+                        SEMANTIC_ERROR_CODE)));
     }
 
     private Mono<OperationResultCodeResponse> checkOutputFileOnFileStorage(NormalizerCallbackRequest normalizerCallbackRequest, PostelBatch postelBatch) {
@@ -127,21 +128,28 @@ public class NormalizzatoreService {
 
     private Mono<Void> verifyCheckSumAndSendToInternalQueue(NormalizerCallbackRequest callbackRequestData, FileDownloadResponse fileDownloadResponse, PostelBatch postelBatch) {
         if (!fileDownloadResponse.getChecksum().equalsIgnoreCase(callbackRequestData.getSha256())) {
-            return Mono.error(new PnAddressManagerException(ERROR_CODE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM,
-                    String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM, callbackRequestData.getUri()),
-                    HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM));
+            return Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM, callbackRequestData.getUri()),
+                    HttpStatus.BAD_REQUEST.value(), SEMANTIC_ERROR_CODE));
         }
         return sendToInternalQueueAndUpdatePostelBatchStatus(callbackRequestData, postelBatch, fileDownloadResponse.getDownload().getUrl());
     }
 
     public Mono<FileDownloadResponse> getFile(String fileKey) {
-        return safeStorageService.getFile(fileKey, pnAddressManagerConfig.getPagoPaCxId());
+        return safeStorageService.getFile(fileKey, pnAddressManagerConfig.getPagoPaCxId())
+                .onErrorResume(WebClientResponseException.class, error -> {
+                    log.error("Exception in call getFile fileKey={} error={}", fileKey, error);
+                    if (error.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+                        log.error(ADDRESS_NORMALIZER_ASYNC + "getFile error:{}", error.getMessage(), error);
+                        return Mono.error(new PnAddressManagerException(error.getMessage(), HttpStatus.BAD_REQUEST.value(),
+                                SEMANTIC_ERROR_CODE));                    }
+                    return Mono.error(error);
+                });
     }
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
         return apiKeyRepository.findById(cxId)
                 .filter(apiKeyModel -> apiKeyModel.getApiKey().equalsIgnoreCase(xApiKey))
-                .switchIfEmpty(Mono.error(new PnAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Api Key not found")));
+                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Api Key not found")));
 
     }
 

@@ -6,7 +6,7 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
@@ -94,7 +94,8 @@ class AddressConverterTest {
      */
     @Test
     void testCreateDeduplicatesResponseFromDeduplicaResponse() {
-        assertThrows(PnInternalException.class, () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(new DeduplicaResponse(), "42"));
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        assertThrows(PnInternalException.class, () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
 
     }
 
@@ -105,7 +106,7 @@ class AddressConverterTest {
     void testCreateDeduplicatesResponseFromDeduplicaResponse2() {
         DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
         risultatoDeduplica.errore("-1");
-        assertThrows(PnAddressManagerException.class,
+        assertThrows(PnInternalAddressManagerException.class,
                 () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
 
@@ -116,7 +117,7 @@ class AddressConverterTest {
     void testCreateDeduplicatesResponseFromDeduplicaResponse3() {
         DeduplicaResponse risultatoDeduplica = mock(DeduplicaResponse.class);
         when(risultatoDeduplica.getErrore()).thenReturn("An error occurred");
-        assertThrows(PnAddressManagerException.class,
+        assertThrows(PnInternalAddressManagerException.class,
                 () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
         verify(risultatoDeduplica, atLeast(1)).getErrore();
     }
@@ -240,13 +241,13 @@ class AddressConverterTest {
     @Test
     void testCreateDeduplicatesResponseFromDeduplicaResponse8() {
         AddressOut addressOut = mock(AddressOut.class);
-        when(addressOut.getnErroreNorm()).thenThrow(new PnAddressManagerException("An error occurred",
+        when(addressOut.getnErroreNorm()).thenThrow(new PnInternalAddressManagerException("An error occurred",
                 "The characteristics of someone or something", 2, "An error occurred"));
         when(addressOut.getfPostalizzabile()).thenReturn("0");
         DeduplicaResponse risultatoDeduplica = mock(DeduplicaResponse.class);
         when(risultatoDeduplica.getSlaveOut()).thenReturn(addressOut);
         when(risultatoDeduplica.getErrore()).thenReturn(null);
-        assertThrows(PnAddressManagerException.class,
+        assertThrows(PnInternalAddressManagerException.class,
                 () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
         verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
         verify(risultatoDeduplica).getErrore();
