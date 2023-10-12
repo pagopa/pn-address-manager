@@ -32,6 +32,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.*;
@@ -117,7 +118,7 @@ public class AddressBatchRequestService {
                 listToConvert.addAll(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest)));
 
         String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
-        String sha256 = addressUtils.computeSha256(csvContent.getBytes());
+        String sha256 = addressUtils.computeSha256(csvContent.getBytes(StandardCharsets.UTF_8));
         String finalBatchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + batchId;
 
         return Flux.fromStream(items.stream())
