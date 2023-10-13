@@ -4,7 +4,7 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
@@ -61,7 +61,7 @@ public class AddressConverter {
         deduplicatesResponse.setCorrelationId(correlationId);
 
         if (risultatoDeduplica.getErrore() != null) {
-            throw new PnAddressManagerException(ERROR_CODE_ADDRESSMANAGER_DEDUPLICAERROR,
+            throw new PnInternalAddressManagerException(ERROR_CODE_ADDRESSMANAGER_DEDUPLICAERROR,
                     decodeErrorDedu(risultatoDeduplica.getErrore()),
                     HttpStatus.BAD_REQUEST.value(),
                     ERROR_CODE_ADDRESSMANAGER_DEDUPLICAERROR);

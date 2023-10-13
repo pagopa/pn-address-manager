@@ -1,18 +1,13 @@
 package it.pagopa.pn.address.manager.middleware.client.safestorage;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileDownloadResponseDto;
-import it.pagopa.pn.address.manager.msclient.generated.pn.safe.storage.v1.api.FileDownloadApi;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
-import org.opensaml.xmlsec.signature.P;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
@@ -74,7 +69,7 @@ class PnSafeStorageClientTest {
         WebClientResponseException webClientResponseException = mock(WebClientResponseException.class);
         when(webClientResponseException.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
         StepVerifier.create(resultMono)
-                .expectError(PnAddressManagerException.class)
+                .expectError(PnInternalAddressManagerException.class)
                 .verify();
     }
 }

@@ -4,7 +4,7 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -130,7 +130,7 @@ public class RecoveryService {
                 .blockOptional()
                 .orElseThrow(() -> {
                     log.warn("Address Manager - can not get batch request - DynamoDB Mono<Page> is null");
-                    return new PnAddressManagerException(ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST,
+                    return new PnInternalAddressManagerException(ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST,
                             ADDRESS_NORMALIZER_ASYNC + ERROR_MESSAGE_ADDRESSMANAGER_BATCHREQUEST ,
                             HttpStatus.INTERNAL_SERVER_ERROR.value(),
                             ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST);

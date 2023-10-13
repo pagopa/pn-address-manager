@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;

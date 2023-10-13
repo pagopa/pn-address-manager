@@ -19,7 +19,8 @@ import java.net.ConnectException;
 import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.SHA256;
 
 @CustomLog
 @Component

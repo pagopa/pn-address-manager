@@ -3,8 +3,10 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AcceptedResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCallbackEvent;
 import it.pagopa.pn.address.manager.model.EventDetail;
@@ -52,7 +54,7 @@ public class NormalizeAddressService {
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
         return apiKeyRepository.findById(cxId)
-                .switchIfEmpty(Mono.error(new PnAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
+                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
 
     }
 

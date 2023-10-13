@@ -1,13 +1,13 @@
 package it.pagopa.pn.address.manager.config;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.amazonaws.services.eventbridge.AmazonEventBridgeAsyncClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ContextConfiguration(classes = {EventBridgeConfiguration.class})
 @ExtendWith(SpringExtension.class)

@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.service;
 
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.model.CapModel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ class CsvServiceTest {
         expectedCountryMap.put("AFRICA DEL SUD","SUDAFRICA");
         expectedCountryMap.put("AFRIQUE DU SUD","SUDAFRICA");
 
-        Assertions.assertThrows(PnAddressManagerException.class, csvService::countryMap);
+        Assertions.assertThrows(PnInternalAddressManagerException.class, csvService::countryMap);
 
     }
 
@@ -137,6 +137,6 @@ class CsvServiceTest {
         expectedCapMap.add(new CapModel("00100", "ROMA", "RM"));
         expectedCapMap.add(new CapModel("20019", "MILANO", "MI"));
 
-        Assertions.assertThrows(PnAddressManagerException.class,csvService::capList);
+        Assertions.assertThrows(PnInternalAddressManagerException.class,csvService::capList);
     }
 }

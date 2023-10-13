@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.model.*;
@@ -113,7 +113,7 @@ public class AddressUtils {
 
         try {
             verifyAddressInCsv(analogAddress, normalizedAddressResponse);
-        } catch (PnAddressManagerException e) {
+        } catch (PnInternalAddressManagerException e) {
             log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, e.getDescription());
             log.error("Error during verifyAddressInCsv for {}: {}", correlationId, e.getDescription(), e);
             normalizedAddressResponse.setError(e.getDescription());
@@ -137,9 +137,9 @@ public class AddressUtils {
         if (StringUtils.isBlank(analogAddress.getCap())
                 || StringUtils.isBlank(analogAddress.getCity())
                 || StringUtils.isBlank(analogAddress.getPr())) {
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Cap, city and Province are mandatory", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
+            throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, "Cap, city and Province are mandatory", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         } else if (!compareWithCapModelObject(analogAddress)) {
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, "Invalid Address, Cap, City and Province: [" + analogAddress.getCap() + "," + analogAddress.getCity() + "," + analogAddress.getPr() + "]", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
+            throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, "Invalid Address, Cap, City and Province: [" + analogAddress.getCap() + "," + analogAddress.getCity() + "," + analogAddress.getPr() + "]", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         }
     }
 
@@ -153,7 +153,7 @@ public class AddressUtils {
     private void searchCountry(String country, Map<String, String> countryMap) {
         String normalizedCountry = StringUtils.normalizeSpace(country.toUpperCase());
         if (!countryMap.containsKey(normalizedCountry)) {
-            throw new PnAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Country not found: [%s]", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
+            throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Country not found: [%s]", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
         }
     }
 

@@ -6,7 +6,7 @@ import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
@@ -207,7 +207,7 @@ public class AddressBatchRequestService {
                     r.setRetry(nextRetry);
                     r.setLastReserved(now);
                     if (nextRetry >= pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxRetry()
-                            || (throwable instanceof PnAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())) {
+                            || (throwable instanceof PnInternalAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())) {
                         r.setStatus(BatchStatus.ERROR.getValue());
                         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - request {} status in {} (retry: {})", batchId, r.getCorrelationId(), r.getStatus(), r.getRetry());
                     }
@@ -232,7 +232,7 @@ public class AddressBatchRequestService {
                     r.setRetry(nextRetry);
                     r.setLastReserved(now);
                     if (nextRetry >= pnAddressManagerConfig.getNormalizer().getPostel().getMaxRetry()
-                            || (throwable instanceof PnAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())) {
+                            || (throwable instanceof PnInternalAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())) {
                         r.setStatus(BatchStatus.ERROR.getValue());
                         log.debug(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - status in {} (retry: {})", postelBatch.getBatchId(), r.getStatus(), r.getRetry());
                     }
