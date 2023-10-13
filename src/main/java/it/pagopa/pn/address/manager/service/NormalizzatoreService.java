@@ -78,9 +78,15 @@ public class NormalizzatoreService {
                     log.info(ADDRESS_NORMALIZER_ASYNC + "created file with fileKey: [{}]", fileCreationResponseDto.getKey());
                     return normalizzatoreConverter.fileDownloadResponseDtoToFileDownloadResponse(fileCreationResponseDto, preLoadRequest.getPreloadIdx());
                 })
-                .onErrorResume(e -> {
-                    log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);
-                    return Mono.error(e);
+                .onErrorResume(WebClientResponseException.class, error -> {
+                    log.error("Exception in call createFile - error={}", error);
+                    if (error.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+                        log.error(ADDRESS_NORMALIZER_ASYNC + "createFile error:{}", error.getMessage(), error);
+                        return Mono.error(new PnAddressManagerException(error.getMessage(), HttpStatus.BAD_REQUEST.value(),
+                                SEMANTIC_ERROR_CODE));
+                    }
+                    log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", error);
+                    return Mono.error(error);
                 });
     }
 
@@ -141,7 +147,8 @@ public class NormalizzatoreService {
                     if (error.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
                         log.error(ADDRESS_NORMALIZER_ASYNC + "getFile error:{}", error.getMessage(), error);
                         return Mono.error(new PnAddressManagerException(error.getMessage(), HttpStatus.BAD_REQUEST.value(),
-                                SEMANTIC_ERROR_CODE));                    }
+                                SEMANTIC_ERROR_CODE));
+                    }
                     return Mono.error(error);
                 });
     }
