@@ -9,7 +9,6 @@ import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
-import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.api.NormalizzatoreApi;
 import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
