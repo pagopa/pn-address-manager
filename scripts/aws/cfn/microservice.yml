@@ -253,9 +253,9 @@ Parameters:
     Default: 1209600
 
   PnAddressManagerNormalizerBatchRequestDelay:
-    Type: Number
+    Type: String
     Description: 'Postel batch request delay'
-    Default: 30000
+    Default: '30000'
 
   PnAddressManagerNormalizerBatchRequestRecoveryDelay:
     Type: Number
