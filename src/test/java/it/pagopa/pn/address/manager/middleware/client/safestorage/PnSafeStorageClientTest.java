@@ -53,23 +53,4 @@ class PnSafeStorageClientTest {
         verify(exchangeFilterFunction2, atLeast(1)).andThen(Mockito.<ExchangeFilterFunction>any());
         verify(exchangeFilterFunction, atLeast(1)).apply(Mockito.<ExchangeFunction>any());
     }
-    @Test
-    @Disabled
-    void testGetFileWithError () {
-        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
-        pnAddressManagerConfig.setSafeStorageBasePath("http://localhost:8080");
-        ResponseExchangeFilter responseExchangeFilter = mock(ResponseExchangeFilter.class);
-        ExchangeFilterFunction exchangeFilterFunction = mock(ExchangeFilterFunction.class);
-        when(exchangeFilterFunction.apply(Mockito.<ExchangeFunction>any())).thenReturn(mock(ExchangeFunction.class));
-        ExchangeFilterFunction exchangeFilterFunction2 = mock(ExchangeFilterFunction.class);
-        when(exchangeFilterFunction2.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction);
-        Mono<FileDownloadResponseDto> resultMono;
-        resultMono=(new PnSafeStorageClient(new PnSafeStorageWebClient(responseExchangeFilter, pnAddressManagerConfig)))
-                .getFile("File Key", "42");
-        WebClientResponseException webClientResponseException = mock(WebClientResponseException.class);
-        when(webClientResponseException.getStatusCode()).thenReturn(HttpStatus.NOT_FOUND);
-        StepVerifier.create(resultMono)
-                .expectError(PnInternalAddressManagerException.class)
-                .verify();
-    }
 }

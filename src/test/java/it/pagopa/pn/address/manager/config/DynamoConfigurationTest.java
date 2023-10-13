@@ -17,9 +17,6 @@ class DynamoConfigurationTest {
     @MockBean
     private DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
 
-    /**
-     * Method under test: {@link DynamoConfiguration#dynamoDb()}
-     */
     @Test
     void testDynamoDb() {
         dynamoConfiguration.dynamoDb();

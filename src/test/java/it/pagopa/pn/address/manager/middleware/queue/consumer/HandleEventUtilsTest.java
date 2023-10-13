@@ -30,5 +30,6 @@ class HandleEventUtilsTest {
         assertThrows(PnInternalException.class, () -> HandleEventUtils.handleException(headers, new Throwable()));
         verify(headers).get(Mockito.<Object>any());
     }
+
 }
 

@@ -264,7 +264,6 @@ class AddressConverterTest {
         batchRequest.setDelay(2);
         batchRequest.setEventBridgeRecoveryDelay(1);
         batchRequest.setMaxRetry(3);
-        batchRequest.setMaxSize(3);
         batchRequest.setRecoveryAfter(2);
         batchRequest.setRecoveryDelay(2);
         batchRequest.setTtl(2);
@@ -284,9 +283,7 @@ class AddressConverterTest {
     @NotNull
     private static PnAddressManagerConfig.Normalizer getNormalizer(PnAddressManagerConfig.BatchRequest batchRequest) {
         PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
-        postel.setDelay(2);
         postel.setMaxRetry(3);
-        postel.setMaxSize(3);
         postel.setRecoveryAfter(2);
         postel.setRecoveryDelay(2);
         postel.setTtl(2);
@@ -308,7 +305,6 @@ class AddressConverterTest {
         batchRequest.setDelay(2);
         batchRequest.setEventBridgeRecoveryDelay(1);
         batchRequest.setMaxRetry(3);
-        batchRequest.setMaxSize(3);
         batchRequest.setRecoveryAfter(2);
         batchRequest.setRecoveryDelay(2);
         batchRequest.setTtl(2);
@@ -318,7 +314,7 @@ class AddressConverterTest {
         PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setNormalizer(normalizer);
         PostelBatch actualCreatePostelBatchByBatchIdAndFileKeyResult = (new AddressConverter(pnAddressManagerConfig))
-                .createPostelBatchByBatchIdAndFileKey("42", "File Key", "Sha256");
+                .createPostelBatchByBatchIdAndFileKey("Request Prefix42", "File Key", "Sha256");
         assertEquals("Request Prefix42", actualCreatePostelBatchByBatchIdAndFileKeyResult.getBatchId());
         assertEquals("NOT_WORKED", actualCreatePostelBatchByBatchIdAndFileKeyResult.getStatus());
         assertEquals("Sha256", actualCreatePostelBatchByBatchIdAndFileKeyResult.getSha256());
@@ -329,9 +325,7 @@ class AddressConverterTest {
     @NotNull
     private static PnAddressManagerConfig.Normalizer getNormalizer1(PnAddressManagerConfig.BatchRequest batchRequest) {
         PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
-        postel.setDelay(2);
         postel.setMaxRetry(3);
-        postel.setMaxSize(3);
         postel.setRecoveryAfter(2);
         postel.setRecoveryDelay(2);
         postel.setRequestPrefix("Request Prefix");

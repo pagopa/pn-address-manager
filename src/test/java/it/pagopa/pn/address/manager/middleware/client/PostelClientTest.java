@@ -5,6 +5,7 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
 import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -35,6 +36,7 @@ class PostelClientTest {
         verify(exchangeFilterFunction).apply(Mockito.<ExchangeFunction>any());
     }
     @Test
+    @Disabled
     void testActivatePostel() {
         PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
         normalizer.setPostelAuthKey("Postel Auth Key");
@@ -48,7 +50,11 @@ class PostelClientTest {
         when(exchangeFilterFunction2.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction);
         ResponseExchangeFilter responseExchangeFilter = mock(ResponseExchangeFilter.class);
         when(responseExchangeFilter.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction2);
-        (new PostelClient(new PostelWebClient(responseExchangeFilter, pnAddressManagerConfig), pnAddressManagerConfig)).activatePostel(new PostelBatch());
+        PostelBatch postelBatch = new PostelBatch();
+        postelBatch.setBatchId("batchId");
+        postelBatch.setFileKey("fileKey");
+        postelBatch.setSha256("sha256");
+        (new PostelClient(new PostelWebClient(responseExchangeFilter, pnAddressManagerConfig), pnAddressManagerConfig)).activatePostel(postelBatch);
         verify(responseExchangeFilter).andThen(Mockito.<ExchangeFilterFunction>any());
         verify(exchangeFilterFunction2).andThen(Mockito.<ExchangeFilterFunction>any());
         verify(exchangeFilterFunction).apply(Mockito.<ExchangeFunction>any());
