@@ -1,12 +1,9 @@
 package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import org.springframework.stereotype.Component;
-import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;

@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
+import com.opencsv.CSVWriter;
 import com.opencsv.bean.CsvToBeanBuilder;
 import com.opencsv.bean.StatefulBeanToCsv;
 import com.opencsv.bean.StatefulBeanToCsvBuilder;
@@ -21,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import static com.opencsv.ICSVWriter.*;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 
@@ -37,8 +39,8 @@ public class CsvService {
 
     public <T> void writeItemsOnCsv(List<T> items, String nameFile, String directoryPath) {
         try (FileWriter writer = new FileWriter(new File(directoryPath, nameFile))) {
-            StatefulBeanToCsv<T> beanToCsv = new StatefulBeanToCsvBuilder<T>(writer)
-                    .withSeparator(';')
+            CSVWriter cw = new CSVWriter(writer, ';' , NO_QUOTE_CHARACTER, DEFAULT_ESCAPE_CHARACTER, DEFAULT_LINE_END);
+            StatefulBeanToCsv<T> beanToCsv = new StatefulBeanToCsvBuilder<T>(cw)
                     .build();
             beanToCsv.write(items);
             writer.flush();
@@ -49,8 +51,8 @@ public class CsvService {
 
     public <T> String writeItemsOnCsvToString(List<T> items) {
         try (StringWriter writer = new StringWriter()) {
-            StatefulBeanToCsv<T> beanToCsv = new StatefulBeanToCsvBuilder<T>(writer)
-                    .withSeparator(';')
+            CSVWriter cw = new CSVWriter(writer, ';' , NO_QUOTE_CHARACTER, DEFAULT_ESCAPE_CHARACTER, DEFAULT_LINE_END);
+            StatefulBeanToCsv<T> beanToCsv = new StatefulBeanToCsvBuilder<T>(cw)
                     .build();
             beanToCsv.write(items);
             return writer.toString();

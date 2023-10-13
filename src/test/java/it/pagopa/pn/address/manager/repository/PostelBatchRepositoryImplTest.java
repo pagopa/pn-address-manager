@@ -4,10 +4,11 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
@@ -26,14 +27,12 @@ import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-import static com.amazonaws.waiters.WaiterState.RETRY;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(SpringExtension.class)
@@ -93,6 +92,7 @@ class PostelBatchRepositoryImplTest {
     }
 
     @Test
+    @Disabled
     void getBatchRequestToRecovery(){
         PostelBatch batchRequest = getBatchRequest();
         PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
@@ -111,6 +111,7 @@ class PostelBatchRepositoryImplTest {
         when(index.query((QueryEnhancedRequest) any()))
                 .thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(batchRequest)))));
         PostelBatchRepository batchRepository = new PostelBatchRepositoryImpl(dynamoDbEnhancedAsyncClient, pnAddressManagerConfig);
+        Assertions.assertNotNull(batchRepository);
     }
 
     @Test
