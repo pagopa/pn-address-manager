@@ -26,6 +26,17 @@ public class BatchRequest {
     private String addresses;
 
     @Getter(onMethod = @__({
+            @DynamoDbAttribute(COL_REQUEST_TO_PROCESS),
+            @DynamoDbSecondaryPartitionKey(indexNames = GSI_CC)
+    }))
+    private String requestToProcess;
+
+    @Getter(onMethod = @__({
+            @DynamoDbAttribute(COL_ADDRESSES_COUNT)
+    }))
+    private String addressesCount;
+
+    @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_BATCH_ID),
             @DynamoDbSecondaryPartitionKey(indexNames = GSI_BL)
     }))
@@ -57,11 +68,6 @@ public class BatchRequest {
             @DynamoDbSecondarySortKey(indexNames = {GSI_BL, GSI_SSL})
     }))
     private LocalDateTime lastReserved;
-
-    @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_RESERVATION_ID)
-    }))
-    private String reservationId;
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_CREATED_AT),

@@ -1,10 +1,10 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
-import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
@@ -38,7 +38,8 @@ public class PostelBatchService {
                               CsvService csvService,
                               AddressUtils addressUtils,
                               UploadDownloadClient uploadDownloadClient,
-                              AddressBatchRequestService addressBatchRequestService, CapAndCountryService capAndCountryService) {
+                              AddressBatchRequestService addressBatchRequestService,
+                              CapAndCountryService capAndCountryService) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.csvService = csvService;

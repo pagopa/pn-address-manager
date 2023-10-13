@@ -19,6 +19,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
 
 import java.security.MessageDigest;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -257,7 +259,6 @@ public class AddressUtils {
         batchRequest.setRetry(0);
         batchRequest.setLastReserved(now);
         batchRequest.setCreatedAt(now);
-        batchRequest.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
         log.trace("New Batch Request: {}", batchRequest);
         return batchRequest;
     }
@@ -325,5 +326,10 @@ public class AddressUtils {
                 .outputFileUrl(url)
                 .error(callbackRequest.getError())
                 .build();
+    }
+
+    public static Duration getTimeSpent(Instant start) {
+        Instant end = Instant.now();
+        return Duration.between(start, end);
     }
 }

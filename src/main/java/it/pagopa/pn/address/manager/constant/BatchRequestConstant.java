@@ -10,6 +10,9 @@ public final class BatchRequestConstant {
 
     public static final String COL_ADDRESSES = "addresses";
     public static final String COL_BATCH_ID = "batchId";
+
+    public static final String COL_REQUEST_TO_PROCESS = "requestToProcess";
+    public static final String COL_ADDRESSES_COUNT = "addressesCount";
     public static final String COL_RETRY = "retry";
     public static final String COL_TTL = "ttl";
     public static final String COL_CLIENT_ID = "clientId";
@@ -24,6 +27,8 @@ public final class BatchRequestConstant {
     public static final String COL_AWS_MESSAGE_ID = "aws-messageId";
 
     public static final String GSI_BL = "batchId-lastReserved-index";
+
+    public static final String GSI_CC = "requestToProcess-index";
     public static final String GSI_S = "status-index";
     public static final String GSI_SSL = "sendStatus-lastReserved-index";
 }

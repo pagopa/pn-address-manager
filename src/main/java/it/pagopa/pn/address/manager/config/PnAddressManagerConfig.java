@@ -7,6 +7,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import java.time.Duration;
+
 @Getter
 @Configuration
 @ConfigurationProperties( prefix = "pn.address-manager")
@@ -39,9 +41,8 @@ public class PnAddressManagerConfig {
     @Data
     public static class Postel{
         private Integer ttl;
+        private Integer workingTtl;
         private Integer maxRetry;
-        private Integer maxSize;
-        private Integer delay;
         private Integer recoveryAfter;
         private Integer recoveryDelay;
         private String requestPrefix;
@@ -51,11 +52,14 @@ public class PnAddressManagerConfig {
     public static class BatchRequest{
         private Integer ttl;
         private Integer maxRetry;
-        private Integer maxSize;
+        private Integer queryMaxSize;
         private Integer delay;
         private Integer recoveryAfter;
         private Integer recoveryDelay;
         private Integer eventBridgeRecoveryDelay;
+        private Integer lockAtMostFor;
+        private Integer timeToBreak;
+        private Integer maxCsvSize;
     }
 
     @Data
@@ -65,6 +69,7 @@ public class PnAddressManagerConfig {
         private String postelBatchTableName;
         private String batchRequestTableName;
         private String countryTableName;
+        private String shedlockTableName;
     }
 
     @Data

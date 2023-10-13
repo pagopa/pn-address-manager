@@ -8,6 +8,7 @@ import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.dynamodb.DynamoDbAsyncClient;
+import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 
 @Configuration
 public class DynamoConfiguration {
@@ -28,6 +29,16 @@ public class DynamoConfiguration {
                 .build();
         return DynamoDbEnhancedAsyncClient.builder()
                 .dynamoDbClient(asyncClient)
+                .build();
+    }
+
+    @Bean
+    public DynamoDbClient dynamoDbClient() {
+        return DynamoDbClient.builder()
+                .region(Region.of(awsRegion))
+                .credentialsProvider(DefaultCredentialsProvider.create())
+                .overrideConfiguration(ClientOverrideConfiguration.builder()
+                        .build())
                 .build();
     }
 }

@@ -50,11 +50,12 @@ public class PostelClient {
 		activatePostelRequest.setRequestId(postelBatch.getBatchId());
 		activatePostelRequest.setUri(postelBatch.getFileKey());
 		activatePostelRequest.setSha256(postelBatch.getSha256());
-		return postelApi.normalizzazione(pnAddressManagerConfig.getPagoPaCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)
+
+		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)
 				.onErrorMap(throwable -> {
 					if (throwable instanceof WebClientResponseException ex) {
-						throw new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
-								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_ACTIVATE_POSTEL_ERROR_CODE);
+						Mono.error(new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
+								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_ACTIVATE_POSTEL_ERROR_CODE));
 					}
 					return throwable;
 				});

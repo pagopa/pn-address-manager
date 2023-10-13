@@ -23,6 +23,9 @@
     "PnAddressManagerNormalizerPostelMaxRetry": "3",
     "PostelCxId": "pn-cons-000",
     "NormalizerRequestPrefix": "",
-    "PnAddressManagerCxId": "pn-address-manager"
+    "PnAddressManagerCxId": "pn-address-manager",
+    "PnAddressManagerBatchCleanRequestDelay": "30000",
+    "PnAddressManagerNormalizerPostelWorkingTtl":"604800000",
+    "PnAddressManagerNormalizerPostelTtl": "1209600"
   }
 }

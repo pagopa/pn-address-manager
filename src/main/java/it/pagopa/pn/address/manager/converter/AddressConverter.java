@@ -124,14 +124,13 @@ public class AddressConverter {
     public PostelBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey, String sha256) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         PostelBatch batchPolling = new PostelBatch();
-        batchPolling.setBatchId(pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + batchId);
+        batchPolling.setBatchId(batchId);
         batchPolling.setFileKey(fileKey);
         batchPolling.setStatus(BatchStatus.NOT_WORKED.getValue());
         batchPolling.setRetry(0);
         batchPolling.setSha256(sha256);
         batchPolling.setLastReserved(now);
         batchPolling.setCreatedAt(now);
-        batchPolling.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
         return batchPolling;
     }
 }

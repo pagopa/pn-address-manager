@@ -161,9 +161,11 @@ public class NormalizzatoreService {
     }
 
     private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, PostelBatch postelBatch, String url) {
+        LocalDateTime now = LocalDateTime.now();
         return sqsService.pushToInputQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, url), AM_POSTEL_CALLBACK_EVENTTYPE)
                 .map(sendMessageResponse -> {
                     postelBatch.setStatus(WORKED.name());
+                    postelBatch.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getTtl()).toEpochSecond(ZoneOffset.UTC));
                     return postelBatch;
                 })
                 .flatMap(postelBatchRepository::update)

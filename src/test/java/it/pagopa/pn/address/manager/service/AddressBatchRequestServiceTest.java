@@ -72,7 +72,7 @@ class AddressBatchRequestServiceTest {
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
         pnAddressManagerConfig.setNormalizer(normalizer);
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
-                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils);
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock, lockAtMostFor, timeToBreak);
 
 
         BatchRequest batchRequest1 = getBatchRequest();
@@ -140,7 +140,7 @@ class AddressBatchRequestServiceTest {
     @Test
     void incrementAndCheckRetry(){
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
-                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils);
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock, lockAtMostFor, timeToBreak);
 
         BatchRequest batchRequest = getBatchRequest();
 
@@ -150,7 +150,7 @@ class AddressBatchRequestServiceTest {
     @Test
     void incrementAndCheckRetry1(){
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
-                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils);
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock, lockAtMostFor, timeToBreak);
 
         assertDoesNotThrow(() -> addressBatchRequestService.incrementAndCheckRetry(getPostelBatch(),new Throwable()));
     }
@@ -161,7 +161,7 @@ class AddressBatchRequestServiceTest {
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer1();
         pnAddressManagerConfig.setNormalizer(normalizer);
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
-                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils);
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock, lockAtMostFor, timeToBreak);
         PostelBatch postelBatch = getPostelBatch();
         postelBatch.setRetry(50);
         StepVerifier.create(addressBatchRequestService.incrementAndCheckRetry(postelBatch,new Throwable())).expectError().verify();
@@ -186,7 +186,7 @@ class AddressBatchRequestServiceTest {
     @Test
     void updateBatchRequest(){
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository, postelBatchRepository, addressConverter, sqsService,
-                postelClient, safeStorageService, pnAddressManagerConfig, eventService, csvService, addressUtils);
+                postelClient, safeStorageService, pnAddressManagerConfig, eventService, csvService, addressUtils, clock, lockAtMostFor, timeToBreak);
         BatchRequest batchRequest1 = getBatchRequest();
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
         when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
@@ -197,7 +197,7 @@ class AddressBatchRequestServiceTest {
     @Test
     void updateBatchRequest1(){
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
-                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils);
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock, lockAtMostFor, timeToBreak);
         BatchRequest batchRequest1 = getBatchRequest();
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
         when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
@@ -208,7 +208,7 @@ class AddressBatchRequestServiceTest {
     @Test
     void updateBatchRequest2(){
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
-                postelClient,safeStorageService,pnAddressManagerConfig,eventService,csvService,addressUtils);
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService,csvService,addressUtils, clock, lockAtMostFor, timeToBreak);
         BatchRequest batchRequest1 = getBatchRequest();
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
         when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
@@ -219,7 +219,7 @@ class AddressBatchRequestServiceTest {
     @Test
     void updateBatchRequest3(){
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
-                postelClient,safeStorageService,pnAddressManagerConfig,eventService,csvService,addressUtils);
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService,csvService,addressUtils, clock, lockAtMostFor, timeToBreak);
         BatchRequest batchRequest1 = getBatchRequest();
         batchRequest1.setStatus(BatchStatus.WORKED.toString());
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));

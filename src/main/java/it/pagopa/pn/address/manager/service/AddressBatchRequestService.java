@@ -19,7 +19,8 @@ import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
+import net.javacrumbs.shedlock.core.LockAssert;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,14 +28,12 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.function.Tuple2;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
 
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
+import java.time.*;
 import java.util.*;
 
 import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
@@ -57,6 +56,7 @@ public class AddressBatchRequestService {
     private final EventService eventService;
     private final CsvService csvService;
     private final AddressUtils addressUtils;
+    private final Clock clock;
 
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
                                       PostelBatchRepository postelBatchRepository,
@@ -67,7 +67,8 @@ public class AddressBatchRequestService {
                                       PnAddressManagerConfig pnAddressManagerConfig,
                                       EventService eventService,
                                       CsvService csvService,
-                                      AddressUtils addressUtils) {
+                                      AddressUtils addressUtils,
+                                      Clock clock) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.addressConverter = addressConverter;
@@ -78,31 +79,101 @@ public class AddressBatchRequestService {
         this.eventService = eventService;
         this.csvService = csvService;
         this.addressUtils = addressUtils;
+        this.clock = clock;
     }
 
+    //    lockAtMostFor specifies how long the lock should be kept in case the executing node dies. You have to set lockAtMostFor to a value which
+//    is much longer than normal execution time  If the task takes longer than lockAtMostFor the resulting behavior may be unpredictable
+//    (more than one process will effectively hold the lock).
+//    lockAtLeastFor specifies minimum amount of time for which the lock should be kept. is to prevent execution from multiple nodes
+//    in case of really short tasks and clock difference between the nodes.
+//
+
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.delay}")
+    @SchedulerLock(name = "batchRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-request.lockAtMostFor}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
+    protected void pollForNormalizeRequestProcessing() {
+        try {
+            // To assert that the lock is held (prevents misconfiguration errors)
+            LockAssert.assertLocked();
+            log.info("batch request for new request start on: {}", LocalDateTime.now());
+            batchAddressRequest();
+        } catch (Exception ex) {
+            log.error("Exception in actionPool", ex);
+        }
+    }
+
     public void batchAddressRequest() {
-        log.trace(ADDRESS_NORMALIZER_ASYNC +  "batchPecRequest start");
+
+        Instant start = clock.instant();
+        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest start from first{}", start);
+
         Page<BatchRequest> page;
         Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
+
+        int csvCount = 0;
+        List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
+        List<BatchRequest> requestToProcess = new ArrayList<>();
+        String batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
+
         do {
+            Instant startPagedQuery = clock.instant();
             page = getBatchRequest(lastEvaluatedKey);
             lastEvaluatedKey = page.lastEvaluatedKey();
+
             if (!page.items().isEmpty()) {
-                String batchId = UUID.randomUUID().toString();
-                execBatchRequest(page.items(), batchId)
+                csvCount = processRequest(page.items(), csvCount, batchId, requestToProcess, listToConvert, start);
+            } else {
+                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request available");
+            }
+            Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+            log.debug(ADDRESS_NORMALIZER_ASYNC + "fix end. Time spent is {} millis", timeSpent.toMillis());
+
+        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) || csvCount >= pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxCsvSize());
+
+        if (!CollectionUtils.isEmpty(requestToProcess)) {
+            execBatchRequest(requestToProcess, batchId, listToConvert)
+                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + batchId))
+                    .block();
+        }
+
+        Duration timeSpent = AddressUtils.getTimeSpent(start);
+        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest end. Time spent is {} millis", timeSpent.toMillis());
+        if (timeSpent.compareTo(Duration.ofMillis(pnAddressManagerConfig.getNormalizer().getBatchRequest().getLockAtMostFor())) > 0) {
+            log.error("Time spent is greater then lockAtMostFor. Multiple nodes could schedule the same actions.");
+        }
+    }
+
+    private int processRequest(List<BatchRequest> items, int csvCount, String batchId, List<BatchRequest> requestToProcess, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
+        for (BatchRequest batchRequest : items) {
+            List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
+            if (csvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxCsvSize()) {
+                listToConvert.addAll(batchRequestAddresses);
+                startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
                         .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + batchId))
                         .block();
+                csvCount += batchRequestAddresses.size();
             } else {
-                log.info(ADDRESS_NORMALIZER_ASYNC +  "no batch request available");
+                csvCount = pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxCsvSize();
+                break;
             }
-        } while (!CollectionUtils.isEmpty(lastEvaluatedKey));
-        log.trace(ADDRESS_NORMALIZER_ASYNC +  "batchPecRequest end");
+        }
+        return csvCount;
+    }
+
+    private Mono<Void> startProcessingBatchRequest(BatchRequest request, String batchId, List<BatchRequest> requestToProcess) {
+        setNewDataOnBatchRequest(request, batchId);
+        return addressBatchRequestRepository.setNewBatchIdToBatchRequest(request)
+                .doOnError(ConditionalCheckFailedException.class,
+                        e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip correlationId: {}", request.getCorrelationId(), e))
+                .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty())
+                .map(requestToProcess::add)
+                .then();
     }
 
 
     private Page<BatchRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
-        return addressBatchRequestRepository.getBatchRequestByNotBatchId(lastEvaluatedKey, pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxSize())
+        return addressBatchRequestRepository.getBatchRequestByNotBatchId(lastEvaluatedKey, pnAddressManagerConfig.getNormalizer().getBatchRequest().getQueryMaxSize())
                 .blockOptional()
                 .orElseThrow(() -> {
                     log.warn(ADDRESS_NORMALIZER_ASYNC + "can not get batch request - DynamoDB Mono<Page> is null");
@@ -110,91 +181,80 @@ public class AddressBatchRequestService {
                 });
     }
 
-    private Mono<Void> execBatchRequest(List<BatchRequest> items, String batchId) {
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-
-        List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
-        items.forEach(batchRequest ->
-                listToConvert.addAll(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest)));
-
+    private Mono<Void> execBatchRequest(List<BatchRequest> items, String batchId, List<NormalizeRequestPostelInput> listToConvert) {
         String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
         String sha256 = addressUtils.computeSha256(csvContent.getBytes(StandardCharsets.UTF_8));
-        String finalBatchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + batchId;
 
-        return Flux.fromStream(items.stream())
-                .doOnNext(item -> {
-                    MDC.put("AWS_messageId", item.getAwsMessageId());
-                    item.setBatchId(finalBatchId);
-                    item.setStatus(TAKEN_CHARGE.name());
-                    item.setLastReserved(now);
+        return safeStorageService.callSelfStorageCreateFileAndUpload(csvContent, sha256)
+                .onErrorResume(e -> {
+                    log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);
+                    return incrementAndCheckRetry(items, e, batchId)
+                            .then(Mono.error(e));
                 })
-                .flatMap(item -> addressBatchRequestRepository.setNewBatchIdToBatchRequest(item)
-                        .doOnError(ConditionalCheckFailedException.class,
-                                e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip correlationId: {}", item.getCorrelationId(), e))
-                        .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty()))
-                .collectList()
-                .filter(requests -> !requests.isEmpty())
-                .zipWhen(batchRequests -> safeStorageService.callSelfStorageCreateFileAndUpload(csvContent, sha256)
-                        .onErrorResume(e -> {
-                            log.error(ADDRESS_NORMALIZER_ASYNC +  "failed to create file", e);
-                            return incrementAndCheckRetry(batchRequests, e, finalBatchId)
-                                    .then(Mono.error(e));
-                        }))
-                .flatMap(t -> activatePostelBatch(t, finalBatchId, sha256));
+                .flatMap(t -> activatePostelBatch(items, t, batchId, sha256));
     }
 
-    private Mono<Void> activatePostelBatch(Tuple2<List<BatchRequest>, FileCreationResponseDto> t, String batchId, String sha256) {
-        return createPostelBatch(t.getT2().getKey(), batchId, sha256)
-                .onErrorResume(v -> incrementAndCheckRetry(t.getT1(), v, batchId).then(Mono.error(v)))
+    private Mono<Void> activatePostelBatch(List<BatchRequest> items, FileCreationResponseDto fileCreationResponseDto, String batchId, String sha256) {
+        return createPostelBatch(fileCreationResponseDto.getKey(), batchId, sha256)
+                .onErrorResume(v -> incrementAndCheckRetry(items, v, batchId).then(Mono.error(v)))
                 .flatMap(this::callPostelActivationApi);
+    }
+
+    private void setNewDataOnBatchRequest(BatchRequest item, String batchId) {
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        item.setBatchId(batchId);
+        item.setStatus(TAKEN_CHARGE.name());
+        item.setLastReserved(now);
     }
 
     public Mono<Void> callPostelActivationApi(PostelBatch postelBatch) {
         return postelClient.activatePostel(postelBatch)
-                .map(activatePostelResponse -> {
-                    log.info(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - called postel activation", postelBatch.getBatchId());
+                .flatMap(activatePostelResponse -> {
+                    log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - called postel activation", postelBatch.getBatchId());
                     if (!StringUtils.hasText(activatePostelResponse.getError())) {
                         return updatePostelBatchToWorking(postelBatch);
                     }
-                    throw new PnInternalException(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - Error during call postel activation api", "ADDRESS MANAGER - POSTEL ACTIVATION");
+                    throw new PnInternalException(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", "ADDRESS MANAGER - POSTEL ACTIVATION");
                 })
-                .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - failed to execute batch", postelBatch.getBatchId(), e))
+                .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute batch", postelBatch.getBatchId(), e))
                 .onErrorResume(v -> incrementAndCheckRetry(postelBatch, v).then(Mono.error(v)))
                 .then();
 
     }
 
     private Mono<Void> updatePostelBatchToWorking(PostelBatch postelBatch) {
-        log.info(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - update PostelBatch with status: {}", postelBatch.getBatchId(),BatchStatus.WORKING.getValue());
+        LocalDateTime now = LocalDateTime.now();
+        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - update PostelBatch with status: {}", postelBatch.getBatchId(), BatchStatus.WORKING.getValue());
         postelBatch.setStatus(BatchStatus.WORKING.getValue());
+        postelBatch.setWorkingTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getWorkingTtl()));
         return postelBatchRepository.update(postelBatch)
-                .doOnNext(polling -> log.debug(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - updated PostelBatch with status: {}", postelBatch.getBatchId(), BatchStatus.WORKING.getValue()))
+                .doOnNext(polling -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - updated PostelBatch with status: {}", postelBatch.getBatchId(), BatchStatus.WORKING.getValue()))
                 .then();
     }
 
 
     private Mono<PostelBatch> createPostelBatch(String fileKey, String batchId, String sha256) {
-        log.info(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - creating PostelBatch with fileKey: {}", batchId, fileKey);
+        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - creating PostelBatch with fileKey: {}", batchId, fileKey);
         return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(batchId, fileKey, sha256))
                 .flatMap(polling -> {
-                    log.debug(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey);
+                    log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey);
                     return setBatchRequestStatusToWorking(batchId)
                             .map(batchRequests -> {
-                                log.debug(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey);
+                                log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey);
                                 return polling;
                             })
-                            .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - failed to create PostelBatch with fileKey: {}", batchId, fileKey, e));
+                            .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to create PostelBatch with fileKey: {}", batchId, fileKey, e));
                 });
     }
 
     private Mono<List<BatchRequest>> setBatchRequestStatusToWorking(String batchId) {
         return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batchId, BatchStatus.TAKEN_CHARGE)
-                .doOnNext(requests -> log.debug(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - updating {} requests in status {}", batchId, requests.size(), BatchStatus.WORKING))
+                .doOnNext(requests -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - updating {} requests in status {}", batchId, requests.size(), BatchStatus.WORKING))
                 .flatMapIterable(requests -> requests)
                 .doOnNext(request -> request.setStatus(BatchStatus.WORKING.getValue()))
                 .flatMap(addressBatchRequestRepository::update)
-                .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC +  "correlationId {} - set status in {}", r.getCorrelationId(), r.getStatus()))
-                .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - failed to set request in status {}", batchId, BatchStatus.WORKING, e))
+                .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "correlationId {} - set status in {}", r.getCorrelationId(), r.getStatus()))
+                .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to set request in status {}", batchId, BatchStatus.WORKING, e))
                 .collectList();
     }
 
@@ -234,15 +294,15 @@ public class AddressBatchRequestService {
                     if (nextRetry >= pnAddressManagerConfig.getNormalizer().getPostel().getMaxRetry()
                             || (throwable instanceof PnInternalAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())) {
                         r.setStatus(BatchStatus.ERROR.getValue());
-                        log.debug(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - status in {} (retry: {})", postelBatch.getBatchId(), r.getStatus(), r.getRetry());
+                        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - status in {} (retry: {})", postelBatch.getBatchId(), r.getStatus(), r.getRetry());
                     }
                 })
                 .flatMap(postelBatchRepository::update)
-                .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - retry incremented", postelBatch.getBatchId()))
-                .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC +  "batchId {} - failed to increment retry", postelBatch.getBatchId(), e))
+                .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - retry incremented", postelBatch.getBatchId()))
+                .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to increment retry", postelBatch.getBatchId(), e))
                 .filter(r -> BatchStatus.ERROR.getValue().equals(r.getStatus()))
                 .flatMap(l -> {
-                    log.debug(ADDRESS_NORMALIZER_ASYNC +  "there is at least one request in ERROR - call batch to send to SQS");
+                    log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - call batch to send to SQS");
                     return updateBatchRequest(postelBatch.getBatchId(), WORKING);
                 });
     }
@@ -265,6 +325,7 @@ public class AddressBatchRequestService {
                 .flatMap(addressBatchRequestRepository::update)
                 .doOnNext(request -> log.debug("Normalize Address - correlationId {} - set status in {}", request.getCorrelationId(), request.getStatus()))
                 .flatMap(this::sendToEventBridgeOrInDlq)
+                .flatMap(addressBatchRequestRepository::update)
                 .filter(request -> TAKEN_CHARGE.getValue().equalsIgnoreCase(request.getStatus()))
                 .collectList()
                 .filter(l -> !l.isEmpty())
@@ -272,16 +333,26 @@ public class AddressBatchRequestService {
     }
 
     private Mono<BatchRequest> sendToEventBridgeOrInDlq(BatchRequest request) {
+        LocalDateTime now = LocalDateTime.now();
+
         return switch (BatchStatus.fromValue(request.getStatus())) {
             case WORKED -> sendEvents(request, request.getClientId())
-                    .doOnNext(putEventsResult -> request.setSendStatus(SENT.getValue()))
-                    .doOnError(throwable -> request.setSendStatus(NOT_SENT.getValue()))
+                    .map(putEventsResult -> {
+                        request.setSendStatus(SENT.getValue());
+                        request.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
+                        return request;
+                    })
+                    .onErrorResume(throwable -> {
+                        request.setSendStatus(NOT_SENT.getValue());
+                        return Mono.just(request);
+                    })
                     .flatMap(putEventsResult -> addressBatchRequestRepository.update(request)
                             .doOnNext(item -> log.debug("Normalize Address - correlationId {} - set Send Status in {}", request.getCorrelationId(), request.getStatus())));
             case ERROR -> sqsService.sendToDlqQueue(request)
                     .thenReturn(request);
             default -> Mono.just(request);
         };
+
     }
 
     private Mono<PutEventsResult> sendEvents(BatchRequest batchRequest, String cxId) {

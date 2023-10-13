@@ -38,7 +38,6 @@ public class CsvService {
     public <T> void writeItemsOnCsv(List<T> items, String nameFile, String directoryPath) {
         try (FileWriter writer = new FileWriter(new File(directoryPath, nameFile))) {
             StatefulBeanToCsv<T> beanToCsv = new StatefulBeanToCsvBuilder<T>(writer)
-                    .withQuotechar('"')
                     .withSeparator(';')
                     .build();
             beanToCsv.write(items);
@@ -51,7 +50,6 @@ public class CsvService {
     public <T> String writeItemsOnCsvToString(List<T> items) {
         try (StringWriter writer = new StringWriter()) {
             StatefulBeanToCsv<T> beanToCsv = new StatefulBeanToCsvBuilder<T>(writer)
-                    .withQuotechar('"')
                     .withSeparator(';')
                     .build();
             beanToCsv.write(items);
