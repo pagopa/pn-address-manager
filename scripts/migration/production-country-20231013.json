@@ -1,0 +1,950 @@
+{"country":{"S":"AFGHANISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AFRICA DEL SUD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AFRIQUE DU SUD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ALBANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ALBANIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ALEMANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ALGERIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ALGERIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ALGÉRIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ALLEMAGNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AMERICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AMERICAN SAMOA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANDORRA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANDORRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANGLETERRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANGOLA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANGUILLA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTIGUA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTIGUA AND BARBUDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTIGUA E BARBUDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTIGUA ET BARBUDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTIGUA Y BARBUDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTIGUA-ET-BARBUDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTILLAS NEERLANDESAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTILLE OLANDESI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ANTILLES NEERLANDAISES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARABIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARABIA SAUDITA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARABIE SAOUDITE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARGENTINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARGENTINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARMENIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARMENIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARMÉNIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ARUBA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ASCENSION"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AUSTRALIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AUSTRALIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AUSTRIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AUSTRICHE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AUTRICHE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AZEIRBAIJAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AZERBAIGIAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AZERBAIJAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"AZERBAJDZAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BAHAMA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BAHAMAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BAHAMAS ISLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BAHRAIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BAHREIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BAHREÏN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BAIA GUANTANAMO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BANGLADESH"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BARBADE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BARBADOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BARBUDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BÉLARUS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BELGICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BELGIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BELGIO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BELGIQUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BELGIUM"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BELICE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BELIZE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BENIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BÉNIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BERMUDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BERMUDAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BERMUDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BERMUDES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BHOUTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BHUTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BIELORUSSIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BIRMANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOLIVIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOLIVIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BONAIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOSNIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOSNIA AND HERZEGOVINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOSNIA ED ERZEGOVINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOSNIA ERZEGOVINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOSNIA HERCEGOVINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOSNIA HERZEGOVINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOSNIE HERZÉGOVINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOSNIE-HERZÉGOVINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BOTSWANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRASIL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRASILE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRAZIL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRESIL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRÉSIL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRITISH INDIAN OCEAN TERRITORY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRITISH VIRGIN ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRUNEI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRUNEI DARUSSALAM"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BRUNI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BULGARIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BULGARIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BULGARIE (REP)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BULGARIE (RÉP)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BULGARIE REP"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BULGARIE RÉP"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BURKINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BURKINA FASO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BURMA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BURUNDI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"BYELORUSSIAN SOVIET SOCIALIST REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CABO VERDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAICOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAIMANES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAIMANS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAÏMANS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAIMANS ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CALEDONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAMBODGE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAMBODIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAMBOGIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAMEROON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAMEROUN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAMERUN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CANADA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAP VERT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAP-VERT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAPE VERDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAPO VERDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAYMAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CAYMAN ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CENTRAFIQUE REP"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CENTRAFIQUE(REP)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CENTRAL AFRICAN REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CENTROAFRICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CEUTA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHAD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHAGOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHILE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHILI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHINA PEOPLE'S REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHIPRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CHYPRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CIAD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CILE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CIPRO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CITE DU VATICAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CITTA DEL VATICANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CITTÀ DEL VATICANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CITTA' DEL VATICANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CLIPPERTON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COLOMBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COLOMBIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COMMONWEALTH OF AUSTRALIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COMORE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COMORES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COMOROS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CONGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CONGO (BRAZZAVILLE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CONGO BRAZZAVILLE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CONGO REP DEMOCRATICA EX ZAIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CONGO REP. DEMOCRATICA (EX ZAIRE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CONGO THE DEMOCRATIC REPUBLIC OF THE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CONGO, THE DEMOCRATIC REPUBLIC OF THE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COOK"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COOK ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COREA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COREA DEL NORD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COREA DEL SUD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COREE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CORÉE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COREE POPULAIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CORÉE POPULAIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COSTA D' AVORIO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COSTA D'AVORIO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COSTA DAVORIO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COSTA DE MARFIL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COSTA RICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COSTARICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COTE D'IVOIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CÔTE D'IVOIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"COTE DE IVOIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CROATIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CROATIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CROAZIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CROZET"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CUBA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CURACAO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CYPRUS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"CZECH REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DANEMARK"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DANIMARCA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DANMARK"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DEMOCRATIC PEOPLE'S REPUBLIC OF KOREA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DEMOCRATIC REPUBLIC OF CONGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DENMARK"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DEUTSCHLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DINAMARCA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DJIBOUTI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DOMINICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DOMINICA REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DOMINICAN REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DOMINICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DOMINIQUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DUBAI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"DUCIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EAST TIMOR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ECUADOR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EGIPTO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EGITTO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EGYPT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EGYPTE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EL SALVADOR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ELLAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EMIRATI ARABI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EMIRATI ARABI UNITI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EMIRATOS ARABES UNIDOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EMIRATS ARABES UNIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ENGLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EQUADOR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EQUATEUR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"EQUATORIAL GUINEA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ERITREA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ERYTHREE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ÉRYTHRÉE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ESPAGNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ESPANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ESTADOS UNIDOS DE AMERICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ESTONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ESTONIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ETATS UNIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ÉTATS UNIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ETATS UNIS DAMERIQUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ETATS-UNIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ÉTATS-UNIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ETHIOPIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ETHIOPIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ETIOPIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND ILES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND ISLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND ISLANDS (MALVINAS)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND ISLANDS MALVINAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND ISLAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND MALVINAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FALKLAND(MALVINAS)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FAR OER"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FAROE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FAROE ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FEDERATION DE RUSSIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FEDERAZIONE RUSSA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FEROE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FÉROÉ"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FIDJI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FIGI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FIJI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FIJI ISLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FIJI ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FILIPINAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FILIPPINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FINLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FINLANDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FINLANDIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FORMOSA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FRANCE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FRANCIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FRENCH GUIANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FRENCH POLYNESIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FRENCH SOUTHERN TERRITORIES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"FUTUNA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GABON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GABONESE REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GAMBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GAMBIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GEORGIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GEORGIA DEL SUD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GEORGIA DEL SUD E ISOLE SANDWICH"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GEORGIA DEL SUD E SANDWICH DEL SUD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GEORGIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GÉORGIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GEORGIE DU SUD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GÉORGIE DU SUD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GERMANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GERMANY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GHANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GIAMAICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GIAPPONE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GIBILTERRA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GIBRALTAR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GIBUTI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GIORDANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GOZO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRAN BRETAGNA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRAN BRETANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRANADA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRANDE BRETAGNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRANDE-BRETAGNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GREAT BRITAIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRECE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRÈCE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRECIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GREECE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GREENLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRENADA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRENADE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GRENADINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GROENLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GROENLANDIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUADALUPA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUADALUPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUADELOUPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUADELUPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUAM"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUANTANAMO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUANTANAMO BAY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUATEMALA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUAYANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUAYANA FRANCESA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUERNESEY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUERNSEY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUIANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEA BISSAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEA ECUATORIAL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEA EQUATORIALE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEA-BISSAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEAEQUATORIALE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINÉE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEE BISSAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINÉE BISSAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINEE EQUATORIALE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINÉE ÉQUATORIALE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUINÉE-BISSAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUYANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUYANA FRANCESE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUYANAFRANCESE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUYANE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"GUYANE FRANCAISE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HAITI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HENDERSON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HISPANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HOLLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HOLY SEE (VATICAN CITY STATE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HOLY SEE VATICAN CITY STATE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HONDURAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HONG KONG"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HONGKONG"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HONGRIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"HUNGARY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IBERIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ICELAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ILES FEROE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ILES MALOVINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ILES VIERGES AMERICAINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ILES VIERGES BRITANNIQUES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ILES VIERGES DES ETATS UNIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ILES VIERGES DES ETATS-UNIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"INDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"INDIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"INDONESIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"INDONESIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"INDONÉSIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"INGHILTERRA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"INGLATERRA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IRAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IRAN ISLAMIC REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IRAN, ISLAMIC REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IRAQ"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IRELAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IRISH REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IRLANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IRLANDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLA FIJI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLANDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLANDIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLAS FEROE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLAS MALVINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLAS MALVINAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLAS MARIANAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLAS VIRGENES AMERICANAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLAS VIRGENES BRITANICAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISLE OF MAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLA CAIMAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLA DELLA MARTINICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLA DI MAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLA DI WAKE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE BERMUDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE CAYMAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE COMORE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE COOK"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE FÆR ØER"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE FALKLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE FAROE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE FIGI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE MALVINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE MARIANNE SETTENTRIONALI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE MARIANNES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE MARSHALL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE PITCAIRN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE SALOMONE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE TOKELAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE TURKS E CAICOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE VERGINI AMERICANE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISOLE VERGINI BRITANNICHE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISRAEL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISRAËL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ISRAELE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"IVORY COAST"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAMAHIRIYA LIBICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAMAHIRIYA LIBYENNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAMAHIRYA LIBICA (LIBIA)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAMAHIRYA LIBICA LIBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAMAICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAMAIQUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAMAÏQUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAPAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JAPON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JERSEY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JORDAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JORDANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JORDANIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"JUTLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KAZAKHSTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KAZAKISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KAZAKSTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KENIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KENYA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KIRGHIZIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KIRGHIZISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KIRGHIZSTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KIRGYZSTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KIRIBATI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KITTS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOREA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOREA ( REP)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOREA DEMOCRATIC PEOPLE'S REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOREA REP"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOREA REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOREA, DEMOCRATIC PEOPLE'S REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOREA, REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOWEIT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KOWEÏT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KUWAIT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KYPROS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"KYRGYZSTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LAO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LAO PEOPLE'S DEMOCRATIC REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LAOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LATVIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LEBANON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LESOTHO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LETTONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LETTONIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LIBAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LIBANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LIBERIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LIBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LIBYA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LIBYAN ARAB JAMAHIRIYA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LIBYE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LICHTENSTEIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LIECHTENSTEIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LITHUANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LITUANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LITUANIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LUSSEMBURGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LUXEMBOURG"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LUXEMBURGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"LYBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACAO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACÉDOINE (EX RÉP YOUGOSLAVE )"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACEDOINE EX REP YOUGOSLAVE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACÉDOINE EX RÉP YOUGOSLAVE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACEDOINE(EX REP YOUGOSLAVE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACEDONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACEDONIA THE FORMER YUGOSLAV REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MACEDONIA, THE FORMER YUGOSLAV REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MADAGASCAR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MADERA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALAISIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALASIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALAWI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALAYSIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALDIVAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALDIVE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALDIVES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALESIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALTA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALTE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALVINAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MALVINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MARIANA ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MARIANNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MARIANNES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAROC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAROCCO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MARRUECOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MARSHALL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MARSHALL ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MARTINICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MARTINIQUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAURICE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAURICIO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAURITANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAURITANIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAURITIUS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAURIZIO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MAYOTTE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MELILLA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MESSICO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MEXICO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MEXIQUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MICRONESIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MICRONESIA FEDERATED STATES OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MICRONESIA, FEDERATED STATES OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MICRONESIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MIQUELON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOLDAVIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOLDOVA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOLDOVA (REP. DE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOLDOVA REP DE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOLDOVA REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOLDOVA, REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONACO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONACO (PRINCIPATO)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONACO PRINCIPATO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONGOLIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONGOLIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONSERRAT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONTECARLO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONTENEGRO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONTÉNÉGRO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MONTSERRAT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOROCCO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOZAMBICO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MOZAMBIQUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MYANMAR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MYANMAR (BIRMANIE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MYANMAR BIRMANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MYANMAR BIRMANIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MYANMAR BURMA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"MYANMAR(BURMA)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NAMIBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NAMIBIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NAURU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NEPAL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NÉPAL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NETHERLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NETHERLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NETHERLANDS ANTILLES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NEW CALEDONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NEW GUINEA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NEW ZEALAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NICARAGUA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NIGER"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NIGERIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NIUE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORFOLK"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORFOLK ISLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORGE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORTHERN MARIANA ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORUEGA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORVEGE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORVÈGE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORVEGIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NORWAY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NOUVELLE CALEDONIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NOUVELLE CALÉDONIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NOUVELLE ZELANDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NOUVELLE ZÉLANDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NUEVA CALEDONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NUEVA ZELANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NUOVA CALEDONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NUOVA GUINEA PAPUA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NUOVA GUINEA-PAPUA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"NUOVA ZELANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"OENO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"OLANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"OMAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ONDURAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"OSTERREICH"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"OUGANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"OUZBEKISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"OUZBÉKISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAESI BASSI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAISES BAJOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAKISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PALAOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PALAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PANAMA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PANAMÁ"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAPOUASIE - NOUVELLE GUINEE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAPOUASIE - NOUVELLE GUINÉE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAPOUASIE NOUVELLE GUINEE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAPOUASIE NOUVELLE GUINÉE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAPUA NEW GUINEA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAPUA NUEVA GUINEA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAPUA NUOVA GUINEA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAPUASIA NUOVA GUINEA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PARAGUAY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAYS BAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PAYS-BAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PEOPLES REPUBLIC OF CHINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PEROU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PÉROU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PERU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PERÙ"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PERU'"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PHILIPPINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PITCAIRN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PITCAIRN ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"POLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"POLINESIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"POLINESIA FRANCESA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"POLINESIA FRANCESE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"POLOGNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"POLONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"POLYNESIE FRANCAISE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"POLYNÉSIE FRANÇAISE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PORTO RICO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PORTOGALLO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PORTORICO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PORTUGAL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PORTUGUESE TIMOR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PRC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PRINCIPALITY OF MONACO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PRINCIPATO DI ANDORRA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PRINCIPATO DI MONACO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PRINCIPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PROVINCE OF TAIWAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"PUERTO RICO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"QATAR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REGNO UNITO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REP CECA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RÉP DÉM DU CONGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REP DEMOCRATICA DEL CONGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REP DEMOCRATICA POPOLARE DI COREA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REP DOMINICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REP. DEMOCRATICA DEL CONGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REP. DEMOCRATICA POPOLARE DI COREA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA CECA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA CENTRAFRICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA CENTROAFRICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA DEL CONGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA DEMOCRATICA DEL CONGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA DI COREA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA DI MACEDONIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA DI MONTENEGRO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA DI SAN MARINO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA DI SERBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA DOMINICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA POPOLARE CINESE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA SLOVACCA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICA SUDAFRICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBBLICADOMINICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIC OF KOREA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIC OF MONTENEGRO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIC OF PALAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIC OF SERBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLICA GABONESA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLICA POPULAR DE CHINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIKA CRNA GORA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIKA SRBIJA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIQUE CENTRAFRICAINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIQUE DE COREE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIQUE DOMINICAINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIQUE FRANCAISE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIQUE GABONAISE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIQUE POPULAIRE DEMOCRATIQUE DE CO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIQUE SUDAFRICAINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REPUBLIQUE TOGOLAISE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"REUNION"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RÉUNION"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RIUNIONE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ROMANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ROUMANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ROUMANIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RUANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RUMANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RUSSIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RUSSIAN FEDERATION"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RUSSIE (FEDERATION DE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RUSSIE (FÉDÉRATION DE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RUSSIE FEDERATION DE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RUSSIE FÉDÉRATION DE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"RWANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S KITTIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S KITTIS AND NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S KITTIS ET NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S KITTIS NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S PIERRE E MIQUELON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S PIERRE ET MIQUELON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S THOMAS AND PRINCE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S THOMAS ET PRINCE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S THOMAS ET PRINCIPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S VINCENT AND GRENADINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S VINCENZO GRENADINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. KITTIS AND NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. KITTIS ET NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. KITTIS(NEVIS)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. PIERRE E MIQUELON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. PIERRE ET MIQUELON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. THOMAS AND PRINCE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. THOMAS-ET-PRINCE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. THOMAS-ET-PRINCIPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. VINCENT AND GRENADINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S. VINCENZO (GRENADINE)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"S.KITTIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SABA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT BARTHELEMY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT CHRISTOPHE ET NIEVES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT CHRISTOPHER E NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT CROIX"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT EUSTATIUS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT HELENA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT HELENE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT KITTIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT KITTIS AND NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT KITTIS E NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT KITTS AND NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT LUCIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT LUCIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT MAARTEN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT MARIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT MARTIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT PIERRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT PIERRE AND MIQUELON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT PIERRE E MIQUELON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT THOMAS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT VINCENT"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT VINCENT AND THE GRENADINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT VINCENT E LE GRENADINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT VINCENTE GRENADINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT-BARTHELEMY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT-BARTHÉLEMY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT-MARTIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINT-PIERRE E MIQUELON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINTE HELENE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINTE HÉLÈNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINTE LUCIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINTE VINCENTE ET GRENADINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINTE-HELENE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAINTE-HÉLÈNE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAIPAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SALOMON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SALOMONE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA AMERICAIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA AMERICAINES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA AMERICAINÉS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA AMERICANE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA NEOZELANDESI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA NORTEAMERICANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA OCC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA OCC."},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA OCCIDENTAL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA OCCIDENTALI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA U S A"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMOA U.S.A."},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAMON ISLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAN CRISTOBAL Y NEVIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAN MARINO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAN PEDRO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAN VINCENZO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SANDWICH"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SANT ELENA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SANT' ELENA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SANT'ELENA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SANTA ELENA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SANTA LUCIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SANTO TOME Y PRINCIPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAO TOME AND PRINCIPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAO TOME E PRINCIPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SÃO TOMÉ E PRÍNCIPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAO TOME ET PRINCIPE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SAUDI ARABIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SCHWEIZ"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SENEGAL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SÉNÉGAL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SERBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SERBIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SEYCHELLES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SIERRA LEON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SIERRA LEONA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SIERRA LEONE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SINGAPORE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SINGAPOUR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SINGAPUR"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SLOVACCHIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SLOVAK REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SLOVAKIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SLOVAQUIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SLOVENIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SLOVENIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SLOVÉNIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SOLOMON"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SOLOMON ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SOUDAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SOUTH AFRICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SOUTH GEORGIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SOUTH SUDAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SPAGNA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SPAIN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SPANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SRI LANKA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ST HELENA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ST. HELENA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ST. LUCIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"STATI UNITI D' AMERICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"STATI UNITI D'AMERICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"STATI UNITI DAMERICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUD SUDAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUDAFRICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUDAFRICANA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUDAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUECIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUEDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUÈDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUISSE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SUIZA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SURINAM"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SURINAME"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SVERIGE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SVEZIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SVIZZERA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SWAZILAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SWAZILANDIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SWEDEN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"SWITZERLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TADJIKISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TAGIKISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TAILANDIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TAIWAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TAIWAN (FORMOSA)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TAIWAN FORMOSA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TAIWAN PROVINCE OF CHINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TAIWAN, PROVINCE OF CHINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TAJIKISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TANZANIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TANZANIA UNITED REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TANZANIA, UNITED REPUBLIC OF"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TANZANIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TCHAD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TCHÈQUE  ( REP.)"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRE ADELIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRE AUSTRALI E ANTART FRANCESI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRE AUSTRALI E ANTART. FRANCESI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRE AUSTRALI E ANTARTICHE FRANCESI"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRIT BRIT DELL' OCEANO INDIANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRIT BRIT DELL'OCEANO INDIANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRIT BRIT DELLOCEANO INDIANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRIT. BRIT. DELL' OCEANO INDIANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRIT. BRIT. DELL'OCEANO INDIANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRITORIO BRITANNICO DELL'OCEANO INDIANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TERRITORIO BRITANNICO DELLOCEANO INDIAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"THAILAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"THAILANDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"THAÏLANDE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"THAILANDIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"THE GAMBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TIMOR EST"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TIMOR LESTE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TIMOR ORIENTAL"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TIMOR ORIENTALE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TIMOR PORTOGHESE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TIMOR PORTUGUES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TINIAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TOBAGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TOGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TOGOLESA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TOGOLESE REPUBLIC"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TOKELAU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TOKELAU ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TONGA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TRINIDAD"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TRINIDAD AND TOBAGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TRINIDAD E TOBAGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TRINIDAD Y TOBAGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TRINITE ET TOBAGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TRINITÉ ET TOBAGO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TRISTAN DA CUNHA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TUNEZ"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TUNISIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TUNISIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURCHIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURKEY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURKMENISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURKMÉNISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURKS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURKS AND CAICOS ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURKS E CAICOS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURKS ET CAIQUES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURQUES E CAIQUES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURQUIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TURQUIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"TUVALU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"U K"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"U S A"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"U.K."},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"U.S.A."},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UCRAINA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UGANDA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UKRAINE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UKRAINIAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UNGHERIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UNITED ARAB EMIRATES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UNITED KINGDOM"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UNITED STATES"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UNITED STATES OF AMERICA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UNITED STATES VIRGIN ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"URUGUAY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"USA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"UZBEKISTAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VANUATU"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VATICAN"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VATICAN CITY"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VATICAN CITY STATE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VATICANO"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VENEZUELA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VERGINI BRITANNICHE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VERGINI U S A"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VERGINI U.S.A."},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VIET NAM"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VIETNAM"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VIRGIN ISLANDS BRITISH"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VIRGIN ISLANDS U S A"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VIRGIN ISLANDS U.S."},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VIRGIN ISLANDS U.S.A"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VIRGIN ISLANDS, BRITISH"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"VIRGIN ISLANDS, U.S."},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"WAKE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"WAKE ISLAND"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"WALLIS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"WALLIS AND FUTUNA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"WALLIS AND FUTUNA ISLANDS"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"WALLIS E FUTUNA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"WESTERN SAMOA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ZAIRE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ZAMBIA"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ZAMBIE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ZIMBABWE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
+{"country":{"S":"ZIMBAWE"},"startValidity":{"NULL":true},"endValidity":{"NULL":true}}
