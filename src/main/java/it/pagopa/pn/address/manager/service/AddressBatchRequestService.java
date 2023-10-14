@@ -6,6 +6,7 @@ import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
@@ -26,6 +27,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
@@ -40,6 +42,8 @@ import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRE
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.NOT_SENT;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.SENT;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_POSTEL_CLIENT;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_POSTEL_CLIENT;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
@@ -129,7 +133,7 @@ public class AddressBatchRequestService {
             Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
             log.debug(ADDRESS_NORMALIZER_ASYNC + "fix end. Time spent is {} millis", timeSpent.toMillis());
 
-        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) || csvCount >= pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxCsvSize());
+        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) || csvCount >= pnAddressManagerConfig.getNormalizer().getMaxCsvSize());
 
         if (!CollectionUtils.isEmpty(requestToProcess)) {
             execBatchRequest(requestToProcess, batchId, listToConvert)
@@ -147,14 +151,14 @@ public class AddressBatchRequestService {
     private int processRequest(List<BatchRequest> items, int csvCount, String batchId, List<BatchRequest> requestToProcess, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
         for (BatchRequest batchRequest : items) {
             List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
-            if (csvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxCsvSize()) {
+            if (csvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
                 listToConvert.addAll(batchRequestAddresses);
                 startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
                         .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + batchId))
                         .block();
                 csvCount += batchRequestAddresses.size();
             } else {
-                csvCount = pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxCsvSize();
+                csvCount = pnAddressManagerConfig.getNormalizer().getMaxCsvSize();
                 break;
             }
         }
@@ -208,7 +212,15 @@ public class AddressBatchRequestService {
     }
 
     public Mono<Void> callPostelActivationApi(PostelBatch postelBatch) {
-        return postelClient.activatePostel(postelBatch)
+
+        Mono.fromCallable(() -> postelClient.activatePostel(postelBatch))
+                .onErrorResume(throwable -> {
+					if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+						Mono.error(new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
+								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_ACTIVATE_POSTEL_ERROR_CODE));
+					}
+					return Mono.error(throwable);
+				})
                 .flatMap(activatePostelResponse -> {
                     log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - called postel activation", postelBatch.getBatchId());
                     if (!StringUtils.hasText(activatePostelResponse.getError())) {
@@ -218,8 +230,9 @@ public class AddressBatchRequestService {
                 })
                 .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute batch", postelBatch.getBatchId(), e))
                 .onErrorResume(v -> incrementAndCheckRetry(postelBatch, v).then(Mono.error(v)))
-                .then();
+                .subscribe();
 
+        return Mono.empty();
     }
 
     private Mono<Void> updatePostelBatchToWorking(PostelBatch postelBatch) {
@@ -362,6 +375,11 @@ public class AddressBatchRequestService {
         normalizeItemsResult.setCorrelationId(batchRequest.getCorrelationId());
         EventDetail eventDetail = new EventDetail(normalizeItemsResult, cxId);
         String finalMessage = addressUtils.toJson(eventDetail);
-        return eventService.sendEvent(finalMessage, batchRequest.getCorrelationId());
+        return eventService.sendEvent(finalMessage)
+                .doOnNext(putEventsResult -> {
+                    log.info("Event with correlationId {} sent successfully", batchRequest.getCorrelationId());
+                    log.debug("Sent event result: {}", putEventsResult.getEntries());
+                })
+                .doOnError(throwable -> log.error("Send event with correlationId {} failed", batchRequest.getCorrelationId(), throwable));
     }
 }

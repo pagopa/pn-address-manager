@@ -34,6 +34,7 @@ public class PnAddressManagerConfig {
         private BatchRequest batchRequest;
         private Postel postel;
         private String postelAuthKey;
+        private Integer maxCsvSize;
     }
 
     @Data
@@ -56,8 +57,8 @@ public class PnAddressManagerConfig {
         private Integer recoveryDelay;
         private Integer eventBridgeRecoveryDelay;
         private Integer lockAtMostFor;
+        private Integer lockAtLeast;
         private Integer timeToBreak;
-        private Integer maxCsvSize;
     }
 
     @Data

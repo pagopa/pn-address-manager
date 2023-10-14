@@ -26,20 +26,9 @@ public class EventService {
         this.pnAddressManagerConfig = pnAddressManagerConfig;
     }
 
-    public Mono<PutEventsResult> sendEvent(String message, String correlationId) {
-        return Mono.create(subscriber ->amazonEventBridge.putEventsAsync(putEventsRequestBuilder(message),
-                new AsyncHandler<>() {
-                    @Override
-                    public void onError(Exception e) {
-                        log.error("Send event with correlationId {} failed", correlationId, e);
-                    }
-
-                    @Override
-                    public void onSuccess(PutEventsRequest request, PutEventsResult putEventsResult) {
-                        log.info("Event with correlationId {} sent successfully", correlationId);
-                        log.debug("Sent event result: {}", putEventsResult.getEntries());
-                    }
-                }));
+    public Mono<PutEventsResult> sendEvent(String message) {
+        return Mono.fromCallable(() ->amazonEventBridge.putEventsAsync(putEventsRequestBuilder(message))
+                        .get());
     }
 
     private PutEventsRequest putEventsRequestBuilder(String message) {

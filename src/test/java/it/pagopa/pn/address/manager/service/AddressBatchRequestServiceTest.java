@@ -118,7 +118,7 @@ class AddressBatchRequestServiceTest {
         when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
         when(addressBatchRequestRepository.update(batchRequest2)).thenReturn(Mono.just(batchRequest2));
         NormalizzazioneResponse responseActivatePostel = new NormalizzazioneResponse();
-        when(postelClient.activatePostel(any())).thenReturn(Mono.just(responseActivatePostel));
+        when(postelClient.activatePostel(any())).thenReturn(responseActivatePostel);
         when(postelBatchRepository.update(postelBatch)).thenReturn(Mono.just(postelBatch));
         assertDoesNotThrow(() -> addressBatchRequestService.batchAddressRequest());
 
@@ -225,7 +225,7 @@ class AddressBatchRequestServiceTest {
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
         when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
         when(sqsService.sendToDlqQueue(batchRequest1)).thenReturn(Mono.empty());
-        when(eventService.sendEvent(any(),any())).thenReturn(Mono.just(new PutEventsResult()));
+        when(eventService.sendEvent(any())).thenReturn(Mono.just(new PutEventsResult()));
         StepVerifier.create(addressBatchRequestService.updateBatchRequest(List.of(batchRequest1),"batchId")).expectNextCount(0).verifyComplete();
     }
 

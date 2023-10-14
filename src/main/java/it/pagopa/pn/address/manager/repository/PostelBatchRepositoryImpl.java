@@ -21,7 +21,6 @@ import java.util.Map;
 
 import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
 import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.GSI_SWT;
-
 @Component
 public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
@@ -30,6 +29,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
     private static final String LAST_RESERVED_ALIAS = "#lastReserved";
     private static final String LAST_RESERVED_PLACEHOLDER = ":lastReserved";
+    private static final String LAST_RESERVED_EQ = LAST_RESERVED_ALIAS + " = " + LAST_RESERVED_PLACEHOLDER;
 
     public PostelBatchRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                      PnAddressManagerConfig pnAddressManagerConfig) {
@@ -67,7 +67,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
                 .build();
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, lastReserved);
 
-        String expression = "#lastReserved = :lastReserved OR attribute_not_exists(#lastReserved)";
+        String expression = LAST_RESERVED_EQ + " OR attribute_not_exists(" + LAST_RESERVED_ALIAS + ")";
         UpdateItemEnhancedRequest<PostelBatch> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(PostelBatch.class)
                 .item(postelBatch)
                 .conditionExpression(expressionBuilder(expression, expressionValues, expressionNames))

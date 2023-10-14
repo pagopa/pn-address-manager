@@ -1,5 +1,5 @@
 {
-  "Parameters" : {
+  "Parameters": {
     "flagCsv": "false",
     "CpuValue": "2048",
     "MemoryAmount": "4GB",
@@ -17,6 +17,7 @@
     "PnAddressManagerNormalizerBatchRequestRecoveryAfter": "3600",
     "PnAddressManagerNormalizerBatchRequestMaxRetry": "3",
     "PnAddressManagerNormalizerBatchRequestMaxSize": "1000",
+    "PnAddressManagerMaxCsvSize": "50000",
     "PnAddressManagerNormalizerEventBridgeRecoveryDelay": "30000",
     "PnAddressManagerNormalizerPostelRecoveryDelay": "30000",
     "PnAddressManagerNormalizerPostelRecoveryAfter": "3600",
@@ -25,7 +26,10 @@
     "NormalizerRequestPrefix": "",
     "PnAddressManagerCxId": "pn-address-manager",
     "PnAddressManagerBatchCleanRequestDelay": "30000",
-    "PnAddressManagerNormalizerPostelWorkingTtl":"604800000",
-    "PnAddressManagerNormalizerPostelTtl": "1209600"
+    "PnAddressManagerNormalizerPostelWorkingTtl": "604800000",
+    "PnAddressManagerNormalizerPostelTtl": "1209600",
+    "PnAddressManagerNormalizerBatchRequestLockAtMost": "120000",
+    "PnAddressManagerNormalizerBatchRequestLockAtLeast": "1000",
+    "PnAddressManagerNormalizerBatchRequestTimeToBreak": "10000"
   }
 }

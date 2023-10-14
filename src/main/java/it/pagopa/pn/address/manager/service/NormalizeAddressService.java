@@ -116,6 +116,11 @@ public class NormalizeAddressService {
     private void sendEvents(NormalizeItemsResult normalizeItemsResult, String cxId) {
         EventDetail eventDetail = new EventDetail(normalizeItemsResult, cxId);
         String message = addressUtils.toJson(eventDetail);
-        eventService.sendEvent(message, normalizeItemsResult.getCorrelationId());
+        eventService.sendEvent(message)
+                .doOnNext(putEventsResult -> {
+                    log.info("Event with correlationId {} sent successfully", normalizeItemsResult.getCorrelationId());
+                    log.debug("Sent event result: {}", putEventsResult.getEntries());
+                })
+                .doOnError(throwable -> log.error("Send event with correlationId {} failed", normalizeItemsResult.getCorrelationId(), throwable));
     }
 }

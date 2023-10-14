@@ -43,22 +43,15 @@ public class PostelClient {
 				});
 	}
 
-	public Mono<NormalizzazioneResponse> activatePostel(PostelBatch postelBatch) {
+	public NormalizzazioneResponse activatePostel(PostelBatch postelBatch) {
 		log.logInvokingExternalService(POSTEL, "Calling Activate Postel");
 
 		NormalizzazioneRequest activatePostelRequest = new NormalizzazioneRequest();
 		activatePostelRequest.setRequestId(postelBatch.getBatchId());
 		activatePostelRequest.setUri(postelBatch.getFileKey());
 		activatePostelRequest.setSha256(postelBatch.getSha256());
-
-		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)
-				.onErrorMap(throwable -> {
-					if (throwable instanceof WebClientResponseException ex) {
-						Mono.error(new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
-								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_ACTIVATE_POSTEL_ERROR_CODE));
-					}
-					return throwable;
-				});
+		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), null /*pnAddressManagerConfig.getNormalizer().getPostelAuthKey()*/, activatePostelRequest)
+				.block();
 
 	}
 }

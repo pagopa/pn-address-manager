@@ -88,7 +88,7 @@ class RecoveryServiceTest {
 
         when(sqsService.sendToDlqQueue(any())).thenReturn(Mono.empty());
         PutEventsResult putEventsResult = new PutEventsResult();
-        when(eventService.sendEvent(anyString(),anyString())).thenReturn(Mono.just(putEventsResult));
+        when(eventService.sendEvent(anyString())).thenReturn(Mono.just(putEventsResult));
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchSendToEventbridge());
     }
 
