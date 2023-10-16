@@ -50,7 +50,7 @@ public class PostelClient {
 		activatePostelRequest.setRequestId(postelBatch.getBatchId());
 		activatePostelRequest.setUri(postelBatch.getFileKey());
 		activatePostelRequest.setSha256(postelBatch.getSha256());
-		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), null /*pnAddressManagerConfig.getNormalizer().getPostelAuthKey()*/, activatePostelRequest)
+		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)
 				.block();
 
 	}
