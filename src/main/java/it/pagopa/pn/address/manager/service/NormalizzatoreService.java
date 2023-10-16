@@ -134,10 +134,10 @@ public class NormalizzatoreService {
     }
 
     private Mono<Void> verifyCheckSumAndSendToInternalQueue(NormalizerCallbackRequest callbackRequestData, FileDownloadResponse fileDownloadResponse, PostelBatch postelBatch) {
-        /*if (!fileDownloadResponse.getChecksum().equalsIgnoreCase(callbackRequestData.getSha256())) {
+        if (!fileDownloadResponse.getChecksum().equalsIgnoreCase(callbackRequestData.getSha256())) {
             return Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM, callbackRequestData.getUri()),
                     HttpStatus.BAD_REQUEST.value(), SEMANTIC_ERROR_CODE));
-        }*/
+        }
         return sendToInternalQueueAndUpdatePostelBatchStatus(callbackRequestData, postelBatch, fileDownloadResponse.getDownload().getUrl());
     }
 
