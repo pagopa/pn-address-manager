@@ -327,7 +327,6 @@ Parameters:
 
   PnAddressManagerNormalizerBatchRequestTimeToBreak:
     Type: String
-    Description:
     Default: '1000'
 
   PnAddressManagerBatchCleanRequestDelay:
