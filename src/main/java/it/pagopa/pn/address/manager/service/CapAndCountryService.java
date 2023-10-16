@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.CapModel;
 import it.pagopa.pn.address.manager.entity.CountryModel;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
@@ -20,11 +21,13 @@ public class CapAndCountryService {
 
     private final CapRepository capRepository;
     private final CountryRepository countryRepository;
+    private final PnAddressManagerConfig pnAddressManagerConfig;
 
 
-    public CapAndCountryService(CapRepository capRepository, CountryRepository countryRepository) {
+    public CapAndCountryService(CapRepository capRepository, CountryRepository countryRepository, PnAddressManagerConfig pnAddressManagerConfig) {
         this.capRepository = capRepository;
         this.countryRepository = countryRepository;
+        this.pnAddressManagerConfig = pnAddressManagerConfig;
     }
 
     public Mono<DeduplicatesResponse> verifyCapAndCountry(DeduplicatesResponse item) {
@@ -55,24 +58,27 @@ public class CapAndCountryService {
     }
 
     public Mono<NormalizeResult> verifyCapAndCountryList(NormalizeResult item) {
-        if (!StringUtils.hasText(item.getNormalizedAddress().getCountry())
-                || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL")) {
-            return verifyCap(item.getNormalizedAddress().getCap())
-                    .onErrorResume(throwable -> {
-                        log.error("Verify cap in whitelist result: {}", throwable.getMessage());
-                        item.setError(throwable.getMessage());
-                        item.setNormalizedAddress(null);
-                        return Mono.empty();
-                    }).thenReturn(item);
-        } else {
-            return verifyCountry(item.getNormalizedAddress().getCountry())
-                    .onErrorResume(throwable -> {
-                        log.error("Verify country in whitelist result: {}", throwable.getMessage());
-                        item.setError(throwable.getMessage());
-                        item.setNormalizedAddress(null);
-                        return Mono.empty();
-                    }).thenReturn(item);
+        if(pnAddressManagerConfig.getEnableWhitelisting()) {
+            if (!StringUtils.hasText(item.getNormalizedAddress().getCountry())
+                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL")) {
+                return verifyCap(item.getNormalizedAddress().getCap())
+                        .onErrorResume(throwable -> {
+                            log.error("Verify cap in whitelist result: {}", throwable.getMessage());
+                            item.setError(throwable.getMessage());
+                            item.setNormalizedAddress(null);
+                            return Mono.empty();
+                        }).thenReturn(item);
+            } else {
+                return verifyCountry(item.getNormalizedAddress().getCountry())
+                        .onErrorResume(throwable -> {
+                            log.error("Verify country in whitelist result: {}", throwable.getMessage());
+                            item.setError(throwable.getMessage());
+                            item.setNormalizedAddress(null);
+                            return Mono.empty();
+                        }).thenReturn(item);
+            }
         }
+        return Mono.just(item);
     }
 
     private Mono<CountryModel> verifyCountry(String country) {

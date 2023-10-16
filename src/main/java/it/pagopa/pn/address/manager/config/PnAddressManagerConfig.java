@@ -28,6 +28,7 @@ public class PnAddressManagerConfig {
     private String postelCxId;
     private String healthCheckPath;
     private String safeStorageBasePath;
+    private Boolean enableWhitelisting;
 
     @Data
     public static class Normalizer{

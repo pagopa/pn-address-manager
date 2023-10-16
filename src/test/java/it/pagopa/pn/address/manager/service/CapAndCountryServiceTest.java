@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.CapModel;
 import it.pagopa.pn.address.manager.entity.CountryModel;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
@@ -33,6 +34,9 @@ class CapAndCountryServiceTest {
 
     @MockBean
     private CountryRepository countryRepository;
+
+    @MockBean
+    private PnAddressManagerConfig pnAddressManagerConfig;
 
     @Test
 

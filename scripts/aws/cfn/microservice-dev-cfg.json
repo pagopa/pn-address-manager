@@ -1,10 +1,11 @@
 {
   "Parameters": {
     "flagCsv": "false",
+    "enableWhitelisting": "true",
     "CpuValue": "2048",
     "MemoryAmount": "4GB",
-    "MinTasksNumber": "2",
-    "MaxTasksNumber": "3",
+    "MinTasksNumber": "1",
+    "MaxTasksNumber": "1",
     "AutoscalingThreshold": "2500",
     "CountriesCsv": "PagoPA-Lista-Nazioni.csv",
     "CapCsv": "PagoPA-ListaCLP.csv",
