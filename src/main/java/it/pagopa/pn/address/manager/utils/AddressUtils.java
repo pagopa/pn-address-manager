@@ -183,6 +183,7 @@ public class AddressUtils {
                     normalizeRequestPostelInput.setLocalita(normalizeRequest.getAddress().getCity());
                     normalizeRequestPostelInput.setProvincia(normalizeRequest.getAddress().getPr());
                     normalizeRequestPostelInput.setIndirizzo(normalizeRequest.getAddress().getAddressRow());
+                    normalizeRequestPostelInput.setIndirizzoAggiuntivo(normalizeRequest.getAddress().getAddressRow2());
                     normalizeRequestPostelInput.setStato(normalizeRequest.getAddress().getCountry());
                     normalizeRequestPostelInput.setLocalitaAggiuntiva(normalizeRequest.getAddress().getCity2());
 

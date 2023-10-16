@@ -47,13 +47,15 @@ class AddressConverterTest {
         assertNull(masterIn.getStato());
         assertNull(masterIn.getProvincia());
         assertNull(masterIn.getLocalitaAggiuntiva());
-        assertEquals("null null", masterIn.getIndirizzo());
+        assertNull(masterIn.getIndirizzo());
+        assertNull(masterIn.getIndirizzoAggiuntivo());
         assertNull(masterIn.getId());
         assertNull(masterIn.getCap());
         assertNull(slaveIn.getProvincia());
         assertNull(slaveIn.getLocalitaAggiuntiva());
         assertNull(slaveIn.getLocalita());
-        assertEquals("null null", slaveIn.getIndirizzo());
+        assertNull( slaveIn.getIndirizzo());
+        assertNull(slaveIn.getIndirizzoAggiuntivo());
         assertNull(slaveIn.getId());
         assertNull(slaveIn.getCap());
     }
@@ -76,13 +78,13 @@ class AddressConverterTest {
         assertNull(masterIn.getProvincia());
         assertNull(masterIn.getLocalitaAggiuntiva());
         assertNull(masterIn.getLocalita());
-        assertEquals("null null", masterIn.getIndirizzo());
+        assertNull( masterIn.getIndirizzo());
+        assertNull( masterIn.getIndirizzoAggiuntivo());
         assertEquals("42", masterIn.getId());
         assertNull(masterIn.getCap());
         assertNull(slaveIn.getProvincia());
         assertNull(slaveIn.getLocalitaAggiuntiva());
         assertNull(slaveIn.getLocalita());
-        assertEquals("null null", slaveIn.getIndirizzo());
         assertEquals("42", slaveIn.getId());
         assertNull(slaveIn.getCap());
         verify(deduplicatesRequest, atLeast(1)).getBaseAddress();

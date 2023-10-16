@@ -49,7 +49,8 @@ public class AddressConverter {
         addressIn.setId(deduplicatesRequest.getCorrelationId());
         addressIn.setProvincia(deduplicatesRequest.getBaseAddress().getPr());
         addressIn.setLocalita(deduplicatesRequest.getBaseAddress().getCity());
-        addressIn.setIndirizzo(deduplicatesRequest.getBaseAddress().getAddressRow() + " " + deduplicatesRequest.getBaseAddress().getAddressRow2());
+        addressIn.setIndirizzo(deduplicatesRequest.getBaseAddress().getAddressRow());
+        addressIn.setIndirizzoAggiuntivo(deduplicatesRequest.getBaseAddress().getAddressRow2());
         addressIn.setCap(deduplicatesRequest.getBaseAddress().getCap());
         addressIn.setLocalitaAggiuntiva(deduplicatesRequest.getBaseAddress().getCity2());
         addressIn.setStato(deduplicatesRequest.getBaseAddress().getCountry());
