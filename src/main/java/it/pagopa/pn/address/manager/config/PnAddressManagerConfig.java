@@ -56,7 +56,7 @@ public class PnAddressManagerConfig {
         private Integer recoveryAfter;
         private Integer recoveryDelay;
         private Integer eventBridgeRecoveryDelay;
-        private Integer lockAtMostFor;
+        private Integer lockAtMost;
         private Integer lockAtLeast;
         private Integer timeToBreak;
     }

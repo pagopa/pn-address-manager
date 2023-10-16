@@ -150,7 +150,7 @@ Resources:
               KeyType: HASH
           Projection:
             ProjectionType: ALL
-        - IndexName: "status-lastReserved-index"
+        - IndexName: "status-workingTtl-index"
           KeySchema:
             - AttributeName: status
               KeyType: HASH
@@ -223,7 +223,7 @@ Resources:
         PointInTimeRecoveryEnabled: true
 
   # Shared lock handling table
-  PnAddressManagerShedLockTable:
+  ShedLockTable:
     Type: AWS::DynamoDB::Table
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
@@ -286,8 +286,6 @@ Outputs:
     Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueARN
 
   ShedLockTableName:
-    Description: Name of dynamodb table containing
-    Value: !Ref PnAddressManagerShedLockTable
+    Value: !Ref ShedLockTable
   ShedLockTableArn:
-    Description: ARN of dynamodb table containing
-    Value: !Sub '${PnAddressManagerShedLockTable.Arn}'
+    Value: !Sub '${ShedLockTable.Arn}'

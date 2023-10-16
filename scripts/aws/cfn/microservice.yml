@@ -318,17 +318,17 @@ Parameters:
   PnAddressManagerNormalizerBatchRequestLockAtMost:
     Type: String
     Description: 'how long the lock should be kept in case the executing node dies'
-    Default: '30s'
+    Default: '120000'
 
   PnAddressManagerNormalizerBatchRequestLockAtLeast:
     Type: String
     Description: 'minimum amount of time for which the lock should be kept'
-    Default: '8s'
+    Default: '1000'
 
   PnAddressManagerNormalizerBatchRequestTimeToBreak:
     Type: String
     Description:
-    Default: '1s'
+    Default: '1000'
 
   PnAddressManagerBatchCleanRequestDelay:
     Type: Number

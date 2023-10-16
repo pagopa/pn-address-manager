@@ -126,12 +126,12 @@ public class AddressBatchRequestService {
             lastEvaluatedKey = page.lastEvaluatedKey();
 
             if (!page.items().isEmpty()) {
-                csvCount = processRequest(page.items(), csvCount, batchId, requestToProcess, listToConvert, start);
+                csvCount = processRequest(page.items(), csvCount, batchId, requestToProcess, listToConvert);
             } else {
                 log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request available");
             }
             Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
-            log.debug(ADDRESS_NORMALIZER_ASYNC + "fix end. Time spent is {} millis", timeSpent.toMillis());
+            log.debug(ADDRESS_NORMALIZER_ASYNC + "end query. Time spent is {} millis", timeSpent.toMillis());
 
         } while (!CollectionUtils.isEmpty(lastEvaluatedKey) || csvCount >= pnAddressManagerConfig.getNormalizer().getMaxCsvSize());
 
@@ -143,12 +143,12 @@ public class AddressBatchRequestService {
 
         Duration timeSpent = AddressUtils.getTimeSpent(start);
         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest end. Time spent is {} millis", timeSpent.toMillis());
-        if (timeSpent.compareTo(Duration.ofMillis(pnAddressManagerConfig.getNormalizer().getBatchRequest().getLockAtMostFor())) > 0) {
+        if (timeSpent.compareTo(Duration.ofMillis(pnAddressManagerConfig.getNormalizer().getBatchRequest().getLockAtMost())) > 0) {
             log.error("Time spent is greater then lockAtMostFor. Multiple nodes could schedule the same actions.");
         }
     }
 
-    private int processRequest(List<BatchRequest> items, int csvCount, String batchId, List<BatchRequest> requestToProcess, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
+    private int processRequest(List<BatchRequest> items, int csvCount, String batchId, List<BatchRequest> requestToProcess, List<NormalizeRequestPostelInput> listToConvert) {
         for (BatchRequest batchRequest : items) {
             List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
             if (csvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
