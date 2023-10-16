@@ -4,7 +4,7 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
@@ -61,7 +61,7 @@ public class AddressConverter {
         deduplicatesResponse.setCorrelationId(correlationId);
 
         if (risultatoDeduplica.getErrore() != null) {
-            throw new PnAddressManagerException(ERROR_CODE_ADDRESSMANAGER_DEDUPLICAERROR,
+            throw new PnInternalAddressManagerException(ERROR_CODE_ADDRESSMANAGER_DEDUPLICAERROR,
                     decodeErrorDedu(risultatoDeduplica.getErrore()),
                     HttpStatus.BAD_REQUEST.value(),
                     ERROR_CODE_ADDRESSMANAGER_DEDUPLICAERROR);
@@ -124,14 +124,13 @@ public class AddressConverter {
     public PostelBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey, String sha256) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         PostelBatch batchPolling = new PostelBatch();
-        batchPolling.setBatchId(pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + batchId);
+        batchPolling.setBatchId(batchId);
         batchPolling.setFileKey(fileKey);
         batchPolling.setStatus(BatchStatus.NOT_WORKED.getValue());
         batchPolling.setRetry(0);
         batchPolling.setSha256(sha256);
         batchPolling.setLastReserved(now);
         batchPolling.setCreatedAt(now);
-        batchPolling.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
         return batchPolling;
     }
 }

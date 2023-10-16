@@ -1,7 +1,6 @@
 package it.pagopa.pn.address.manager.middleware.client.safestorage;
 
 import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
-import it.pagopa.pn.address.manager.exception.PnSafeStorageException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileDownloadResponseDto;
@@ -19,7 +18,8 @@ import java.net.ConnectException;
 import java.time.Duration;
 import java.util.Date;
 import java.util.concurrent.TimeoutException;
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.SHA256;
 
 @CustomLog
 @Component
@@ -70,7 +70,7 @@ public class PnSafeStorageClient {
                 ).onErrorResume(WebClientResponseException.class, ex -> {
                     log.trace("CREATE FILE TOCK {}", new Date().getTime());
                     log.error(ex.getResponseBodyAsString());
-                    return Mono.error(new PnSafeStorageException(ex));
+                    return Mono.error(ex);
                 });
     }
 }

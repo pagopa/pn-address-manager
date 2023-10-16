@@ -70,7 +70,6 @@ class SqsServiceTest {
         batchRequest.setClientId("yourClientId");
         batchRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
         batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setReservationId("yourReservationId");
         batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
         batchRequest.setSendStatus("yourSendStatus");
         batchRequest.setMessage("yourMessage");

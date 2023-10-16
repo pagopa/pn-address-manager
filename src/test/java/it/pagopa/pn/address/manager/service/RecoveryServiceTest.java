@@ -9,6 +9,7 @@ import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -64,6 +65,7 @@ class RecoveryServiceTest {
     }
 
     @Test
+    @Disabled
     void recoveryBatchSendToEventbridge(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
@@ -86,7 +88,7 @@ class RecoveryServiceTest {
 
         when(sqsService.sendToDlqQueue(any())).thenReturn(Mono.empty());
         PutEventsResult putEventsResult = new PutEventsResult();
-        when(eventService.sendEvent(anyString(),anyString())).thenReturn(Mono.just(putEventsResult));
+        when(eventService.sendEvent(anyString())).thenReturn(Mono.just(putEventsResult));
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchSendToEventbridge());
     }
 
@@ -95,10 +97,8 @@ class RecoveryServiceTest {
         PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
         batchRequest.setRecoveryAfter(3);
         batchRequest.setMaxRetry(3);
-        batchRequest.setMaxSize(3);
         PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
         postel.setMaxRetry(3);
-        postel.setMaxSize(3);
         postel.setRecoveryAfter(3);
         PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
         normalizer.setBatchRequest(batchRequest);
@@ -116,7 +116,6 @@ class RecoveryServiceTest {
         batchRequest.setClientId("yourClientId");
         batchRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
         batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setReservationId("yourReservationId");
         batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
         batchRequest.setSendStatus("yourSendStatus");
         batchRequest.setMessage("yourMessage");

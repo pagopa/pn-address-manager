@@ -3,10 +3,7 @@ package it.pagopa.pn.address.manager.entity;
 import lombok.Data;
 import lombok.Getter;
 import lombok.ToString;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbAttribute;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbBean;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbPartitionKey;
-import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.DynamoDbSecondaryPartitionKey;
+import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.LocalDateTime;
 
@@ -45,19 +42,20 @@ public class PostelBatch {
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_STATUS),
-            @DynamoDbSecondaryPartitionKey(indexNames = GSI_S)
+            @DynamoDbSecondaryPartitionKey(indexNames = {GSI_S, GSI_SWT})
     }))
     private String status;
-
-    @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_RESERVATION_ID)
-    }))
-    private String reservationId;
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_LAST_RESERVED)
     }))
     private LocalDateTime lastReserved;
+
+    @Getter(onMethod = @__({
+            @DynamoDbAttribute(COL_WORKINGTTL),
+            @DynamoDbSecondarySortKey(indexNames = GSI_SWT)
+    }))
+    private LocalDateTime workingTtl;
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_TIMESTAMP)

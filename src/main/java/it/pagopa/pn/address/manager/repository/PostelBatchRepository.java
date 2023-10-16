@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 
 import java.util.List;
 
@@ -16,4 +17,8 @@ public interface PostelBatchRepository {
     Mono<PostelBatch> resetPostelBatchForRecovery(PostelBatch postelBatch);
 
     Mono<List<PostelBatch>> getPostelBatchToRecover();
+
+    Mono<Page<PostelBatch>> getPostelBatchToClean();
+
+    Mono<PostelBatch> deleteItem(String batchId);
 }

@@ -154,7 +154,6 @@ class AddressBatchRequestRepositoryImplTest {
         batchRequest.setClientId("yourClientId");
         batchRequest.setStatus("yourStatus");
         batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setReservationId("yourReservationId");
         batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
         batchRequest.setSendStatus("yourSendStatus");
         batchRequest.setMessage("yourMessage");

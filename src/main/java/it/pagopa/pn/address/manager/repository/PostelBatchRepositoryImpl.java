@@ -19,10 +19,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.COL_LAST_RESERVED;
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.COL_RETRY;
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.GSI_S;
-
+import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
+import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.GSI_SWT;
 @Component
 public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
@@ -31,6 +29,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
     private static final String LAST_RESERVED_ALIAS = "#lastReserved";
     private static final String LAST_RESERVED_PLACEHOLDER = ":lastReserved";
+    private static final String LAST_RESERVED_EQ = LAST_RESERVED_ALIAS + " = " + LAST_RESERVED_PLACEHOLDER;
 
     public PostelBatchRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                      PnAddressManagerConfig pnAddressManagerConfig) {
@@ -68,7 +67,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
                 .build();
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, lastReserved);
 
-        String expression = "#lastReserved = :lastReserved OR attribute_not_exists(#lastReserved)";
+        String expression = LAST_RESERVED_EQ + " OR attribute_not_exists(" + LAST_RESERVED_ALIAS + ")";
         UpdateItemEnhancedRequest<PostelBatch> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(PostelBatch.class)
                 .item(postelBatch)
                 .conditionExpression(expressionBuilder(expression, expressionValues, expressionNames))
@@ -86,12 +85,12 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxRetry())).build());
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, AttributeValue.builder()
-                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getRecoveryAfter()).toString())
+                .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getRecoveryAfter()).toString())
                 .build());
 
         String expression = "#retry < :retry AND (:lastReserved > #lastReserved OR attribute_not_exists(#lastReserved))";
 
-        QueryConditional queryConditional = QueryConditional.keyEqualTo(keyBuilder(BatchStatus.TAKEN_CHARGE.getValue()));
+        QueryConditional queryConditional = QueryConditional.keyEqualTo(keyBuilder(BatchStatus.NOT_WORKED.getValue()));
 
         QueryEnhancedRequest queryEnhancedRequest = QueryEnhancedRequest.builder()
                 .queryConditional(queryConditional)
@@ -100,6 +99,30 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
         return Flux.from(table.index(GSI_S).query(queryEnhancedRequest).flatMapIterable(Page::items))
                 .collectList();
+    }
+
+    @Override
+    public Mono<Page<PostelBatch>> getPostelBatchToClean() {
+        Key key = Key.builder()
+                .partitionValue(BatchStatus.WORKING.getValue())
+                .sortValue(AttributeValue.builder()
+                        .s(LocalDateTime.now(ZoneOffset.UTC).toString())
+                        .build())
+                .build();
+
+        QueryConditional queryConditional = QueryConditional.sortLessThan(key);
+
+        QueryEnhancedRequest.Builder queryEnhancedRequestBuilder = QueryEnhancedRequest.builder()
+                .queryConditional(queryConditional);
+
+        QueryEnhancedRequest queryEnhancedRequest = queryEnhancedRequestBuilder.build();
+
+        return Mono.from(table.index(GSI_SWT).query(queryEnhancedRequest));
+    }
+
+    @Override
+    public Mono<PostelBatch> deleteItem(String batchId) {
+        return Mono.fromFuture(table.deleteItem(Key.builder().partitionValue(batchId).build()));
     }
 
     private Expression expressionBuilder(String expression, Map<String, AttributeValue> expressionValues, Map<String, String> expressionNames) {

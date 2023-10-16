@@ -135,7 +135,7 @@ Parameters:
     Description: minimum autoscaling number of tasks
 
   MaxTasksNumber:
-    Default: 6
+    Default: 1
     Type: Number
     Description: maximum autoscaling number of tasks
 
@@ -253,9 +253,9 @@ Parameters:
     Default: 1209600
 
   PnAddressManagerNormalizerBatchRequestDelay:
-    Type: String
+    Type: Number
     Description: 'Postel batch request delay'
-    Default: '30000'
+    Default: 60000
 
   PnAddressManagerNormalizerBatchRequestRecoveryDelay:
     Type: Number
@@ -315,6 +315,50 @@ Parameters:
     Description: 'Postel base url'
     Default: ''
 
+  PnAddressManagerNormalizerBatchRequestLockAtMost:
+    Type: String
+    Description: 'how long the lock should be kept in case the executing node dies'
+    Default: '120000'
+
+  PnAddressManagerNormalizerBatchRequestLockAtLeast:
+    Type: String
+    Description: 'minimum amount of time for which the lock should be kept'
+    Default: '1000'
+
+  PnAddressManagerNormalizerBatchRequestTimeToBreak:
+    Type: String
+    Description:
+    Default: '1000'
+
+  PnAddressManagerBatchCleanRequestDelay:
+    Type: Number
+    Description: 'Delay to execute batch to reprocess stopped request'
+    Default: 30000
+
+  PnAddressManagerNormalizerPostelWorkingTtl:
+    Type: Number
+    Description: 'Postel working TTL'
+    Default: 1209600
+
+  PnAddressManagerNormalizerPostelTtl:
+    Type: Number
+    Description: 'Postel TTL'
+    Default: 1209600
+
+  ShedLockTableName:
+    Type: String
+    Description: 'Name of DynamoDB table PnAddressManagerShedLock'
+
+  ShedLockTableArn:
+    Type: String
+    Description: 'ARN of DynamoDB table PnAddressManagerShedLock'
+
+  PnAddressManagerMaxCsvSize:
+    Type: Number
+    Description: 'Csv Raw max Number'
+    Default: 50000
+
+
 Resources:
 
   # PN-address-manager microservice
@@ -358,19 +402,27 @@ Resources:
         ContainerEnvEntry16: !Sub 'PN_ADDRESSMANAGER_DAO_COUNTRYTABLENAME=${CountryTableName}'
         ContainerEnvEntry17: !Sub 'PN_ADDRESSMANAGER_DAO_POSTELBATCHTABLENAME=${PostelBatchTableName}'
         ContainerEnvEntry18: !Sub 'PN_ADDRESSMANAGER_DAO_BATCHREQUESTTABLENAME=${BatchRequestTableName}'
-        ContainerEnvEntry24: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_TTL=${PnAddressManagerNormalizerBatchRequestTtl}'
-        ContainerEnvEntry25: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_DELAY=${PnAddressManagerNormalizerBatchRequestDelay}'
-        ContainerEnvEntry26: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYDELAY=${PnAddressManagerNormalizerBatchRequestRecoveryDelay}'
-        ContainerEnvEntry27: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYAFTER=${PnAddressManagerNormalizerBatchRequestRecoveryAfter}'
-        ContainerEnvEntry28: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXRETRY=${PnAddressManagerNormalizerBatchRequestMaxRetry}'
-        ContainerEnvEntry29: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXSIZE=${PnAddressManagerNormalizerBatchRequestMaxSize}'
-        ContainerEnvEntry30: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_EVENTBRIDGERECOVERYDELAY=${PnAddressManagerNormalizerEventBridgeRecoveryDelay}'
-        ContainerEnvEntry31: !Sub 'PN_ADDRESSMANAGER_POSTELCXID=${PostelCxId}'
-        ContainerEnvEntry32: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYDELAY=${PnAddressManagerNormalizerPostelRecoveryDelay}'
-        ContainerEnvEntry33: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYAFTER=${PnAddressManagerNormalizerPostelRecoveryAfter}'
-        ContainerEnvEntry34: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_MAXRETRY=${PnAddressManagerNormalizerPostelMaxRetry}'
-        ContainerEnvEntry35: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_REQUESTPREFIX=${NormalizerRequestPrefix}'
-        ContainerEnvEntry36: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
+        ContainerEnvEntry19: !Sub 'PN_ADDRESSMANAGER_DAO_SHEDLOCKTABLENAME=${ShedLockTableName}'
+        ContainerEnvEntry20: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_TTL=${PnAddressManagerNormalizerBatchRequestTtl}'
+        ContainerEnvEntry21: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_DELAY=${PnAddressManagerNormalizerBatchRequestDelay}'
+        ContainerEnvEntry22: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_LOCKATMOST=${PnAddressManagerNormalizerBatchRequestLockAtMost}'
+        ContainerEnvEntry23: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_LOCKATLEAST=${PnAddressManagerNormalizerBatchRequestLockAtLeast}'
+        ContainerEnvEntry24: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_TIMETOBREAK=${PnAddressManagerNormalizerBatchRequestTimeToBreak}'
+        ContainerEnvEntry25: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYDELAY=${PnAddressManagerNormalizerBatchRequestRecoveryDelay}'
+        ContainerEnvEntry26: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYAFTER=${PnAddressManagerNormalizerBatchRequestRecoveryAfter}'
+        ContainerEnvEntry27: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXRETRY=${PnAddressManagerNormalizerBatchRequestMaxRetry}'
+        ContainerEnvEntry28: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_QUERYMAXSIZE=${PnAddressManagerNormalizerBatchRequestMaxSize}'
+        ContainerEnvEntry29: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_EVENTBRIDGERECOVERYDELAY=${PnAddressManagerNormalizerEventBridgeRecoveryDelay}'
+        ContainerEnvEntry30: !Sub 'PN_ADDRESSMANAGER_POSTELCXID=${PostelCxId}'
+        ContainerEnvEntry31: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYDELAY=${PnAddressManagerNormalizerPostelRecoveryDelay}'
+        ContainerEnvEntry32: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_RECOVERYAFTER=${PnAddressManagerNormalizerPostelRecoveryAfter}'
+        ContainerEnvEntry33: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_MAXRETRY=${PnAddressManagerNormalizerPostelMaxRetry}'
+        ContainerEnvEntry34: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_REQUESTPREFIX=${NormalizerRequestPrefix}'
+        ContainerEnvEntry35: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_WORKINGTTL=${PnAddressManagerNormalizerPostelWorkingTtl}'
+        ContainerEnvEntry36: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_TTL=${PnAddressManagerNormalizerPostelTtl}'
+        ContainerEnvEntry37: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
+        ContainerEnvEntry38: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHCLEANREQUESTDELAY=${PnAddressManagerBatchCleanRequestDelay}'
+        ContainerEnvEntry39: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXCSVSIZE=${PnAddressManagerMaxCsvSize}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets
@@ -435,6 +487,7 @@ Resources:
               - dynamodb:GetItem
               - dynamodb:Query
               - dynamodb:Scan
+              - dynamodb:Delete
               - dynamodb:UpdateItem
               - dynamodb:PutItem
             Resource:
@@ -443,6 +496,7 @@ Resources:
               - !Ref ApiKeyTableArn
               - !Ref BatchRequestTableArn
               - !Ref PostelBatchTableArn
+              - !Ref ShedLockTableArn
               - !Sub '${BatchRequestTableArn}/index/*'
               - !Sub '${PostelBatchTableArn}/index/*'
 

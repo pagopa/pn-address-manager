@@ -51,7 +51,7 @@ class EventServiceTest {
             handler.onSuccess(null, putEventsResult);
             return null;
         });
-        StepVerifier.create(eventService.sendEvent("Test message", "12345"))
+        StepVerifier.create(eventService.sendEvent("Test message"))
                 .expectNextCount(0);
     }
 

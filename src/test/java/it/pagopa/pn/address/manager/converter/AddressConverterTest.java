@@ -6,7 +6,7 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
@@ -94,7 +94,8 @@ class AddressConverterTest {
      */
     @Test
     void testCreateDeduplicatesResponseFromDeduplicaResponse() {
-        assertThrows(PnInternalException.class, () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(new DeduplicaResponse(), "42"));
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        assertThrows(PnInternalException.class, () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
 
     }
 
@@ -105,7 +106,7 @@ class AddressConverterTest {
     void testCreateDeduplicatesResponseFromDeduplicaResponse2() {
         DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
         risultatoDeduplica.errore("-1");
-        assertThrows(PnAddressManagerException.class,
+        assertThrows(PnInternalAddressManagerException.class,
                 () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
 
@@ -116,7 +117,7 @@ class AddressConverterTest {
     void testCreateDeduplicatesResponseFromDeduplicaResponse3() {
         DeduplicaResponse risultatoDeduplica = mock(DeduplicaResponse.class);
         when(risultatoDeduplica.getErrore()).thenReturn("An error occurred");
-        assertThrows(PnAddressManagerException.class,
+        assertThrows(PnInternalAddressManagerException.class,
                 () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
         verify(risultatoDeduplica, atLeast(1)).getErrore();
     }
@@ -240,13 +241,13 @@ class AddressConverterTest {
     @Test
     void testCreateDeduplicatesResponseFromDeduplicaResponse8() {
         AddressOut addressOut = mock(AddressOut.class);
-        when(addressOut.getnErroreNorm()).thenThrow(new PnAddressManagerException("An error occurred",
+        when(addressOut.getnErroreNorm()).thenThrow(new PnInternalAddressManagerException("An error occurred",
                 "The characteristics of someone or something", 2, "An error occurred"));
         when(addressOut.getfPostalizzabile()).thenReturn("0");
         DeduplicaResponse risultatoDeduplica = mock(DeduplicaResponse.class);
         when(risultatoDeduplica.getSlaveOut()).thenReturn(addressOut);
         when(risultatoDeduplica.getErrore()).thenReturn(null);
-        assertThrows(PnAddressManagerException.class,
+        assertThrows(PnInternalAddressManagerException.class,
                 () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
         verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
         verify(risultatoDeduplica).getErrore();
@@ -263,7 +264,6 @@ class AddressConverterTest {
         batchRequest.setDelay(2);
         batchRequest.setEventBridgeRecoveryDelay(1);
         batchRequest.setMaxRetry(3);
-        batchRequest.setMaxSize(3);
         batchRequest.setRecoveryAfter(2);
         batchRequest.setRecoveryDelay(2);
         batchRequest.setTtl(2);
@@ -283,9 +283,7 @@ class AddressConverterTest {
     @NotNull
     private static PnAddressManagerConfig.Normalizer getNormalizer(PnAddressManagerConfig.BatchRequest batchRequest) {
         PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
-        postel.setDelay(2);
         postel.setMaxRetry(3);
-        postel.setMaxSize(3);
         postel.setRecoveryAfter(2);
         postel.setRecoveryDelay(2);
         postel.setTtl(2);
@@ -307,7 +305,6 @@ class AddressConverterTest {
         batchRequest.setDelay(2);
         batchRequest.setEventBridgeRecoveryDelay(1);
         batchRequest.setMaxRetry(3);
-        batchRequest.setMaxSize(3);
         batchRequest.setRecoveryAfter(2);
         batchRequest.setRecoveryDelay(2);
         batchRequest.setTtl(2);
@@ -317,7 +314,7 @@ class AddressConverterTest {
         PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setNormalizer(normalizer);
         PostelBatch actualCreatePostelBatchByBatchIdAndFileKeyResult = (new AddressConverter(pnAddressManagerConfig))
-                .createPostelBatchByBatchIdAndFileKey("42", "File Key", "Sha256");
+                .createPostelBatchByBatchIdAndFileKey("Request Prefix42", "File Key", "Sha256");
         assertEquals("Request Prefix42", actualCreatePostelBatchByBatchIdAndFileKeyResult.getBatchId());
         assertEquals("NOT_WORKED", actualCreatePostelBatchByBatchIdAndFileKeyResult.getStatus());
         assertEquals("Sha256", actualCreatePostelBatchByBatchIdAndFileKeyResult.getSha256());
@@ -328,9 +325,7 @@ class AddressConverterTest {
     @NotNull
     private static PnAddressManagerConfig.Normalizer getNormalizer1(PnAddressManagerConfig.BatchRequest batchRequest) {
         PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
-        postel.setDelay(2);
         postel.setMaxRetry(3);
-        postel.setMaxSize(3);
         postel.setRecoveryAfter(2);
         postel.setRecoveryDelay(2);
         postel.setRequestPrefix("Request Prefix");

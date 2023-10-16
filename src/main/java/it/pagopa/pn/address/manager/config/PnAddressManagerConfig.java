@@ -34,14 +34,14 @@ public class PnAddressManagerConfig {
         private BatchRequest batchRequest;
         private Postel postel;
         private String postelAuthKey;
+        private Integer maxCsvSize;
     }
 
     @Data
     public static class Postel{
         private Integer ttl;
+        private Integer workingTtl;
         private Integer maxRetry;
-        private Integer maxSize;
-        private Integer delay;
         private Integer recoveryAfter;
         private Integer recoveryDelay;
         private String requestPrefix;
@@ -51,11 +51,14 @@ public class PnAddressManagerConfig {
     public static class BatchRequest{
         private Integer ttl;
         private Integer maxRetry;
-        private Integer maxSize;
+        private Integer queryMaxSize;
         private Integer delay;
         private Integer recoveryAfter;
         private Integer recoveryDelay;
         private Integer eventBridgeRecoveryDelay;
+        private Integer lockAtMost;
+        private Integer lockAtLeast;
+        private Integer timeToBreak;
     }
 
     @Data
@@ -65,6 +68,7 @@ public class PnAddressManagerConfig {
         private String postelBatchTableName;
         private String batchRequestTableName;
         private String countryTableName;
+        private String shedlockTableName;
     }
 
     @Data

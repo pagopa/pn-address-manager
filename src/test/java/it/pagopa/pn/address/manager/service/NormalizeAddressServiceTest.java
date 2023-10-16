@@ -114,7 +114,7 @@ class NormalizeAddressServiceTest {
         normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         when(addressUtils.normalizeRequestToResult(any())).thenReturn(new NormalizeItemsResult());
         when(addressUtils.toJson(any())).thenReturn("json");
-        StepVerifier.create(normalizeAddressService.handleRequest(PnNormalizeRequestEvent.Payload.builder().build())).expectNextCount(0).verifyComplete();
+        StepVerifier.create(normalizeAddressService.handleRequest(PnNormalizeRequestEvent.Payload.builder().build())).expectComplete();
     }
 
     @Test

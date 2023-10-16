@@ -13,8 +13,11 @@ public final class PostelBatchConstant {
     public static final String COL_SHA256 = "sha256";
     public static final String COL_TTL = "ttl";
     public static final String COL_STATUS = "status";
-    public static final String COL_RESERVATION_ID = "reservationId";
     public static final String COL_LAST_RESERVED = "lastReserved";
+
+    public static final String COL_WORKINGTTL = "workingTtl";
     public static final String COL_TIMESTAMP = "timeStamp";
     public static final String GSI_S = "status-index";
+
+    public static final String GSI_SWT = "status-workingTtl-index";
 }

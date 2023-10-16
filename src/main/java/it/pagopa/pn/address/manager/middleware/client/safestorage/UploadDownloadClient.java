@@ -1,9 +1,10 @@
 package it.pagopa.pn.address.manager.middleware.client.safestorage;
 
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -40,7 +41,7 @@ public class UploadDownloadClient {
                 .thenReturn(fileCreationResponse.getKey())
                 .onErrorResume(ee -> {
                     log.error("Normalize Address - uploadContent Exception uploading file", ee);
-                    return Mono.error(new PnAddressManagerException(ee.getMessage(), ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_CODE));
+                    return Mono.error(new PnInternalAddressManagerException(ee.getMessage(), ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_CODE));
                 });
     }
 
@@ -51,7 +52,7 @@ public class UploadDownloadClient {
                 .bodyToMono(byte[].class)
                 .onErrorMap(ex -> {
                     log.error("downloadContent Exception downloading content", ex);
-                    return new PnAddressManagerException(ex.getMessage(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_CODE);
+                    return new PnInternalAddressManagerException(ex.getMessage(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_CODE);
                 });
     }
 }

@@ -6,11 +6,11 @@ import lombok.Getter;
 @Getter
 public class PnAddressManagerException extends PnRuntimeException {
 
-    private final String description;
+    private final String code;
 
-    public PnAddressManagerException(String message, String description, int status, String errorCode){
-        super(message, description, status, errorCode, null, null);
-        this.description = description;
+    public PnAddressManagerException(String message, int status, String code){
+        super(message, message, status, code, null, null);
+        this.code = code;
     }
 
 

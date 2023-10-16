@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.CapModel;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
@@ -30,7 +30,7 @@ public class CapRepositoryImpl implements CapRepository {
                 .partitionValue(cap)
                 .build();
         return Mono.fromFuture(table.getItem(key))
-                .switchIfEmpty(Mono.error(new PnAddressManagerException(CAP_DOES_NOT_EXISTS, CAP_DOES_NOT_EXISTS, HttpStatus.NOT_FOUND.value(), "Cap not found")));
+                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(CAP_DOES_NOT_EXISTS, CAP_DOES_NOT_EXISTS, HttpStatus.NOT_FOUND.value(), "Cap not found")));
 
     }
 }

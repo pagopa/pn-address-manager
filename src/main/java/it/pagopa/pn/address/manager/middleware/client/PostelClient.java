@@ -6,17 +6,17 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.NormalizzazioneResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
+import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
-import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.api.NormalizzatoreApi;
 import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.POSTEL;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_POSTEL_CLIENT;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_POSTEL_CLIENT;
 
 
 @CustomLog
@@ -36,28 +36,22 @@ public class PostelClient {
 		return postelApi.deduplica(cxId, xApiKey, inputDeduplica)
 				.onErrorMap(throwable -> {
 					if (throwable instanceof WebClientResponseException ex) {
-						throw new PnAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
+						throw new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
 								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_DEDUPLICA_ONLINE_ERROR_CODE);
 					}
 					return throwable;
 				});
 	}
 
-	public Mono<NormalizzazioneResponse> activatePostel(PostelBatch postelBatch) {
+	public NormalizzazioneResponse activatePostel(PostelBatch postelBatch) {
 		log.logInvokingExternalService(POSTEL, "Calling Activate Postel");
 
 		NormalizzazioneRequest activatePostelRequest = new NormalizzazioneRequest();
 		activatePostelRequest.setRequestId(postelBatch.getBatchId());
 		activatePostelRequest.setUri(postelBatch.getFileKey());
 		activatePostelRequest.setSha256(postelBatch.getSha256());
-		return postelApi.normalizzazione(pnAddressManagerConfig.getPagoPaCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)
-				.onErrorMap(throwable -> {
-					if (throwable instanceof WebClientResponseException ex) {
-						throw new PnAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
-								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_ACTIVATE_POSTEL_ERROR_CODE);
-					}
-					return throwable;
-				});
+		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), null /*pnAddressManagerConfig.getNormalizer().getPostelAuthKey()*/, activatePostelRequest)
+				.block();
 
 	}
 }

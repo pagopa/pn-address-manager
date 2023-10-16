@@ -56,7 +56,7 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
     public static final String ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL = "Normalized Address from postel is empty";
 
     public static final String ERROR_CODE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND = "ERROR_ADDRESS_MANAGER_POSTELBATCHNOTFOUND";
-    public static final String ERROR_MESSAGE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND = "Postel batch for fileKey %s does not exist";
+    public static final String ERROR_MESSAGE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND = "Postel batch for requestId %s does not exist";
 
     public static final String ERROR_CODE_ADDRESS_MANAGER_POSTELOUTPUTFILEKEYNOTFOUND = "ERROR_ADDRESS_MANAGER_POSTELOUTPUTFILEKEYNOTFOUND";
     public static final String ERROR_MESSAGE_ADDRESS_MANAGER_POSTELOUTPUTFILEKEYNOTFOUND = "fileKey %s does not exist";
