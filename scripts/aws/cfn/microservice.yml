@@ -318,12 +318,10 @@ Parameters:
   NormalizzatoreBasePath:
     Type: String
     Description: 'Postel Normalizzatore base url'
-    Default: ''
 
   DeduplicaBasePath:
     Type: String
     Description: 'Postel Deduplica base url'
-    Default: ''
 
   PnAddressManagerNormalizerBatchRequestLockAtMost:
     Type: String
