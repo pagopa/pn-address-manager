@@ -20,6 +20,7 @@ import reactor.test.StepVerifier;
 
 import java.time.LocalDateTime;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -185,6 +186,7 @@ class CapAndCountryServiceTest {
     @Test
     void verifyCapAndCountryList(){
         NormalizeResult item = new NormalizeResult();
+        when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
         AnalogAddress analogAddress = new AnalogAddress();
         analogAddress.setAddressRow("123 Main St");
         analogAddress.setAddressRow2("Apt 4B");
@@ -199,6 +201,26 @@ class CapAndCountryServiceTest {
         capModel.setEndValidity(LocalDateTime.now().minusDays(1));
         capModel.setCap("12345");
         when(capRepository.findValidCap(any())).thenReturn(Mono.just(capModel));
+        StepVerifier.create(capAndCountryService.verifyCapAndCountryList(item)).expectNext(item).verifyComplete();
+    }
+    @Test
+    void verifyCapAndCountryListFlagFlase(){
+        NormalizeResult item = new NormalizeResult();
+        when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("123 Main St");
+        analogAddress.setAddressRow2("Apt 4B");
+        analogAddress.setCap("12345");
+        analogAddress.setCity("Sample City");
+        analogAddress.setCity2("Suburb");
+        analogAddress.setPr("CA");
+        analogAddress.setCountry("FRANCE");
+        item.setNormalizedAddress(analogAddress);
+        CountryModel countryModel = new CountryModel();
+        countryModel.setCountry("COUNTRY");
+        countryModel.setStartValidity(LocalDateTime.now());
+        countryModel.setEndValidity(LocalDateTime.now().minusDays(1));
+        when(countryRepository.findByName(anyString())).thenReturn(Mono.just(countryModel));
         StepVerifier.create(capAndCountryService.verifyCapAndCountryList(item)).expectNext(item).verifyComplete();
     }
 

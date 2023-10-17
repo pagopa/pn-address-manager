@@ -83,7 +83,7 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
         when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new PostelBatch()));
-        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        FileDownloadResponse fileDownloadResponse = mock(FileDownloadResponse.class);
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         StepVerifier.create(normalizzatoreService.callbackNormalizedAddress(normalizerCallbackRequest,"id","id")).expectError().verify();
     }

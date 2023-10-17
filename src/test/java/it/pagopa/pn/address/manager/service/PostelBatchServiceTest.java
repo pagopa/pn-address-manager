@@ -56,15 +56,12 @@ class PostelBatchServiceTest {
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyString(),any())).thenReturn(Mono.just(List.of(new BatchRequest())));
         StepVerifier.create(postelBatchService.resetRelatedBatchRequestForRetry(postelBatch)).expectError().verify();
     }
-
-
     @Test
     void findPostelBatch(){
         postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capAndCountryService);
         when(postelBatchRepository.findByBatchId(anyString())).thenReturn(Mono.just(new PostelBatch()));
         StepVerifier.create(postelBatchService.findPostelBatch("fileKey")).expectNext(new PostelBatch()).verifyComplete();
     }
-
     @Test
     void getResponse(){
         postelBatchService = new PostelBatchService(addressBatchRequestRepository, postelBatchRepository, csvService, addressUtils, uploadDownloadClient, addressBatchRequestService, capAndCountryService);

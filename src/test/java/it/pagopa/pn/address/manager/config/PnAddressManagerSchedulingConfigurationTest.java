@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.config;
 
 import net.javacrumbs.shedlock.core.LockProvider;
+import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
@@ -18,7 +19,6 @@ class PnAddressManagerSchedulingConfigurationTest {
     }
 
     @Test
-    @Disabled
     void lockProvider() {
         DynamoDbClient dynamoDB = DynamoDbClient.builder()
                 .region(Region.EU_SOUTH_1)
@@ -27,6 +27,7 @@ class PnAddressManagerSchedulingConfigurationTest {
         PnAddressManagerConfig.Dao dao = new PnAddressManagerConfig.Dao();
         dao.setBatchRequestTableName("Lock");
         cfg.setDao(dao);
+        cfg.getDao().setShedlockTableName("Lock");
         LockProvider provider = configuration.lockProvider(dynamoDB, cfg);
         Assertions.assertNotNull(provider);
     }
