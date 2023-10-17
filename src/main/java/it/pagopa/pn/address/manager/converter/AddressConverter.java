@@ -1,16 +1,13 @@
 package it.pagopa.pn.address.manager.converter;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.*;
-import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.*;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
@@ -21,12 +18,6 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 
 @Component
 public class AddressConverter {
-
-    private final PnAddressManagerConfig pnAddressManagerConfig;
-
-    public AddressConverter(PnAddressManagerConfig pnAddressManagerConfig) {
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-    }
 
     public DeduplicaRequest createDeduplicaRequestFromDeduplicatesRequest(DeduplicatesRequest deduplicatesRequest) {
         DeduplicaRequest inputDeduplica = new DeduplicaRequest();
@@ -61,48 +52,35 @@ public class AddressConverter {
         deduplicatesResponse.setCorrelationId(correlationId);
 
         if (risultatoDeduplica.getErrore() != null) {
-            throw new PnInternalAddressManagerException(ERROR_CODE_ADDRESSMANAGER_DEDUPLICAERROR,
-                    decodeErrorDedu(risultatoDeduplica.getErrore()),
-                    HttpStatus.BAD_REQUEST.value(),
-                    ERROR_CODE_ADDRESSMANAGER_DEDUPLICAERROR);
+            deduplicatesResponse.setError(decodeErrorDedu(risultatoDeduplica.getErrore()));
+        } else {
+            getAnalogAddress(risultatoDeduplica, deduplicatesResponse);
         }
-
-        getAnalogAddress(risultatoDeduplica, deduplicatesResponse);
 
         return deduplicatesResponse;
     }
 
     private static String decodeErroreNorm(Integer error) {
-        if (error != null) {
-            //TODO: CHIEDERE INFORMAZIONI SULLA DECODIFICA DEL CODICE ERRORE DEDU
-            return "TODO";
-        } else {
-            return null;
-        }
+        return String.valueOf(error);
+        //return PostelErrorNormEnum.getValueFromName(error);
     }
 
     private static String decodeErrorDedu(String erroreDedu) {
-        if (erroreDedu != null) {
-            //TODO: CHIEDERE INFORMAZIONI SULLA DECODIFICA DEL CODICE ERRORE DEDU
-            return "TODO";
-        } else {
-            return null;
-        }
+        return erroreDedu;
+        //return PostelErrorEnum.valueOf(erroreDedu).getValue();
     }
 
-    @NotNull
-    private static DeduplicatesResponse getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse) {
+    private static void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse) {
 
         if (risultatoDeduplica.getSlaveOut() != null) {
             if (StringUtils.hasText(risultatoDeduplica.getSlaveOut().getfPostalizzabile())
                     && risultatoDeduplica.getSlaveOut().getfPostalizzabile().equalsIgnoreCase("0")) {
                 deduplicatesResponse.setError(decodeErroreNorm(risultatoDeduplica.getSlaveOut().getnErroreNorm()));
-                return deduplicatesResponse;
+                return;
             }
             AnalogAddress analogAddress = getAddress(risultatoDeduplica.getSlaveOut());
             deduplicatesResponse.setNormalizedAddress(analogAddress);
             deduplicatesResponse.setEqualityResult(risultatoDeduplica.getRisultatoDedu());
-            return deduplicatesResponse;
         } else {
             throw new PnInternalException(ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL, ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL);
         }

@@ -1,14 +1,13 @@
 package it.pagopa.pn.address.manager.service;
 
-
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaRequest;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaResponse;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaRequest;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
-import it.pagopa.pn.address.manager.middleware.client.PostelClient;
+import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
@@ -30,7 +29,7 @@ class DeduplicatesAddressServiceTest {
     AddressUtils addressUtils;
 
     @MockBean
-    PostelClient postelClient;
+    DeduplicaClient postelClient;
 
     @MockBean
     AddressConverter addressConverter;
@@ -52,7 +51,7 @@ class DeduplicatesAddressServiceTest {
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
         when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new DeduplicaRequest());
-        when(postelClient.deduplica(any(), any(), any())).thenReturn(Mono.just(new DeduplicaResponse()));
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(new DeduplicaResponse()));
         StepVerifier.create(deduplicatesAddressService.deduplicates(new DeduplicatesRequest(), "cxId","apiKey")).expectError().verify();
     }
 
@@ -64,7 +63,7 @@ class DeduplicatesAddressServiceTest {
         apiKeyModel.setCxId("cxId");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
         when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new DeduplicaRequest());
-        when(postelClient.deduplica(any(), any(), any())).thenReturn(Mono.just(new DeduplicaResponse()));
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(new DeduplicaResponse()));
         StepVerifier.create(deduplicatesAddressService.deduplicates(new DeduplicatesRequest(), "cxId","apiKey")).expectError().verify();
     }
 
@@ -78,7 +77,7 @@ class DeduplicatesAddressServiceTest {
         apiKeyModel.setCxId("cxId");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
         when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new DeduplicaRequest());
-        when(postelClient.deduplica(any(), any(), any())).thenReturn(Mono.just(new DeduplicaResponse()));
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(new DeduplicaResponse()));
         when(addressUtils.normalizeAddress(any(),any(), any())).thenReturn(new NormalizedAddressResponse());
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setEqualityResult(false);

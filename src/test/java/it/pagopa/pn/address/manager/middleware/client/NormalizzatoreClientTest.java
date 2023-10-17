@@ -1,10 +1,9 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.DeduplicaRequest;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
-import it.pagopa.pn.address.manager.msclient.generated.postel.v1.api.DefaultApi;
+import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.api.DefaultApi;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -13,28 +12,12 @@ import org.springframework.web.reactive.function.client.ExchangeFunction;
 
 import static org.mockito.Mockito.*;
 
-class PostelClientTest {
+class NormalizzatoreClientTest {
 
     DefaultApi defaultApi = mock(DefaultApi.class);
-    PostelWebClient postelWebClient = mock(PostelWebClient.class);
+    NormalizzatoreWebClient postelWebClient = mock(NormalizzatoreWebClient.class);
     ResponseExchangeFilter responseExchangeFilter = mock(ResponseExchangeFilter.class);
 
-    @Test
-    void testDeduplica() {
-        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
-        pnAddressManagerConfig.setPostelBasePath("http://localhost:8080");
-        ExchangeFilterFunction exchangeFilterFunction = mock(ExchangeFilterFunction.class);
-        when(exchangeFilterFunction.apply(Mockito.<ExchangeFunction>any())).thenReturn(mock(ExchangeFunction.class));
-        ExchangeFilterFunction exchangeFilterFunction2 = mock(ExchangeFilterFunction.class);
-        when(exchangeFilterFunction2.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction);
-        ResponseExchangeFilter responseExchangeFilter = mock(ResponseExchangeFilter.class);
-        when(responseExchangeFilter.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction2);
-        PostelClient postelClient = new PostelClient(new PostelWebClient(responseExchangeFilter, pnAddressManagerConfig), pnAddressManagerConfig);
-        postelClient.deduplica(new DeduplicaRequest(), "cxId", "xApiKey");
-        verify(responseExchangeFilter).andThen(Mockito.<ExchangeFilterFunction>any());
-        verify(exchangeFilterFunction2).andThen(Mockito.<ExchangeFilterFunction>any());
-        verify(exchangeFilterFunction).apply(Mockito.<ExchangeFunction>any());
-    }
     @Test
     @Disabled
     void testActivatePostel() {
@@ -42,7 +25,7 @@ class PostelClientTest {
         normalizer.setPostelAuthKey("Postel Auth Key");
         PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setPagoPaCxId("cxId");
-        pnAddressManagerConfig.setPostelBasePath("http://localhost:8080");
+        pnAddressManagerConfig.setNormalizzatoreBasePath("http://localhost:8080");
         pnAddressManagerConfig.setNormalizer(normalizer);
         ExchangeFilterFunction exchangeFilterFunction = mock(ExchangeFilterFunction.class);
         when(exchangeFilterFunction.apply(Mockito.<ExchangeFunction>any())).thenReturn(mock(ExchangeFunction.class));
@@ -54,7 +37,7 @@ class PostelClientTest {
         postelBatch.setBatchId("batchId");
         postelBatch.setFileKey("fileKey");
         postelBatch.setSha256("sha256");
-        (new PostelClient(new PostelWebClient(responseExchangeFilter, pnAddressManagerConfig), pnAddressManagerConfig)).activatePostel(postelBatch);
+        (new NormalizzatoreClient(new NormalizzatoreWebClient(responseExchangeFilter, pnAddressManagerConfig), pnAddressManagerConfig)).activatePostel(postelBatch);
         verify(responseExchangeFilter).andThen(Mockito.<ExchangeFilterFunction>any());
         verify(exchangeFilterFunction2).andThen(Mockito.<ExchangeFilterFunction>any());
         verify(exchangeFilterFunction).apply(Mockito.<ExchangeFunction>any());

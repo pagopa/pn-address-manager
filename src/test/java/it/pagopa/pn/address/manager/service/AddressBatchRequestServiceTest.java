@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.NormalizzazioneResponse;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.normalizzatore.v1.dto.NormalizzazioneResponse;
 import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
@@ -8,7 +8,8 @@ import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.address.manager.middleware.client.PostelClient;
+import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
+import it.pagopa.pn.address.manager.middleware.client.NormalizzatoreClient;
 import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
@@ -49,7 +50,7 @@ class AddressBatchRequestServiceTest {
     SqsService sqsService;
 
     @MockBean
-    PostelClient postelClient;
+    NormalizzatoreClient postelClient;
 
     @MockBean
     SafeStorageService safeStorageService;

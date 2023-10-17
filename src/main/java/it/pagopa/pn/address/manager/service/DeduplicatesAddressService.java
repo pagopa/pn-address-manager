@@ -6,7 +6,7 @@ import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
-import it.pagopa.pn.address.manager.middleware.client.PostelClient;
+import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
@@ -22,14 +22,14 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 public class DeduplicatesAddressService {
 
     private final AddressUtils addressUtils;
-    private final PostelClient postelClient;
+    private final DeduplicaClient postelClient;
     private final AddressConverter addressConverter;
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private final ApiKeyRepository apiKeyRepository;
     private final CapAndCountryService capAndCountryService;
 
     public DeduplicatesAddressService(AddressUtils addressUtils,
-                                      PostelClient postelClient,
+                                      DeduplicaClient postelClient,
                                       AddressConverter addressConverter,
                                       PnAddressManagerConfig pnAddressManagerConfig,
                                       ApiKeyRepository apiKeyRepository,
@@ -49,7 +49,7 @@ public class DeduplicatesAddressService {
                         return Mono.just(createDeduplicatesResponseByDeduplicatesRequest(request));
                     }
                     return postelClient
-                            .deduplica(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request), pnAddressManagerCxId, xApiKey)
+                            .deduplica(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
                             .map(risultatoDeduplica -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, request.getCorrelationId()))
                             .flatMap(capAndCountryService::verifyCapAndCountry)
                             .doOnError(Mono::error);
