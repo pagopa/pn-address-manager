@@ -111,6 +111,9 @@ components:
         slaveOut e risultatoDedu: obbligatori in caso di risposta di successo
         errore: valorizzato in caso di risposta con errore
       properties:
+        masterOut:
+          description: risultato delle deduplica 
+          $ref: '#/components/schemas/AddressOut'
         slaveOut:
           description: risultato delle deduplica
           $ref: '#/components/schemas/AddressOut'
@@ -124,8 +127,16 @@ components:
           type: string
           description: >-
             identificativo dell'errore
-            - _E01_ //FIXME elencare i casi
-            - _E02_
+            - DED400: BAD REQUEST. Mi passa un input errato sia dal punto di vista del contenuto o formale;
+            - DED401: UNAUTHORIZATED. Mi passa delle credenziali vuote o errate;
+            - DED404: NOT FOUND. Il servizio nel server Postel non è disponibile;
+            - DED500: INTERNAL_SERVER_ERROR. Il servizio nei server Postel non è raggiungibile; 
+            - DED998: SERVIZIO DI NORMALIZZAZIONE NON DISPONIBILE; 
+            - DED997: SERVIZIO ORACLE NON DISPONIBILE; 
+            - DED992: ERRORE_GENERICO;
+            - DED996: ENTRAMBI_SCARTATI;
+            - DED995: INDIRIZZO_MASTER_SCARTATO;
+            - DED994: INDIRIZZO_SLAVE_SCARTATO;
 
     AddressOut:
       type: object

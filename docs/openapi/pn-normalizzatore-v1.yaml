@@ -133,9 +133,11 @@ components:
           type: string
           description: >-
             identificativo dell'errore            
-              - _E01_ //FIXME elencare i casi
-              - _E02_
-
+              - NOR400: BAD REQUEST. Mi passa un input errato sia dal punto di vista del contenuto o formale;
+              - NOR401: UNAUTHORIZATED. Mi passa delle credenziali vuote o errate;
+              - NOR404: NOT FOUND. Il servizio nel server Postel non è disponibile;
+              - NOR500: INTERNAL_SERVER_ERROR. Il servizio nei server Postel non è raggiungibile;
+              - NOR998: SERVIZIO DI NORMALIZZAZIONE NON DISPONIBILE; 
     Problem:
       required:
         - type
