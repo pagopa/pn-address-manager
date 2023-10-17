@@ -1,6 +1,6 @@
 openapi: 3.0.3
 info:
-  title:  API fornite dal normalizzatore
+  title:  API fornite dal normalizzatore SINI
   version: 1.0.0
 paths:
   /send-normalizzatore-ingress/v1/normalizzazione:
@@ -57,39 +57,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/NormalizzazioneResponse'
-        '400':
-          description: Bad request
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-        '500':
-          description: Internal error
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Problem'
-
-  /send-normalizzatore-ingress/v1/deduplica:
-    post:
-      operationId: deduplica
-      summary: PN richiede la deduplica online
-      parameters:
-        - $ref: '#/components/parameters/xPagopaAddrManCxId'
-        - $ref: '#/components/parameters/xPagopaAddrManApiKey'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/DeduplicaRequest'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/DeduplicaResponse'
         '400':
           description: Bad request
           content:
@@ -168,121 +135,6 @@ components:
             identificativo dell'errore            
               - _E01_ //FIXME elencare i casi
               - _E02_
-
-    DeduplicaRequest:
-      type: object
-      required:
-        - masterIn
-        - slaveIn
-      properties:
-        configIn:
-          $ref: '#/components/schemas/ConfigIn'
-        masterIn:
-          description: Indirizzo base con cui deduplicare lo slave
-          $ref: '#/components/schemas/AddressIn'
-        slaveIn:
-          description: Indirizzo oggetto della deduplica
-          $ref: '#/components/schemas/AddressIn'
-
-    ConfigIn:
-      type: object
-      properties:
-        configurazioneDeduplica:
-          type: string
-        configurazioneNorm:
-          type: string
-
-    AddressIn:
-      type: object
-      required:
-       - localita
-       - indirizzo
-      properties:
-        id:
-          type: string
-        provincia:
-          type: string
-        cap:
-          type: string
-        localita:
-          type: string
-        localitaAggiuntiva:
-          type: string
-        indirizzo:
-          type: string
-        indirizzoAggiuntivo:
-          type: string
-        stato:
-          type: string
-
-    DeduplicaResponse:
-      type: object
-      description: >-
-        slaveOut e risultatoDedu: obbligatori in caso di risposta di successo
-        errore: valorizzato in caso di risposta con errore
-      properties:
-        slaveOut:
-          description: risultato delle deduplica
-          $ref: '#/components/schemas/AddressOut'
-        risultatoDedu:
-          type: boolean
-          description: >-
-            Codice contenete l'esito del processo di deduplica
-            - false: Indirzzi differenti
-            - true: Indirizzi uguali
-        errore:
-          type: string
-          description: >-
-            identificativo dell'errore
-            - _E01_ //FIXME elencare i casi
-            - _E02_
-
-    AddressOut:
-      type: object
-      required:
-       - nRisultatoNorm
-       - fPostalizzabile
-      properties:
-        id:
-          type: string
-        nRisultatoNorm:
-          type: integer
-        nErroreNorm:
-          type: integer
-        sSiglaProv:
-          type: string
-        fPostalizzabile:
-          type: string
-        sStatoUff:
-          type: string
-        sStatoAbb:
-          type: string
-        sStatoSpedizione:
-          type: string
-        sComuneUff:
-          type: string
-        sComuneAbb:
-          type: string
-        sComuneSpedizione:
-          type: string
-        sFrazioneUff:
-          type: string
-        sFrazioneAbb:
-          type: string
-        sFrazioneSpedizione:
-          type: string
-        sCivicoAltro:
-          type: string
-        sCap:
-          type: string
-        sPresso:
-          type: string
-        sViaCompletaUff:
-          type: string
-        sViaCompletaAbb:
-          type: string
-        sViaCompletaSpedizione:
-          type: string
 
     Problem:
       required:
