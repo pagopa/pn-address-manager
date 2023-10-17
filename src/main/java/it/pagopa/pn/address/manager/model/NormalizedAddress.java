@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.model;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.v1.dto.AddressOut;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.AddressOut;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.opencsv.bean.CsvBindByPosition;
@@ -40,17 +40,17 @@ public class NormalizedAddress {
     @CsvBindByPosition(position = 1)
     private Integer nRisultatoNorm;
 
-    public static final String JSON_PROPERTY_N_ERRORE_NORM = "nErroreNorm";
+    public static final String JSON_PROPERTY_F_POSTALIZZABILE = "fPostalizzabile";
     @CsvBindByPosition(position = 2)
+    private Integer fPostalizzabile;
+
+    public static final String JSON_PROPERTY_N_ERRORE_NORM = "nErroreNorm";
+    @CsvBindByPosition(position = 3)
     private Integer nErroreNorm;
 
     public static final String JSON_PROPERTY_S_SIGLA_PROV = "sSiglaProv";
-    @CsvBindByPosition(position = 3)
-    private String sSiglaProv;
-
-    public static final String JSON_PROPERTY_F_POSTALIZZABILE = "fPostalizzabile";
     @CsvBindByPosition(position = 4)
-    private Integer fPostalizzabile;
+    private String sSiglaProv;
 
     public static final String JSON_PROPERTY_S_STATO_UFF = "sStatoUff";
     @CsvBindByPosition(position = 5)
