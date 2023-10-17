@@ -6,19 +6,18 @@ import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnPostelException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.address.manager.middleware.client.PostelClient;
+import it.pagopa.pn.address.manager.middleware.client.NormalizzatoreClient;
 import it.pagopa.pn.address.manager.model.EventDetail;
 import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import it.pagopa.pn.commons.exceptions.PnInternalException;
 import lombok.extern.slf4j.Slf4j;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
@@ -42,8 +41,6 @@ import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRE
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.NOT_SENT;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.SENT;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_POSTEL_CLIENT;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_POSTEL_CLIENT;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
@@ -54,7 +51,7 @@ public class AddressBatchRequestService {
     private final PostelBatchRepository postelBatchRepository;
     private final AddressConverter addressConverter;
     private final SqsService sqsService;
-    private final PostelClient postelClient;
+    private final NormalizzatoreClient postelClient;
     private final SafeStorageService safeStorageService;
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private final EventService eventService;
@@ -66,7 +63,7 @@ public class AddressBatchRequestService {
                                       PostelBatchRepository postelBatchRepository,
                                       AddressConverter addressConverter,
                                       SqsService sqsService,
-                                      PostelClient postelClient,
+                                      NormalizzatoreClient postelClient,
                                       SafeStorageService safeStorageService,
                                       PnAddressManagerConfig pnAddressManagerConfig,
                                       EventService eventService,
@@ -216,8 +213,8 @@ public class AddressBatchRequestService {
         Mono.fromCallable(() -> postelClient.activatePostel(postelBatch))
                 .onErrorResume(throwable -> {
 					if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
-						Mono.error(new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT
-								, ex.getStatusCode().value(), PnAddressManagerExceptionCodes.ERROR_ADDRESS_MANAGER_ACTIVATE_POSTEL_ERROR_CODE));
+                        log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", postelBatch.getBatchId(), ex);
+						Mono.error(new PnPostelException("Error during call postel activation api", "NOR400", ex));
 					}
 					return Mono.error(throwable);
 				})
@@ -226,9 +223,9 @@ public class AddressBatchRequestService {
                     if (!StringUtils.hasText(activatePostelResponse.getError())) {
                         return updatePostelBatchToWorking(postelBatch);
                     }
-                    throw new PnInternalException(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", "ADDRESS MANAGER - POSTEL ACTIVATION");
+                    return Mono.error(new PnPostelException("Error during call postel activation api", activatePostelResponse.getError(), null));
                 })
-                .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute batch", postelBatch.getBatchId(), e))
+                .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute call to Activation Postel Api", postelBatch.getBatchId(), e))
                 .onErrorResume(v -> incrementAndCheckRetry(postelBatch, v).then(Mono.error(v)))
                 .subscribe();
 
@@ -305,7 +302,8 @@ public class AddressBatchRequestService {
                     r.setRetry(nextRetry);
                     r.setLastReserved(now);
                     if (nextRetry >= pnAddressManagerConfig.getNormalizer().getPostel().getMaxRetry()
-                            || (throwable instanceof PnInternalAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())) {
+                            || (throwable instanceof PnInternalAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())
+                            || throwable instanceof PnPostelException ex && ex.getError().equals("NOR400")) {
                         r.setStatus(BatchStatus.ERROR.getValue());
                         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - status in {} (retry: {})", postelBatch.getBatchId(), r.getStatus(), r.getRetry());
                     }
