@@ -60,6 +60,7 @@ public class PostelBatchService {
                             .collectList()
                             .flatMap(batchRequestList -> addressBatchRequestService.updateBatchRequest(batchRequestList, postelBatch.getBatchId()));
                 })
+                .onErrorResume(throwable -> addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable))
                 .then();
     }
 

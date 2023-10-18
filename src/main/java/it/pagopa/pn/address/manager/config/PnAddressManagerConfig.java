@@ -24,7 +24,8 @@ public class PnAddressManagerConfig {
     private Normalizer normalizer;
     private String pagoPaCxId;
     private String apiKey;
-    private String postelBasePath;
+    private String normalizzatoreBasePath;
+    private String deduplicaBasePath;
     private String postelCxId;
     private String healthCheckPath;
     private String safeStorageBasePath;

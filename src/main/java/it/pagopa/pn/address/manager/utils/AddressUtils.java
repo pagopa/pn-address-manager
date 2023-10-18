@@ -296,8 +296,8 @@ public class AddressUtils {
     }
 
     private String decodeErrorErroreNorm(Integer nErroreNorm) {
-        //TODO: attendere decodifiche da postel
-        return "ERRORE";
+        return String.valueOf(nErroreNorm);
+        //return PostelErrorNormEnum.getValueFromName(nErroreNorm);
     }
 
     private AnalogAddress toAnalogAddress(NormalizedAddress normalizedAddress) {
