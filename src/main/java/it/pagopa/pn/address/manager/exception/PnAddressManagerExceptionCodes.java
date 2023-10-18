@@ -32,8 +32,8 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
     public static final String ERROR_MESSAGE_BATCH_REQUEST_RETRY_EXHAUSTED = "Errore durante il recupero dei batch di richiesta - numero massimo di tentativi esaurito!";
 
     public static final String APIKEY_DOES_NOT_EXISTS = "ApiKey does not exist";
-    public static final String CAP_DOES_NOT_EXISTS = "Cap does not exist or is not valid";
-    public static final String COUNTRY_DOES_NOT_EXISTS = "Country does not exist";
+    public static final String CAP_DOES_NOT_EXISTS = "Cap %s does not exist or is not valid";
+    public static final String COUNTRY_DOES_NOT_EXISTS = "Country %s does not exist";
 
     public static final String ERROR_ADDRESS_MANAGER_CSV_UPLOAD_FAILED_ERROR_CODE = "CSV_UPLOAD_FAILED";
     public static final String ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_CODE = "CSV_DOWNLOAD_FAILED";

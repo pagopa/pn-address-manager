@@ -25,25 +25,26 @@ public class AddressConverter {
         ConfigIn configIn = new ConfigIn();
         inputDeduplica.setConfigIn(configIn);
 
-        AddressIn slaveIn = getAddressIn(deduplicatesRequest);
+        AddressIn slaveIn = getAddressIn(deduplicatesRequest.getTargetAddress(), deduplicatesRequest.getCorrelationId());
         inputDeduplica.setSlaveIn(slaveIn);
 
-        AddressIn masterIn = getAddressIn(deduplicatesRequest);
+        AddressIn masterIn = getAddressIn(deduplicatesRequest.getBaseAddress(), deduplicatesRequest.getCorrelationId());
         inputDeduplica.setMasterIn(masterIn);
 
         return inputDeduplica;
     }
 
     @NotNull
-    private static AddressIn getAddressIn(DeduplicatesRequest deduplicatesRequest) {
+    private static AddressIn getAddressIn(AnalogAddress analogAddress, String correlationId) {
         AddressIn addressIn = new AddressIn();
-        addressIn.setId(deduplicatesRequest.getCorrelationId());
-        addressIn.setProvincia(deduplicatesRequest.getBaseAddress().getPr());
-        addressIn.setLocalita(deduplicatesRequest.getBaseAddress().getCity());
-        addressIn.setIndirizzo(deduplicatesRequest.getBaseAddress().getAddressRow() + " " + deduplicatesRequest.getBaseAddress().getAddressRow2());
-        addressIn.setCap(deduplicatesRequest.getBaseAddress().getCap());
-        addressIn.setLocalitaAggiuntiva(deduplicatesRequest.getBaseAddress().getCity2());
-        addressIn.setStato(deduplicatesRequest.getBaseAddress().getCountry());
+        addressIn.setId(correlationId);
+        addressIn.setProvincia(analogAddress.getPr());
+        addressIn.setLocalita(analogAddress.getCity());
+        addressIn.setIndirizzo(analogAddress.getAddressRow());
+        addressIn.setIndirizzoAggiuntivo(analogAddress.getAddressRow2());
+        addressIn.setCap(analogAddress.getCap());
+        addressIn.setLocalitaAggiuntiva(analogAddress.getCity2());
+        addressIn.setStato(analogAddress.getCountry());
         return addressIn;
     }
 
