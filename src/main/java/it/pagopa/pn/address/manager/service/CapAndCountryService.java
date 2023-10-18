@@ -33,7 +33,7 @@ public class CapAndCountryService {
     public Mono<DeduplicatesResponse> verifyCapAndCountry(DeduplicatesResponse item) {
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {
             if ((!StringUtils.hasText(item.getNormalizedAddress().getCountry())
-                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL"))
+                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITA"))
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
@@ -60,7 +60,7 @@ public class CapAndCountryService {
     public Mono<NormalizeResult> verifyCapAndCountryList(NormalizeResult item) {
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {
             if ((!StringUtils.hasText(item.getNormalizedAddress().getCountry())
-                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL"))
+                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITA"))
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
