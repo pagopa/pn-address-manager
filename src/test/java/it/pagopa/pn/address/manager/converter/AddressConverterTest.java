@@ -39,6 +39,7 @@ class AddressConverterTest {
     void testCreateDeduplicaRequestFromDeduplicatesRequest() {
         DeduplicatesRequest deduplicatesRequest = new DeduplicatesRequest();
         deduplicatesRequest.baseAddress(new AnalogAddress());
+        deduplicatesRequest.targetAddress(new AnalogAddress());
         DeduplicaRequest actualCreateDeduplicaRequestFromDeduplicatesRequestResult = addressConverter
                 .createDeduplicaRequestFromDeduplicatesRequest(deduplicatesRequest);
         AddressIn slaveIn = actualCreateDeduplicaRequestFromDeduplicatesRequestResult.getSlaveIn();
@@ -68,6 +69,7 @@ class AddressConverterTest {
     void testCreateDeduplicaRequestFromDeduplicatesRequest2() {
         DeduplicatesRequest deduplicatesRequest = mock(DeduplicatesRequest.class);
         when(deduplicatesRequest.getBaseAddress()).thenReturn(new AnalogAddress());
+        when(deduplicatesRequest.getTargetAddress()).thenReturn(new AnalogAddress());
         when(deduplicatesRequest.getCorrelationId()).thenReturn("42");
         DeduplicaRequest actualCreateDeduplicaRequestFromDeduplicatesRequestResult = addressConverter
                 .createDeduplicaRequestFromDeduplicatesRequest(deduplicatesRequest);
