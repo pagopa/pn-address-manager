@@ -80,8 +80,19 @@ components:
           type: string
         equalityResult:
           type: boolean
+        resultDetails:
+          type: string
+          description: >-
+            Dettagli relativi al processo di normalizzazione
+            - _RD00_ Indirizzo base scartato in fase di normalizzazione - valorizzato solo se il target viene considerato postalizzabile
+            - _RD01_ Indirizzo traget scartato in fase di normalizzazione - valorizzato solo in caso di error PNDEDU001 
+            - _RD01_ Indirizzo target normalizzato ma non postalizzabile - valorizzato solo in caso di error PNDEDU001
         error:
           type: string
+          description: >-
+            Codice di errore del servizio di deduplica
+            - _PNDEDU001_: Indirizzo non utilizzabile
+            - _PNDEDU999_: Errore del servizio target
         normalizedAddress:
           $ref: '#/components/schemas/AnalogAddress'
     
