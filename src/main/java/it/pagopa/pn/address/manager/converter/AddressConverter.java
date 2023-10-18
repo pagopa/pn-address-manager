@@ -41,7 +41,7 @@ public class AddressConverter {
         addressIn.setProvincia(analogAddress.getPr());
         addressIn.setLocalita(analogAddress.getCity());
         addressIn.setIndirizzo(analogAddress.getAddressRow());
-        //addressIn.setIndirizzoAggiuntivo(analogAddress.getAddressRow2());
+        addressIn.setIndirizzoAggiuntivo(analogAddress.getAddressRow2());
         addressIn.setCap(analogAddress.getCap());
         addressIn.setLocalitaAggiuntiva(analogAddress.getCity2());
         addressIn.setStato(analogAddress.getCountry());

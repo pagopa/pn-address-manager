@@ -33,7 +33,7 @@ public class CapAndCountryService {
     public Mono<DeduplicatesResponse> verifyCapAndCountry(DeduplicatesResponse item) {
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {
             if ((!StringUtils.hasText(item.getNormalizedAddress().getCountry())
-                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL"))
+                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITA"))
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
@@ -43,7 +43,7 @@ public class CapAndCountryService {
                             return Mono.empty();
                         })
                         .thenReturn(item);
-            } else {
+            } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
                             log.error("Verify country in whitelist result: {}", throwable.getMessage());
@@ -53,15 +53,14 @@ public class CapAndCountryService {
                         })
                         .thenReturn(item);
             }
-        } else {
-            return Mono.just(item);
         }
+        return Mono.just(item);
     }
 
     public Mono<NormalizeResult> verifyCapAndCountryList(NormalizeResult item) {
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {
             if ((!StringUtils.hasText(item.getNormalizedAddress().getCountry())
-                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL"))
+                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITA"))
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
@@ -70,7 +69,7 @@ public class CapAndCountryService {
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         }).thenReturn(item);
-            } else {
+            } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
                             log.error("Verify country in whitelist result: {}", throwable.getMessage());
