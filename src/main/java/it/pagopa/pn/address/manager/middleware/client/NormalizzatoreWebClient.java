@@ -20,7 +20,7 @@ public class NormalizzatoreWebClient extends CommonBaseClient {
     public ApiClient init() {
         ApiClient apiClient = new ApiClient(super.initWebClient(ApiClient.buildWebClientBuilder()
                 .filters(f -> f.add(responseExchangeFilter))));
-        apiClient.setBasePath(cfg.getDeduplicaBasePath());
+        apiClient.setBasePath(cfg.getNormalizzatoreBasePath());
         return apiClient;
     }
 }
