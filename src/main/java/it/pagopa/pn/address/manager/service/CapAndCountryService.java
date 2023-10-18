@@ -31,9 +31,10 @@ public class CapAndCountryService {
     }
 
     public Mono<DeduplicatesResponse> verifyCapAndCountry(DeduplicatesResponse item) {
-        if (item.getNormalizedAddress() != null) {
-            if (org.apache.commons.lang3.StringUtils.isBlank(item.getNormalizedAddress().getCountry())
-                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL")) {
+        if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {
+            if ((!StringUtils.hasText(item.getNormalizedAddress().getCountry())
+                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL"))
+                    && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
                             log.error("Verify cap in whitelist result: {}", throwable.getMessage());
@@ -58,9 +59,10 @@ public class CapAndCountryService {
     }
 
     public Mono<NormalizeResult> verifyCapAndCountryList(NormalizeResult item) {
-        if(pnAddressManagerConfig.getEnableWhitelisting()) {
-            if (!StringUtils.hasText(item.getNormalizedAddress().getCountry())
-                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL")) {
+        if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {
+            if ((!StringUtils.hasText(item.getNormalizedAddress().getCountry())
+                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITAL"))
+                    && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
                             log.error("Verify cap in whitelist result: {}", throwable.getMessage());
