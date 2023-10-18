@@ -43,7 +43,7 @@ public class CapAndCountryService {
                             return Mono.empty();
                         })
                         .thenReturn(item);
-            } else {
+            } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
                             log.error("Verify country in whitelist result: {}", throwable.getMessage());
@@ -53,9 +53,8 @@ public class CapAndCountryService {
                         })
                         .thenReturn(item);
             }
-        } else {
-            return Mono.just(item);
         }
+        return Mono.just(item);
     }
 
     public Mono<NormalizeResult> verifyCapAndCountryList(NormalizeResult item) {
@@ -70,7 +69,7 @@ public class CapAndCountryService {
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         }).thenReturn(item);
-            } else {
+            } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
                             log.error("Verify country in whitelist result: {}", throwable.getMessage());
