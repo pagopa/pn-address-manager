@@ -82,12 +82,14 @@ public class AddressConverter {
                 deduplicatesResponse.setError(PNADDR001);
                 return;
             }
-            ExternalDeduplicatesError error = ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore());
-            switch (error) {
-                case DED001 -> deduplicatesResponse.setResultDetails(RD01);
-                case DED002 -> deduplicatesResponse.setResultDetails(RD02);
-                case DED003 -> deduplicatesResponse.setResultDetails(RD03);
-                default -> deduplicatesResponse.setResultDetails(null);
+            if(StringUtils.hasText(risultatoDeduplica.getErrore())) {
+                ExternalDeduplicatesError error = ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore());
+                switch (error) {
+                    case DED001 -> deduplicatesResponse.setResultDetails(RD01);
+                    case DED002 -> deduplicatesResponse.setResultDetails(RD02);
+                    case DED003 -> deduplicatesResponse.setResultDetails(RD03);
+                    default -> deduplicatesResponse.setResultDetails(null);
+                }
             }
             AnalogAddress analogAddress = getAddress(risultatoDeduplica.getSlaveOut());
             deduplicatesResponse.setNormalizedAddress(analogAddress);

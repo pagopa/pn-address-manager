@@ -153,7 +153,6 @@ class AddressConverterTest {
         assertNull(normalizedAddress.getPr());
         verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
         verify(risultatoDeduplica).getRisultatoDedu();
-        verify(risultatoDeduplica).getErrore();
     }
 
     /**
@@ -189,7 +188,6 @@ class AddressConverterTest {
         assertEquals("Gets Sigla Prov", normalizedAddress.getPr());
         verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
         verify(risultatoDeduplica).getRisultatoDedu();
-        verify(risultatoDeduplica).getErrore();
         verify(addressOut, atLeast(1)).getfPostalizzabile();
         verify(addressOut).getsCap();
         verify(addressOut).getsCivicoAltro();
