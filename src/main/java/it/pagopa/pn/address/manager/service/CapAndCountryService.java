@@ -64,7 +64,7 @@ public class CapAndCountryService {
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
-                            log.error("Verify cap in whitelist result: {}", throwable.getMessage());
+                            log.warn("Verify cap in whitelist result: {}", throwable.getMessage());
                             item.setError(throwable.getMessage());
                             item.setNormalizedAddress(null);
                             return Mono.empty();
@@ -72,7 +72,7 @@ public class CapAndCountryService {
             } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
-                            log.error("Verify country in whitelist result: {}", throwable.getMessage());
+                            log.warn("Verify country in whitelist result: {}", throwable.getMessage());
                             item.setError(throwable.getMessage());
                             item.setNormalizedAddress(null);
                             return Mono.empty();
