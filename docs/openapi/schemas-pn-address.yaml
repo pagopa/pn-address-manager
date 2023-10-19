@@ -55,7 +55,10 @@ components:
           $ref: '#/components/schemas/AnalogAddress'
         error:
           type: string
-          description: Se presente indica che si è verificato un errore durante l'esecuzione dell'operazione richiesta.
+          description: >-
+            Se presente indica che l'indirizzo non è da considerarsi postalizzabile:
+            - Indirizzo dichiarato non postalizzabile dal normalizzatore
+            - Indirizzo avente come destinazione CAP/StatoEstero non abilitato
         
     DeduplicatesRequest:
       type: object
@@ -80,8 +83,21 @@ components:
           type: string
         equalityResult:
           type: boolean
+        resultDetails:
+          type: string
+          description: >-
+            Dettagli aggiuntivi sul processo di normalizzazione/deduplica
+            Se normalizedAddress è valorizzato e equalityResult è false potrebbero essersi comunque verificati errori nel processo di deduplica:
+            - _RD01_ Processo non completo per errori in fase di normalizzazione dell'indirzzo base
+            - _RD02_ Processo non completo per errori in fase di normalizzazione dell'indirzzo target
+            - _RD03_ Processo non completo per errori in fase di normalizzazione di entrammbi gli indirizzi
         error:
           type: string
+          description: >-
+            Codice di errore del servizio di deduplica
+            - _PNADDR001_: Indirizzo dichiarato non postalizzabile dal normalizzatore
+            - _PNADDR002_: Indirizzo dichiarato postalizzabile dal normalizzatore ma con CAP/stato estero non abilitati
+            - _PNADDR999_: Errore del servizio di normalizzazione
         normalizedAddress:
           $ref: '#/components/schemas/AnalogAddress'
     
