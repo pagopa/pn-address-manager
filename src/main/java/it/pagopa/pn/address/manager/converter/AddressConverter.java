@@ -2,11 +2,14 @@ package it.pagopa.pn.address.manager.converter;
 
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.*;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.constant.ExternalDeduplicatesError;
+import it.pagopa.pn.address.manager.constant.PostelError;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -14,9 +17,11 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
+@Slf4j
 public class AddressConverter {
 
     public DeduplicaRequest createDeduplicaRequestFromDeduplicatesRequest(DeduplicatesRequest deduplicatesRequest) {
@@ -53,31 +58,36 @@ public class AddressConverter {
         deduplicatesResponse.setCorrelationId(correlationId);
 
         if (risultatoDeduplica.getErrore() != null) {
-            deduplicatesResponse.setError(decodeErrorDedu(risultatoDeduplica.getErrore()));
-        } else {
-            getAnalogAddress(risultatoDeduplica, deduplicatesResponse);
+            String errorAsString = risultatoDeduplica.getErrore() + ": " +
+                    ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore()).getDescrizione();
+            log.warn("Error during deduplicate address: correlationId: [{}] - error: {}", deduplicatesResponse.getCorrelationId(), errorAsString);
+            if (!risultatoDeduplica.getErrore().startsWith("DED00")) {
+                deduplicatesResponse.setError(PNADDR999);
+                return deduplicatesResponse;
+            }
         }
+
+        getAnalogAddress(risultatoDeduplica, deduplicatesResponse);
 
         return deduplicatesResponse;
     }
 
-    private static String decodeErroreNorm(Integer error) {
-        return String.valueOf(error);
-        //return PostelErrorNormEnum.getValueFromName(error);
-    }
-
-    private static String decodeErrorDedu(String erroreDedu) {
-        return erroreDedu;
-        //return PostelErrorEnum.valueOf(erroreDedu).getValue();
-    }
-
     private static void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse) {
-
         if (risultatoDeduplica.getSlaveOut() != null) {
             if (StringUtils.hasText(risultatoDeduplica.getSlaveOut().getfPostalizzabile())
                     && risultatoDeduplica.getSlaveOut().getfPostalizzabile().equalsIgnoreCase("0")) {
-                deduplicatesResponse.setError(decodeErroreNorm(risultatoDeduplica.getSlaveOut().getnErroreNorm()));
+                log.error(risultatoDeduplica.getSlaveOut().getnErroreNorm() + ": " +
+                        PostelError.valueOf("E" + risultatoDeduplica.getErrore()).getDescrizioneBreve() +
+                        PostelError.valueOf("E" + risultatoDeduplica.getErrore()).getDescrizioneLunga());
+                deduplicatesResponse.setError(PNADDR001);
                 return;
+            }
+            ExternalDeduplicatesError error = ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore());
+            switch (error) {
+                case DED001 -> deduplicatesResponse.setResultDetails(RD01);
+                case DED002 -> deduplicatesResponse.setResultDetails(RD02);
+                case DED003 -> deduplicatesResponse.setResultDetails(RD03);
+                default -> deduplicatesResponse.setResultDetails(null);
             }
             AnalogAddress analogAddress = getAddress(risultatoDeduplica.getSlaveOut());
             deduplicatesResponse.setNormalizedAddress(analogAddress);
@@ -85,6 +95,7 @@ public class AddressConverter {
         } else {
             throw new PnInternalException(ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL, ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL);
         }
+
     }
 
     @NotNull

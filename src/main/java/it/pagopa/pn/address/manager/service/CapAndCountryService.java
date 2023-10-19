@@ -14,6 +14,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+
 @Service
 @Slf4j
 
@@ -37,8 +39,8 @@ public class CapAndCountryService {
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
-                            log.error("Verify cap in whitelist result: {}", throwable.getMessage());
-                            item.setError(throwable.getMessage());
+                            log.warn("Error during verify CAP deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
+                            item.setError(PNADDR002);
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         })
@@ -46,8 +48,8 @@ public class CapAndCountryService {
             } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
-                            log.error("Verify country in whitelist result: {}", throwable.getMessage());
-                            item.setError(throwable.getMessage());
+                            log.warn("Error during verify country deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
+                            item.setError(PNADDR002);
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         })
