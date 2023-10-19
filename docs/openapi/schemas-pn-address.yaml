@@ -90,10 +90,7 @@ components:
             Se normalizedAddress è valorizzato e equalityResult è false potrebbero essersi comunque verificati errori nel processo di deduplica:
             - _RD01_ Processo non completo per errori in fase di normalizzazione dell'indirzzo base
             - _RD02_ Processo non completo per errori in fase di normalizzazione dell'indirzzo target
-            - _RD03_ Processo non completo per errori in fase di normalizzazione di entrammbi gli inidirizzi
-            In caso di error PNDEDU001 specifica la motivazione:
-            - _RD11_ Indirizzo target scartato in fase di normalizzazione
-            - _RD12_ Indirizzo target normalizzato ma non postalizzabile
+            - _RD03_ Processo non completo per errori in fase di normalizzazione di entrammbi gli indirizzi
         error:
           type: string
           description: >-
