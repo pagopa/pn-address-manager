@@ -93,6 +93,17 @@ class PostelBatchRepositoryImplTest {
                 .verifyComplete();
 	}
 	@Test
+	void deleteItemTest(){
+		PostelBatch postelBatch = getBatchRequest();
+		CompletableFuture<Object> completableFuture = new CompletableFuture<>();
+		completableFuture.completeAsync(() -> postelBatch);
+		when(dynamoDbAsyncTable.deleteItem((Key) any()))
+				.thenReturn(completableFuture);
+		StepVerifier.create(postelBatchRepository.deleteItem("batchId"))
+				.expectNext(postelBatch)
+				.verifyComplete();
+	}
+	@Test
 	void resetPostelBatchForRecovery () {
 		PostelBatch postelBatch = getBatchRequest();
 		when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any()))
