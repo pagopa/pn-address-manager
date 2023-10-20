@@ -26,6 +26,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -71,10 +72,24 @@ class AddressBatchRequestServiceTest {
 
     private AddressBatchRequestService addressBatchRequestService;
     @Test
-    @Disabled
     void batchAddressRequest(){
+        Instant now = Instant.now();
+        when(clock.instant()).thenReturn(now);
         pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setQueryMaxSize(100);
+        batchRequest.setLockAtMost(100);
+        batchRequest.setLockAtLeast(100);
+        batchRequest.setRecoveryAfter(3);
+        batchRequest.setMaxRetry(3);
+        batchRequest.setRecoveryDelay(3);
+        batchRequest.setDelay(3);
+        batchRequest.setEventBridgeRecoveryDelay(3);
+        batchRequest.setTimeToBreak(3);
+        batchRequest.setTimeToBreak(3);
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
+        normalizer.setMaxCsvSize(100);
+        normalizer.setBatchRequest(batchRequest);
         pnAddressManagerConfig.setNormalizer(normalizer);
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
                 postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock);

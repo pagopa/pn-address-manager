@@ -20,6 +20,7 @@ import reactor.test.StepVerifier;
 
 import java.time.LocalDateTime;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
@@ -39,9 +40,9 @@ class CapAndCountryServiceTest {
     private PnAddressManagerConfig pnAddressManagerConfig;
 
     @Test
-
     void verifyCapAndCountry(){
         DeduplicatesResponse item = new DeduplicatesResponse();
+        when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
         AnalogAddress analogAddress = new AnalogAddress();
         analogAddress.setAddressRow("123 Main St");
         analogAddress.setAddressRow2("Apt 4B");
@@ -51,8 +52,70 @@ class CapAndCountryServiceTest {
         analogAddress.setPr("CA");
         analogAddress.setCountry("ITALIA");
         item.setNormalizedAddress(analogAddress);
-        when(capRepository.findValidCap(any())).thenReturn(Mono.empty());
-        Assertions.assertNotNull(capAndCountryService.verifyCapAndCountry(item));
+        CapModel capModel = new CapModel();
+        capModel.setStartValidity(LocalDateTime.now());
+        capModel.setEndValidity(LocalDateTime.now().minusDays(1));
+        capModel.setCap("12345");
+        when(capRepository.findValidCap(any())).thenReturn(Mono.just(capModel));
+        StepVerifier.create(capAndCountryService.verifyCapAndCountry(item)).expectNext(item).verifyComplete();
+    }
+    @Test
+    void verifyCapAndCountryCountryError(){
+        DeduplicatesResponse item = new DeduplicatesResponse();
+        when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("123 Main St");
+        analogAddress.setAddressRow2("Apt 4B");
+        analogAddress.setCap("12345");
+        analogAddress.setCity("Sample City");
+        analogAddress.setCity2("Suburb");
+        analogAddress.setPr("CA");
+        analogAddress.setCountry("FRANCE");
+        item.setNormalizedAddress(analogAddress);
+        CountryModel countryModel = new CountryModel();
+        countryModel.setCountry("COUNTRY");
+        countryModel.setStartValidity(LocalDateTime.now());
+        countryModel.setEndValidity(LocalDateTime.now().minusDays(1));
+        when(countryRepository.findByName(anyString())).thenReturn(Mono.just(countryModel));
+        StepVerifier.create(capAndCountryService.verifyCapAndCountry(item)).expectNext(item).verifyComplete();
+    }
+    @Test
+    void verifyCapAndCountryValidityError1(){
+        DeduplicatesResponse item = new DeduplicatesResponse();
+        when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("123 Main St");
+        analogAddress.setAddressRow2("Apt 4B");
+        analogAddress.setCap("12345");
+        analogAddress.setCity("Sample City");
+        analogAddress.setCity2("Suburb");
+        analogAddress.setPr("CA");
+        analogAddress.setCountry("FRANCE");
+        item.setNormalizedAddress(analogAddress);
+        CountryModel countryModel = new CountryModel();
+        countryModel.setCountry("COUNTRY");
+        countryModel.setStartValidity(null);
+        when(countryRepository.findByName(anyString())).thenReturn(Mono.just(countryModel));
+        StepVerifier.create(capAndCountryService.verifyCapAndCountry(item)).expectNext(item).verifyComplete();
+    }
+    @Test
+    void verifyCapAndCountryValidityError2(){
+        DeduplicatesResponse item = new DeduplicatesResponse();
+        when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("123 Main St");
+        analogAddress.setAddressRow2("Apt 4B");
+        analogAddress.setCap("12345");
+        analogAddress.setCity("Sample City");
+        analogAddress.setCity2("Suburb");
+        analogAddress.setPr("CA");
+        analogAddress.setCountry("ITALIA");
+        item.setNormalizedAddress(analogAddress);
+        CapModel capModel = new CapModel();
+        capModel.setStartValidity(null);
+        capModel.setCap("12345");
+        when(capRepository.findValidCap(any())).thenReturn(Mono.just(capModel));
+        StepVerifier.create(capAndCountryService.verifyCapAndCountry(item)).expectNext(item).verifyComplete();
     }
 
     @Test
@@ -185,6 +248,7 @@ class CapAndCountryServiceTest {
     @Test
     void verifyCapAndCountryList(){
         NormalizeResult item = new NormalizeResult();
+        when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
         AnalogAddress analogAddress = new AnalogAddress();
         analogAddress.setAddressRow("123 Main St");
         analogAddress.setAddressRow2("Apt 4B");
@@ -201,8 +265,26 @@ class CapAndCountryServiceTest {
         when(capRepository.findValidCap(any())).thenReturn(Mono.just(capModel));
         StepVerifier.create(capAndCountryService.verifyCapAndCountryList(item)).expectNext(item).verifyComplete();
     }
-
-
+    @Test
+    void verifyCapAndCountryListError(){
+        NormalizeResult item = new NormalizeResult();
+        when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("123 Main St");
+        analogAddress.setAddressRow2("Apt 4B");
+        analogAddress.setCap("12345");
+        analogAddress.setCity("Sample City");
+        analogAddress.setCity2("Suburb");
+        analogAddress.setPr("CA");
+        analogAddress.setCountry("FRANCE");
+        item.setNormalizedAddress(analogAddress);
+        CountryModel countryModel = new CountryModel();
+        countryModel.setCountry("COUNTRY");
+        countryModel.setStartValidity(LocalDateTime.now());
+        countryModel.setEndValidity(LocalDateTime.now().minusDays(1));
+        when(countryRepository.findByName(anyString())).thenReturn(Mono.just(countryModel));
+        StepVerifier.create(capAndCountryService.verifyCapAndCountryList(item)).expectNext(item).verifyComplete();
+    }
     @Test
     void verifyCapAndCountryList1(){
         NormalizeResult item = new NormalizeResult();
