@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.POSTEL;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.POSTEL;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_POSTEL_CLIENT;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_POSTEL_CLIENT;
 

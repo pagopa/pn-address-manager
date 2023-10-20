@@ -37,7 +37,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.*;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.NOT_SENT;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.SENT;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;

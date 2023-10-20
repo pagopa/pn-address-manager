@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.OutputDeduplicatesError;
 import it.pagopa.pn.address.manager.entity.CapModel;
 import it.pagopa.pn.address.manager.entity.CountryModel;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
@@ -13,8 +14,6 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
-
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
 
 @Service
 @Slf4j
@@ -40,7 +39,7 @@ public class CapAndCountryService {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
                             log.warn("Error during verify CAP deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
-                            item.setError(PNADDR002);
+                            item.setError(OutputDeduplicatesError.PNADDR002.name());
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         })
@@ -49,7 +48,7 @@ public class CapAndCountryService {
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
                             log.warn("Error during verify country deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
-                            item.setError(PNADDR002);
+                            item.setError(OutputDeduplicatesError.PNADDR002.name());
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         })

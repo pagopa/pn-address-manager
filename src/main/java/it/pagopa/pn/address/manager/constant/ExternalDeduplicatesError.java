@@ -1,8 +1,8 @@
 package it.pagopa.pn.address.manager.constant;
 
 public enum ExternalDeduplicatesError {
-    DED400("BAD REQUEST. Mi passa un input errato sia dal punto di vista del contenuto o formale"),
-    DED401("UNAUTHORIZED. Mi passa delle credenziali vuote o errate"),
+    DED400("BAD REQUEST.Input errato"),
+    DED401("UNAUTHORIZED. Credenziali vuote o errate"),
     DED404("NOT FOUND. Il servizio nel server Postel non è disponibile"),
     DED500("INTERNAL_SERVER_ERROR. Il servizio nei server Postel non è raggiungibile"),
     DED998("SERVIZIO DI NORMALIZZAZIONE NON DISPONIBILE"),

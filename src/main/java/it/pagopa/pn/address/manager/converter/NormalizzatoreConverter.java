@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import java.util.Date;
 import java.util.List;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 @Component
 public class NormalizzatoreConverter {
 	public FileCreationRequestDto preLoadRequestToFileCreationRequestDto (PreLoadRequest preLoadRequest){

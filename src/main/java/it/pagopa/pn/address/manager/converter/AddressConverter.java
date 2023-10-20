@@ -1,9 +1,7 @@
 package it.pagopa.pn.address.manager.converter;
 
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.*;
-import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.constant.ExternalDeduplicatesError;
-import it.pagopa.pn.address.manager.constant.PostelError;
+import it.pagopa.pn.address.manager.constant.*;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
@@ -17,7 +15,6 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
@@ -58,36 +55,34 @@ public class AddressConverter {
         deduplicatesResponse.setCorrelationId(correlationId);
 
         if (risultatoDeduplica.getErrore() != null) {
-            String errorAsString = risultatoDeduplica.getErrore() + ": " +
-                    ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore()).getDescrizione();
-            log.warn("Error during deduplicate address: correlationId: [{}] - error: {}", deduplicatesResponse.getCorrelationId(), errorAsString);
+            log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}",
+                    deduplicatesResponse.getCorrelationId(),
+                    ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore()).getDescrizione());
             if (!risultatoDeduplica.getErrore().startsWith("DED00")) {
-                deduplicatesResponse.setError(PNADDR999);
+                deduplicatesResponse.setError(OutputDeduplicatesError.PNADDR999.name());
                 return deduplicatesResponse;
             }
         }
 
-        getAnalogAddress(risultatoDeduplica, deduplicatesResponse);
+        getAnalogAddress(risultatoDeduplica, deduplicatesResponse, correlationId);
 
         return deduplicatesResponse;
     }
 
-    private static void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse) {
+    private static void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse, String correlationId) {
         if (risultatoDeduplica.getSlaveOut() != null) {
             if (StringUtils.hasText(risultatoDeduplica.getSlaveOut().getfPostalizzabile())
                     && risultatoDeduplica.getSlaveOut().getfPostalizzabile().equalsIgnoreCase("0")) {
-                log.error(risultatoDeduplica.getSlaveOut().getnErroreNorm() + ": " +
-                        PostelError.valueOf("E" + risultatoDeduplica.getErrore()).getDescrizioneBreve() +
-                        PostelError.valueOf("E" + risultatoDeduplica.getErrore()).getDescrizioneLunga());
-                deduplicatesResponse.setError(PNADDR001);
+                log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}", correlationId, PostelError.fromCode(risultatoDeduplica.getSlaveOut().getnErroreNorm()).getDescription());
+                deduplicatesResponse.setError(OutputDeduplicatesError.PNADDR001.name());
                 return;
             }
             if(StringUtils.hasText(risultatoDeduplica.getErrore())) {
                 ExternalDeduplicatesError error = ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore());
                 switch (error) {
-                    case DED001 -> deduplicatesResponse.setResultDetails(RD01);
-                    case DED002 -> deduplicatesResponse.setResultDetails(RD02);
-                    case DED003 -> deduplicatesResponse.setResultDetails(RD03);
+                    case DED001 -> deduplicatesResponse.setResultDetails(OutputDeduplicatesResponseDetails.RD01.name());
+                    case DED002 -> deduplicatesResponse.setResultDetails(OutputDeduplicatesResponseDetails.RD02.name());
+                    case DED003 -> deduplicatesResponse.setResultDetails(OutputDeduplicatesResponseDetails.RD03.name());
                     default -> deduplicatesResponse.setResultDetails(null);
                 }
             }
@@ -97,7 +92,6 @@ public class AddressConverter {
         } else {
             throw new PnInternalException(ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL, ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL);
         }
-
     }
 
     @NotNull

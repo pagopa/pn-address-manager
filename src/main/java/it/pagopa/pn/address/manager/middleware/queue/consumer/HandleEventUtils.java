@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.middleware.queue.consumer;
 
 import org.springframework.messaging.MessageHeaders;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
 
 @lombok.CustomLog
 public class HandleEventUtils {

@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
@@ -293,11 +293,6 @@ public class AddressUtils {
             }
             return result;
         }).toList();
-    }
-
-    private String decodeErrorErroreNorm(Integer nErroreNorm) {
-        return String.valueOf(nErroreNorm);
-        //return PostelErrorNormEnum.getValueFromName(nErroreNorm);
     }
 
     private AnalogAddress toAnalogAddress(NormalizedAddress normalizedAddress) {
