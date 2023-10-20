@@ -15,6 +15,8 @@ import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
+import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.PNADDR002_MESSAGE;
+
 @Service
 @Slf4j
 
@@ -65,16 +67,16 @@ public class CapAndCountryService {
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
-                            log.error("Verify cap in whitelist result: {}", throwable.getMessage());
-                            item.setError(throwable.getMessage());
+                            log.warn("Verify cap in whitelist result: {}", throwable.getMessage());
+                            item.setError(PNADDR002_MESSAGE);
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         }).thenReturn(item);
             } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
-                            log.error("Verify country in whitelist result: {}", throwable.getMessage());
-                            item.setError(throwable.getMessage());
+                            log.warn("Verify country in whitelist result: {}", throwable.getMessage());
+                            item.setError(PNADDR002_MESSAGE);
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         }).thenReturn(item);
