@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+import static it.pagopa.pn.address.manager.constant.PostelError._000;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
@@ -287,7 +288,7 @@ public class AddressUtils {
 				log.info("Address with correlationId: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1],
 						normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
 				if (normalizedAddress.getFPostalizzabile() == 0) {
-					result.setError(decodeErrorErroreNorm(normalizedAddress));
+					result.setError(decodeErrorErroreNorm(normalizedAddress,index));
 				} else {
 					result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
 				}
@@ -296,17 +297,13 @@ public class AddressUtils {
 		}).toList();
 	}
 
-	private String decodeErrorErroreNorm (NormalizedAddress normalizedAddress) {
-		String[] index = normalizedAddress.getId().split("#");
-		PostelError error = PostelError.valueOf("E" + normalizedAddress.getNErroreNorm());
-		String errorAsString = error.getCodice() + ": "
-				+ error.getDescrizioneBreve() + " - "
-				+ error.getDescrizioneLunga();
-		if (index.length == 2) {
-			log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], errorAsString);
+	private String decodeErrorErroreNorm (NormalizedAddress normalizedAddress, String[] index) {
+		if(normalizedAddress.getNErroreNorm() != null) {
+			PostelError error = PostelError.fromCode(normalizedAddress.getNErroreNorm());
+				log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
 		}
-		//Todo: controllare se il correllationId formattato correttamente
-		return errorAsString;
+		log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], "Errore non presente");
+		return PNADDR001_MESSAGE;
 	}
 
 	private AnalogAddress toAnalogAddress (NormalizedAddress normalizedAddress) {

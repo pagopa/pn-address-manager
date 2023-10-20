@@ -45,13 +45,13 @@ public class AddressmanagerConstant {
 	public static final String PNADDR001 = "PNADDR001";
 	public static final String PNADDR002 = "PNADDR002";
 	public static final String PNADDR999 = "PNADDR999";
-	public static final String PNADDR001_MESSAGE = "Indirizzo dichiarato non postalizzabile dal normalizzatore";
-	public static final String PNADDR002_MESSAGE = "Indirizzo dichiarato postalizzabile dal normalizzatore ma con CAP/stato estero non abilitati";
-	public static final String PNADDR999_MESSAGE = "Errore del servizio di normalizzazione";
+	public static final String PNADDR001_MESSAGE = "Address declared non-mailable by normalizer";
+	public static final String PNADDR002_MESSAGE = "Address with not Enabled POSTAL CODE/ foreign STATE as destination";
+	public static final String PNADDR999_MESSAGE = "Normalization service error";
 	public static final String RD01 = "RD01";
 	public static final String RD02 = "RD02";
 	public static final String RD03 = "RD03";
-	public static final String RD01_MESSAGE = "Processo non completo per errori in fase di normalizzazione dell'indirzzo base";
-	public static final String RD02_MESSAGE = "Processo non completo per errori in fase di normalizzazione dell'indirzzo target";
-	public static final String RD03_MESSAGE = "Processo non completo per errori in fase di normalizzazione di entrammbi gli indirizzi";
+	public static final String RD01_MESSAGE = "Process not complete due to errors during the base address normalization phase";
+	public static final String RD02_MESSAGE = "Process not complete due to errors during the target address normalization phase";
+	public static final String RD03_MESSAGE = "Process not complete due to errors during both addresses normalization phases";
 }
