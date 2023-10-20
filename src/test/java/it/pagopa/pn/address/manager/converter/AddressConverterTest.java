@@ -12,7 +12,6 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.Deduplicates
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,9 +103,39 @@ class AddressConverterTest {
 
     }
     @Test
-    void testCreateDeduplicatesResponseFromDeduplicaResponse2() {
+    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed001() {
+        AddressOut addressOut= mock(AddressOut.class);
         DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
-        risultatoDeduplica.setErrore("Errore");
+        risultatoDeduplica.setSlaveOut(addressOut);
+        risultatoDeduplica.setMasterOut(addressOut);
+        risultatoDeduplica.setErrore("DED001");
+        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
+    }
+    @Test
+    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed002() {
+        AddressOut addressOut= mock(AddressOut.class);
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        risultatoDeduplica.setSlaveOut(addressOut);
+        risultatoDeduplica.setMasterOut(addressOut);
+        risultatoDeduplica.setErrore("DED002");
+        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
+    }
+    @Test
+    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed003() {
+        AddressOut addressOut= mock(AddressOut.class);
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        risultatoDeduplica.setSlaveOut(addressOut);
+        risultatoDeduplica.setMasterOut(addressOut);
+        risultatoDeduplica.setErrore("DED003");
+        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
+    }
+    @Test
+    void testCreateDeduplicatesResponseFromDeduplicaResponseError() {
+        AddressOut addressOut= mock(AddressOut.class);
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        risultatoDeduplica.setSlaveOut(addressOut);
+        risultatoDeduplica.setMasterOut(addressOut);
+        risultatoDeduplica.setErrore("DED400");
         assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
 

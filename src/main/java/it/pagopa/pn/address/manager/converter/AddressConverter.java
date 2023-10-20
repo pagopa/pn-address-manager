@@ -68,7 +68,7 @@ public class AddressConverter {
                     case DED001 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD01.name());
                     case DED002 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD02.name());
                     case DED003 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD03.name());
-                    default -> deduplicatesResponse.setResultDetails(null);
+                    default -> deduplicatesResponse.setResultDetails(null); //Todo: Possiamo mettere il caso 3 in default per non avere questo null impossibile?
                 }
             }
         }
