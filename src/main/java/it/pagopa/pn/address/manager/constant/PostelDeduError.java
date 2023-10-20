@@ -1,6 +1,9 @@
 package it.pagopa.pn.address.manager.constant;
 
-public enum ExternalDeduplicatesError {
+import lombok.Getter;
+
+@Getter
+public enum PostelDeduError {
     DED400("BAD REQUEST.Input errato"),
     DED401("UNAUTHORIZED. Credenziali vuote o errate"),
     DED404("NOT FOUND. Il servizio nel server Postel non è disponibile"),
@@ -14,11 +17,8 @@ public enum ExternalDeduplicatesError {
 
     private final String descrizione;
 
-    ExternalDeduplicatesError(String descrizione) {
+    PostelDeduError(String descrizione) {
         this.descrizione = descrizione;
     }
 
-    public String getDescrizione() {
-        return descrizione;
-    }
 }

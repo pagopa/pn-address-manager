@@ -55,17 +55,25 @@ public class AddressConverter {
         deduplicatesResponse.setCorrelationId(correlationId);
 
         if (risultatoDeduplica.getErrore() != null) {
-            log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}",
-                    deduplicatesResponse.getCorrelationId(),
-                    ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore()).getDescrizione());
+            log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}", deduplicatesResponse.getCorrelationId(), PostelDeduError.valueOf(risultatoDeduplica.getErrore()).getDescrizione());
+
             if (!risultatoDeduplica.getErrore().startsWith("DED00")) {
-                deduplicatesResponse.setError(OutputDeduplicatesError.PNADDR999.name());
+
+                deduplicatesResponse.setError(DeduplicatesError.PNADDR999.name());
                 return deduplicatesResponse;
+
+            } else {
+                PostelDeduError error = PostelDeduError.valueOf(risultatoDeduplica.getErrore());
+                switch (error) {
+                    case DED001 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD01.name());
+                    case DED002 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD02.name());
+                    case DED003 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD03.name());
+                    default -> deduplicatesResponse.setResultDetails(null);
+                }
             }
         }
 
         getAnalogAddress(risultatoDeduplica, deduplicatesResponse, correlationId);
-
         return deduplicatesResponse;
     }
 
@@ -73,18 +81,11 @@ public class AddressConverter {
         if (risultatoDeduplica.getSlaveOut() != null) {
             if (StringUtils.hasText(risultatoDeduplica.getSlaveOut().getfPostalizzabile())
                     && risultatoDeduplica.getSlaveOut().getfPostalizzabile().equalsIgnoreCase("0")) {
-                log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}", correlationId, PostelError.fromCode(risultatoDeduplica.getSlaveOut().getnErroreNorm()).getDescription());
-                deduplicatesResponse.setError(OutputDeduplicatesError.PNADDR001.name());
+                log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}",
+                        correlationId,
+                        PostelNErrorNorm.fromCode(risultatoDeduplica.getSlaveOut().getnErroreNorm()).getDescription());
+                deduplicatesResponse.setError(DeduplicatesError.PNADDR001.name());
                 return;
-            }
-            if(StringUtils.hasText(risultatoDeduplica.getErrore())) {
-                ExternalDeduplicatesError error = ExternalDeduplicatesError.valueOf(risultatoDeduplica.getErrore());
-                switch (error) {
-                    case DED001 -> deduplicatesResponse.setResultDetails(OutputDeduplicatesResponseDetails.RD01.name());
-                    case DED002 -> deduplicatesResponse.setResultDetails(OutputDeduplicatesResponseDetails.RD02.name());
-                    case DED003 -> deduplicatesResponse.setResultDetails(OutputDeduplicatesResponseDetails.RD03.name());
-                    default -> deduplicatesResponse.setResultDetails(null);
-                }
             }
             AnalogAddress analogAddress = getAddress(risultatoDeduplica.getSlaveOut());
             deduplicatesResponse.setNormalizedAddress(analogAddress);

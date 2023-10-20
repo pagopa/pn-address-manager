@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.constant.PostelError;
+import it.pagopa.pn.address.manager.constant.PostelNErrorNorm;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
@@ -28,8 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
-import static it.pagopa.pn.address.manager.constant.PostelError._000;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
@@ -299,7 +298,7 @@ public class AddressUtils {
 
 	private String decodeErrorErroreNorm (NormalizedAddress normalizedAddress, String[] index) {
 		if(normalizedAddress.getNErroreNorm() != null) {
-			PostelError error = PostelError.fromCode(normalizedAddress.getNErroreNorm());
+			PostelNErrorNorm error = PostelNErrorNorm.fromCode(normalizedAddress.getNErroreNorm());
 				log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
 		}
 		log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], "Errore non presente");

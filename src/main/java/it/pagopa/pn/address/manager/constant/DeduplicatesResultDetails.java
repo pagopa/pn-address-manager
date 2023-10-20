@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.constant;
 
-public enum OutputDeduplicatesResponseDetails {
+public enum DeduplicatesResultDetails {
     RD01,
     RD02,
     RD03
