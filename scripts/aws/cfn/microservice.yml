@@ -191,6 +191,16 @@ Parameters:
     Description: 'Physical address validation. Allowed Characters'
     Default: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
 
+  PhysicalAddressForeignContryValidationCharsValue:
+    Type: String
+    Description: 'Physical foreign address validation. Allowed Characters'
+    Default: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
+
+  ForeignCountryPatternValidationMode:
+    Type: String
+    Description: 'Mode of foreign country validation: "STANDARD|PASSTHROUGH|PATTERN"'
+    Default: STANDARD
+
 Resources:
 
   # PN-address-manager microservice
@@ -224,6 +234,8 @@ Resources:
         ContainerEnvEntry6: !Sub 'PN_ADDRESS_MANAGER_CAP_CSV=${CapCsv}'
         ContainerEnvEntry7: !Sub 'PN_ADDRESS_MANAGER_ENABLE_PATTERN_VALIDATION=${EnablePatternValidation}'
         ContainerEnvEntry8: !Sub 'PN_ADDRESS_MANAGER_VALIDATION_PATTERN=${PhysicalAddressValidationCharsValue}'
+        ContainerEnvEntry9: !Sub 'PN_ADDRESS_MANAGER_FOREIGN_VALIDATION_PATTERN=${PhysicalAddressForeignContryValidationCharsValue}'
+        ContainerEnvEntry10: !Sub 'PN_ADDRESS_MANAGER_FOREIGN_VALIDATION_MODE=${ForeignCountryPatternValidationMode}'
         MappedPaths: '/address-private/*'
         ECSClusterName: !Ref ECSClusterName
         Subnets: !Ref SubnetsIds

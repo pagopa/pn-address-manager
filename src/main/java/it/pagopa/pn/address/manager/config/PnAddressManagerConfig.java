@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.config;
 
+import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
 import lombok.Data;
 import lombok.Getter;
@@ -15,6 +16,8 @@ import org.springframework.context.annotation.Import;
 public class PnAddressManagerConfig {
 
     private String validationPattern;
+    private String foreignValidationPattern;
+    private ForeignValidationMode foreignValidationMode;
     private Boolean enableValidation;
     private Boolean flagCsv;
 }
