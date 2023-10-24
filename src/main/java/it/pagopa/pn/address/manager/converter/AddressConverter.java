@@ -1,12 +1,13 @@
 package it.pagopa.pn.address.manager.converter;
 
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.*;
-import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.constant.*;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -17,6 +18,7 @@ import java.time.ZoneOffset;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
+@Slf4j
 public class AddressConverter {
 
     public DeduplicaRequest createDeduplicaRequestFromDeduplicatesRequest(DeduplicatesRequest deduplicatesRequest) {
@@ -53,30 +55,36 @@ public class AddressConverter {
         deduplicatesResponse.setCorrelationId(correlationId);
 
         if (risultatoDeduplica.getErrore() != null) {
-            deduplicatesResponse.setError(decodeErrorDedu(risultatoDeduplica.getErrore()));
-        } else {
-            getAnalogAddress(risultatoDeduplica, deduplicatesResponse);
+            log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}", deduplicatesResponse.getCorrelationId(), PostelDeduError.valueOf(risultatoDeduplica.getErrore()).getDescrizione());
+
+            if (!risultatoDeduplica.getErrore().startsWith("DED00")) {
+
+                deduplicatesResponse.setError(DeduplicatesError.PNADDR999.name());
+                return deduplicatesResponse;
+
+            } else {
+                PostelDeduError error = PostelDeduError.valueOf(risultatoDeduplica.getErrore());
+                switch (error) {
+                    case DED001 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD01.name());
+                    case DED002 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD02.name());
+                    case DED003 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD03.name());
+                    default -> deduplicatesResponse.setResultDetails(null); //Todo: Possiamo mettere il caso 3 in default per non avere questo null impossibile?
+                }
+            }
         }
 
+        getAnalogAddress(risultatoDeduplica, deduplicatesResponse, correlationId);
         return deduplicatesResponse;
     }
 
-    private static String decodeErroreNorm(Integer error) {
-        return String.valueOf(error);
-        //return PostelErrorNormEnum.getValueFromName(error);
-    }
-
-    private static String decodeErrorDedu(String erroreDedu) {
-        return erroreDedu;
-        //return PostelErrorEnum.valueOf(erroreDedu).getValue();
-    }
-
-    private static void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse) {
-
+    private static void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse, String correlationId) {
         if (risultatoDeduplica.getSlaveOut() != null) {
             if (StringUtils.hasText(risultatoDeduplica.getSlaveOut().getfPostalizzabile())
                     && risultatoDeduplica.getSlaveOut().getfPostalizzabile().equalsIgnoreCase("0")) {
-                deduplicatesResponse.setError(decodeErroreNorm(risultatoDeduplica.getSlaveOut().getnErroreNorm()));
+                log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}",
+                        correlationId,
+                        PostelNErrorNorm.fromCode(risultatoDeduplica.getSlaveOut().getnErroreNorm()).getDescription());
+                deduplicatesResponse.setError(DeduplicatesError.PNADDR001.name());
                 return;
             }
             AnalogAddress analogAddress = getAddress(risultatoDeduplica.getSlaveOut());

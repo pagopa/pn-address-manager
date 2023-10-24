@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.converter;
 
-import it.pagopa.pn.address.manager.constant.AddressmanagerConstant;
+import it.pagopa.pn.address.manager.constant.AddressManagerConstant;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileDownloadInfoDto;
@@ -41,8 +41,8 @@ class NormalizzatoreConverterTest {
         FileCreationRequestDto actualPreLoadRequestToFileCreationRequestDtoResult = normalizzatoreConverter
                 .preLoadRequestToFileCreationRequestDto(new PreLoadRequest());
         assertNull(actualPreLoadRequestToFileCreationRequestDtoResult.getContentType());
-        assertEquals(AddressmanagerConstant.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
-        assertEquals(AddressmanagerConstant.PN_ADDRESSES_NORMALIZED,
+        assertEquals(AddressManagerConstant.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
+        assertEquals(AddressManagerConstant.PN_ADDRESSES_NORMALIZED,
                 actualPreLoadRequestToFileCreationRequestDtoResult.getDocumentType());
     }
 
@@ -56,8 +56,8 @@ class NormalizzatoreConverterTest {
         FileCreationRequestDto actualPreLoadRequestToFileCreationRequestDtoResult = normalizzatoreConverter
                 .preLoadRequestToFileCreationRequestDto(preLoadRequest);
         assertEquals("text/plain", actualPreLoadRequestToFileCreationRequestDtoResult.getContentType());
-        assertEquals(AddressmanagerConstant.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
-        assertEquals(AddressmanagerConstant.PN_ADDRESSES_NORMALIZED,
+        assertEquals(AddressManagerConstant.SAVED, actualPreLoadRequestToFileCreationRequestDtoResult.getStatus());
+        assertEquals(AddressManagerConstant.PN_ADDRESSES_NORMALIZED,
                 actualPreLoadRequestToFileCreationRequestDtoResult.getDocumentType());
         verify(preLoadRequest).getContentType();
     }

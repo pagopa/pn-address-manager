@@ -22,6 +22,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -266,7 +268,41 @@ class AddressUtilsTest {
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
         assertNotNull(addressUtils.toResultItem(normalizedAddresses));
-
+    }
+    @Test
+    void toResultItemNotPostalizzabile(){
+        NormalizedAddress normalizedAddress = getNormalizedAddressNotPostalizzabile(42);
+        NormalizedAddress normalizedAddress1 = getNormalizedAddressNotPostalizzabile(0);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
+        normalizedAddresses.add(normalizedAddress);
+        normalizedAddresses.add(normalizedAddress1);
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses));
+    }
+    @NotNull
+    private static NormalizedAddress getNormalizedAddressNotPostalizzabile(int nRisultatoNorm) {
+        NormalizedAddress normalizedAddress = new NormalizedAddress();
+        normalizedAddress.setId("1#1");
+        normalizedAddress.setNRisultatoNorm(nRisultatoNorm);
+        normalizedAddress.setNErroreNorm(0);
+        normalizedAddress.setSSiglaProv("MI");
+        normalizedAddress.setFPostalizzabile(0);
+        normalizedAddress.setSStatoUff("Lombardia");
+        normalizedAddress.setSStatoAbb("LO");
+        normalizedAddress.setSStatoSpedizione("Lombardy");
+        normalizedAddress.setSComuneUff("Milano");
+        normalizedAddress.setSComuneAbb("Milan");
+        normalizedAddress.setSComuneSpedizione("Milan City");
+        normalizedAddress.setSFrazioneUff("Frazione Ufficio");
+        normalizedAddress.setSFrazioneAbb("Frazione Abbreviata");
+        normalizedAddress.setSFrazioneSpedizione("Frazione Spedizione");
+        normalizedAddress.setSCivicoAltro("Altro Civico");
+        normalizedAddress.setSCap("20100");
+        normalizedAddress.setSPresso("Presso Qualcuno");
+        normalizedAddress.setSViaCompletaUff("Via Ufficio Completa");
+        normalizedAddress.setSViaCompletaAbb("Via Abbreviata Completa");
+        normalizedAddress.setSViaCompletaSpedizione("Via Spedizione Completa");
+        return normalizedAddress;
     }
 
     @NotNull

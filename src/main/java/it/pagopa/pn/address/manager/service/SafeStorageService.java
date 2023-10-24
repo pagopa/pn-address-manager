@@ -12,8 +12,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.ADDRESS_NORMALIZER_ASYNC;
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.SAFE_STORAGE_URL_PREFIX;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.SAFE_STORAGE_URL_PREFIX;
 
 @Service
 @Slf4j

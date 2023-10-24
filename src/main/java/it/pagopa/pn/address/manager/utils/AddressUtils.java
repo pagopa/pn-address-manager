@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.constant.PostelNErrorNorm;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
@@ -27,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
@@ -281,12 +282,12 @@ public class AddressUtils {
         return normalizedAddresses.stream().map(normalizedAddress -> {
             NormalizeResult result = new NormalizeResult();
             String[] index = normalizedAddress.getId().split("#");
-            if(index.length == 2) {
+            if (index.length == 2) {
                 result.setId(index[1]);
                 log.info("Address with correlationId: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1],
                         normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
                 if (normalizedAddress.getFPostalizzabile() == 0) {
-                    result.setError(decodeErrorErroreNorm(normalizedAddress.getNErroreNorm()));
+                    result.setError(decodeErrorErroreNorm(normalizedAddress, index));
                 } else {
                     result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
                 }
@@ -295,9 +296,13 @@ public class AddressUtils {
         }).toList();
     }
 
-    private String decodeErrorErroreNorm(Integer nErroreNorm) {
-        return String.valueOf(nErroreNorm);
-        //return PostelErrorNormEnum.getValueFromName(nErroreNorm);
+    private String decodeErrorErroreNorm(NormalizedAddress normalizedAddress, String[] index) {
+        if (normalizedAddress.getNErroreNorm() != null) {
+            PostelNErrorNorm error = PostelNErrorNorm.fromCode(normalizedAddress.getNErroreNorm());
+            log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
+        } else
+            log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], "Errore non presente");
+        return PNADDR001_MESSAGE;
     }
 
     private AnalogAddress toAnalogAddress(NormalizedAddress normalizedAddress) {

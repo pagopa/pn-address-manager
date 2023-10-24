@@ -9,7 +9,6 @@ import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -28,7 +27,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 class RecoveryServiceTest {
-
     RecoveryService recoveryService;
 
     @MockBean AddressBatchRequestRepository addressBatchRequestRepository;
@@ -65,10 +63,22 @@ class RecoveryServiceTest {
     }
 
     @Test
-    @Disabled
     void recoveryBatchSendToEventbridge(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setQueryMaxSize(100);
+        batchRequest.setLockAtMost(100);
+        batchRequest.setLockAtLeast(100);
+        batchRequest.setRecoveryAfter(3);
+        batchRequest.setMaxRetry(3);
+        batchRequest.setRecoveryDelay(3);
+        batchRequest.setDelay(3);
+        batchRequest.setEventBridgeRecoveryDelay(3);
+        batchRequest.setTimeToBreak(3);
+        batchRequest.setTimeToBreak(3);
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
+        normalizer.setMaxCsvSize(100);
+        normalizer.setBatchRequest(batchRequest);
         pnAddressManagerConfig.setNormalizer(normalizer);
         recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, postelBatchRepository);
 
@@ -86,10 +96,57 @@ class RecoveryServiceTest {
         when(addressBatchRequestRepository.setNewReservationIdToBatchRequest(any())).thenReturn(Mono.just(batchRequest1));
         when(addressBatchRequestRepository.setNewReservationIdToBatchRequest(any())).thenReturn(Mono.just(batchRequest2));
 
+
         when(sqsService.sendToDlqQueue(any())).thenReturn(Mono.empty());
         PutEventsResult putEventsResult = new PutEventsResult();
         when(eventService.sendEvent(anyString())).thenReturn(Mono.just(putEventsResult));
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchSendToEventbridge());
+    }
+    @Test
+    void testCleanStoppedRequest () {
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setQueryMaxSize(100);
+        batchRequest.setLockAtMost(100);
+        batchRequest.setLockAtLeast(100);
+        batchRequest.setRecoveryAfter(3);
+        batchRequest.setMaxRetry(3);
+        batchRequest.setRecoveryDelay(3);
+        batchRequest.setDelay(3);
+        batchRequest.setEventBridgeRecoveryDelay(3);
+        batchRequest.setTimeToBreak(3);
+        batchRequest.setTimeToBreak(3);
+        PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
+        normalizer.setMaxCsvSize(100);
+        normalizer.setBatchRequest(batchRequest);
+        pnAddressManagerConfig.setNormalizer(normalizer);
+        recoveryService = new RecoveryService(addressBatchRequestRepository,
+                addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, postelBatchRepository);
+        BatchRequest batchRequest1= getBatchRequest();
+        PostelBatch postelBatch1 = new PostelBatch();
+        postelBatch1.setBatchId("id1");
+        PostelBatch postelBatch2 = new PostelBatch();
+        postelBatch2.setBatchId("id2");
+        Page<PostelBatch> page1 = Page.create(List.of(postelBatch1), Map.of("key", AttributeValue.builder().s("value").build()));
+        Page<PostelBatch> page2 = Page.create(List.of(postelBatch2));
+        when(postelBatchRepository.getPostelBatchToClean())
+                .thenReturn(Mono.just(page1))
+                .thenReturn(Mono.just(page2))
+                .thenThrow(RuntimeException.class);
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyString(), any()))
+                .thenReturn(Mono.just(List.of(batchRequest1)));
+        when(addressBatchRequestService.incrementAndCheckRetry(any(),any(),anyString()))
+                .thenReturn(Mono.empty());
+        when(addressBatchRequestRepository.update(any()))
+                .thenReturn(Mono.just(batchRequest1));
+        when(postelBatchRepository.deleteItem(anyString()))
+                .thenReturn(Mono.empty());
+        when(addressBatchRequestRepository.update(any()))
+                .thenReturn(Mono.just(batchRequest1));
+        when(postelBatchRepository.deleteItem(anyString()))
+                .thenReturn(Mono.empty());
+        Assertions.assertDoesNotThrow(() -> recoveryService.cleanStoppedRequest());
+
     }
 
     @NotNull

@@ -7,7 +7,7 @@ import it.pagopa.pn.address.manager.entity.PostelBatch;
 import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.api.DefaultApi;
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.POSTEL;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.POSTEL;
 
 
 @CustomLog

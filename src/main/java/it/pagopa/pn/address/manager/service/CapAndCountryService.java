@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.DeduplicatesError;
 import it.pagopa.pn.address.manager.entity.CapModel;
 import it.pagopa.pn.address.manager.entity.CountryModel;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
@@ -8,15 +9,16 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRes
 import it.pagopa.pn.address.manager.repository.CapRepository;
 import it.pagopa.pn.address.manager.repository.CountryRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
 
-@Service
-@Slf4j
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.PNADDR002_MESSAGE;
 
+@Component
+@Slf4j
 public class CapAndCountryService {
 
     private final CapRepository capRepository;
@@ -37,8 +39,8 @@ public class CapAndCountryService {
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
-                            log.error("Verify cap in whitelist result: {}", throwable.getMessage());
-                            item.setError(throwable.getMessage());
+                            log.warn("Error during verify CAP deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
+                            item.setError(DeduplicatesError.PNADDR002.name());
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         })
@@ -46,8 +48,8 @@ public class CapAndCountryService {
             } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
-                            log.error("Verify country in whitelist result: {}", throwable.getMessage());
-                            item.setError(throwable.getMessage());
+                            log.warn("Error during verify country deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
+                            item.setError(DeduplicatesError.PNADDR002.name());
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         })
@@ -64,16 +66,16 @@ public class CapAndCountryService {
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
-                            log.error("Verify cap in whitelist result: {}", throwable.getMessage());
-                            item.setError(throwable.getMessage());
+                            log.warn("Verify cap in whitelist result: {}", throwable.getMessage());
+                            item.setError(PNADDR002_MESSAGE);
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         }).thenReturn(item);
             } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
-                            log.error("Verify country in whitelist result: {}", throwable.getMessage());
-                            item.setError(throwable.getMessage());
+                            log.warn("Verify country in whitelist result: {}", throwable.getMessage());
+                            item.setError(PNADDR002_MESSAGE);
                             item.setNormalizedAddress(null);
                             return Mono.empty();
                         }).thenReturn(item);

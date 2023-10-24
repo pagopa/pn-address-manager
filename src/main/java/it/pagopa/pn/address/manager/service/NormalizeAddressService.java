@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 

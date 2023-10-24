@@ -23,6 +23,10 @@ class DeduplicaClientTest {
     void testDeduplica() {
         PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
         PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
+        pnAddressManagerConfig.setPostelCxId("postelCxId");
+        pnAddressManagerConfig.setPagoPaCxId("pagoPaCxId");
+        pnAddressManagerConfig.setNormalizer(normalizer);
+        pnAddressManagerConfig.getNormalizer().setPostelAuthKey("postelAuthKey");
         pnAddressManagerConfig.setNormalizer(normalizer);
         pnAddressManagerConfig.setDeduplicaBasePath("http://localhost:8080");
         ExchangeFilterFunction exchangeFilterFunction = mock(ExchangeFilterFunction.class);

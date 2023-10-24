@@ -12,7 +12,6 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.Deduplicates
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -103,30 +102,41 @@ class AddressConverterTest {
         assertThrows(PnInternalException.class, () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
 
     }
-
-    /**
-     * Method under test: {@link AddressConverter#createDeduplicatesResponseFromDeduplicaResponse(DeduplicaResponse, String)}
-     */
     @Test
-    @Disabled
-    void testCreateDeduplicatesResponseFromDeduplicaResponse2() {
+    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed001() {
+        AddressOut addressOut= mock(AddressOut.class);
         DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
-        risultatoDeduplica.errore("NOR400");
-        assertThrows(PnInternalAddressManagerException.class,
-                () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
+        risultatoDeduplica.setSlaveOut(addressOut);
+        risultatoDeduplica.setMasterOut(addressOut);
+        risultatoDeduplica.setErrore("DED001");
+        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
-
-    /**
-     * Method under test: {@link AddressConverter#createDeduplicatesResponseFromDeduplicaResponse(DeduplicaResponse, String)}
-     */
     @Test
-    @Disabled
-    void testCreateDeduplicatesResponseFromDeduplicaResponse3() {
-        DeduplicaResponse risultatoDeduplica = mock(DeduplicaResponse.class);
-        when(risultatoDeduplica.getErrore()).thenReturn("NOR400");
-        assertThrows(PnInternalAddressManagerException.class,
-                () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
-        verify(risultatoDeduplica, atLeast(1)).getErrore();
+    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed002() {
+        AddressOut addressOut= mock(AddressOut.class);
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        risultatoDeduplica.setSlaveOut(addressOut);
+        risultatoDeduplica.setMasterOut(addressOut);
+        risultatoDeduplica.setErrore("DED002");
+        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
+    }
+    @Test
+    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed003() {
+        AddressOut addressOut= mock(AddressOut.class);
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        risultatoDeduplica.setSlaveOut(addressOut);
+        risultatoDeduplica.setMasterOut(addressOut);
+        risultatoDeduplica.setErrore("DED003");
+        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
+    }
+    @Test
+    void testCreateDeduplicatesResponseFromDeduplicaResponseError() {
+        AddressOut addressOut= mock(AddressOut.class);
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        risultatoDeduplica.setSlaveOut(addressOut);
+        risultatoDeduplica.setMasterOut(addressOut);
+        risultatoDeduplica.setErrore("DED400");
+        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
 
     /**
@@ -153,7 +163,17 @@ class AddressConverterTest {
         assertNull(normalizedAddress.getPr());
         verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
         verify(risultatoDeduplica).getRisultatoDedu();
-        verify(risultatoDeduplica).getErrore();
+    }
+    @Test
+    void testCreateDeduplicatesResponseFromDeduplicaResponseGetAnalogAddressError(){
+        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
+        DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
+        deduplicatesResponse.setCorrelationId("42");
+        AddressOut addressOut = new AddressOut();
+        addressOut.setfPostalizzabile(String.valueOf(0));
+        risultatoDeduplica.setSlaveOut(addressOut);
+        deduplicatesResponse.setError("Errore");
+        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
 
     /**
@@ -189,7 +209,6 @@ class AddressConverterTest {
         assertEquals("Gets Sigla Prov", normalizedAddress.getPr());
         verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
         verify(risultatoDeduplica).getRisultatoDedu();
-        verify(risultatoDeduplica).getErrore();
         verify(addressOut, atLeast(1)).getfPostalizzabile();
         verify(addressOut).getsCap();
         verify(addressOut).getsCivicoAltro();
@@ -198,50 +217,6 @@ class AddressConverterTest {
         verify(addressOut).getsSiglaProv();
         verify(addressOut).getsStatoSpedizione();
         verify(addressOut).getsViaCompletaSpedizione();
-    }
-
-    /**
-     * Method under test: {@link AddressConverter#createDeduplicatesResponseFromDeduplicaResponse(DeduplicaResponse, String)}
-     */
-    @Test
-    @Disabled
-    void testCreateDeduplicatesResponseFromDeduplicaResponse6() {
-        AddressOut addressOut = mock(AddressOut.class);
-        when(addressOut.getnErroreNorm()).thenReturn(-1);
-        when(addressOut.getfPostalizzabile()).thenReturn("0");
-        DeduplicaResponse risultatoDeduplica = mock(DeduplicaResponse.class);
-        when(risultatoDeduplica.getSlaveOut()).thenReturn(addressOut);
-        when(risultatoDeduplica.getErrore()).thenReturn(null);
-        DeduplicatesResponse actualCreateDeduplicatesResponseFromDeduplicaResponseResult = addressConverter
-                .createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42");
-        assertEquals("42", actualCreateDeduplicatesResponseFromDeduplicaResponseResult.getCorrelationId());
-        assertEquals("TODO", actualCreateDeduplicatesResponseFromDeduplicaResponseResult.getError());
-        verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
-        verify(risultatoDeduplica).getErrore();
-        verify(addressOut).getnErroreNorm();
-        verify(addressOut, atLeast(1)).getfPostalizzabile();
-    }
-
-    /**
-     * Method under test: {@link AddressConverter#createDeduplicatesResponseFromDeduplicaResponse(DeduplicaResponse, String)}
-     */
-    @Test
-    @Disabled
-    void testCreateDeduplicatesResponseFromDeduplicaResponse7() {
-        AddressOut addressOut = mock(AddressOut.class);
-        when(addressOut.getnErroreNorm()).thenReturn(null);
-        when(addressOut.getfPostalizzabile()).thenReturn("0");
-        DeduplicaResponse risultatoDeduplica = mock(DeduplicaResponse.class);
-        when(risultatoDeduplica.getSlaveOut()).thenReturn(addressOut);
-        when(risultatoDeduplica.getErrore()).thenReturn(null);
-        DeduplicatesResponse actualCreateDeduplicatesResponseFromDeduplicaResponseResult = addressConverter
-                .createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42");
-        assertEquals("42", actualCreateDeduplicatesResponseFromDeduplicaResponseResult.getCorrelationId());
-        assertNull(actualCreateDeduplicatesResponseFromDeduplicaResponseResult.getError());
-        verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
-        verify(risultatoDeduplica).getErrore();
-        verify(addressOut).getnErroreNorm();
-        verify(addressOut, atLeast(1)).getfPostalizzabile();
     }
 
     /**

@@ -23,7 +23,7 @@ import reactor.core.publisher.Mono;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static it.pagopa.pn.address.manager.constant.AddressmanagerConstant.*;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.WORKED;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
