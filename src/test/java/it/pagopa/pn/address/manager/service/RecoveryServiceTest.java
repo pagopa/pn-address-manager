@@ -74,8 +74,6 @@ class RecoveryServiceTest {
         batchRequest.setRecoveryDelay(3);
         batchRequest.setDelay(3);
         batchRequest.setEventBridgeRecoveryDelay(3);
-        batchRequest.setTimeToBreak(3);
-        batchRequest.setTimeToBreak(3);
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
         normalizer.setMaxCsvSize(100);
         normalizer.setBatchRequest(batchRequest);
@@ -114,8 +112,6 @@ class RecoveryServiceTest {
         batchRequest.setRecoveryDelay(3);
         batchRequest.setDelay(3);
         batchRequest.setEventBridgeRecoveryDelay(3);
-        batchRequest.setTimeToBreak(3);
-        batchRequest.setTimeToBreak(3);
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
         normalizer.setMaxCsvSize(100);
         normalizer.setBatchRequest(batchRequest);
