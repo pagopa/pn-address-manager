@@ -212,8 +212,14 @@ class AddressBatchRequestServiceTest {
 
     @Test
     void updateBatchRequest1(){
+        PnAddressManagerConfig config = new PnAddressManagerConfig();
+        PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setMaxRetry(3);
+        normalizer.setBatchRequest(batchRequest);
+        config.setNormalizer(normalizer);
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
-                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock);
+                postelClient,safeStorageService,config,eventService, csvService, addressUtils, clock);
         BatchRequest batchRequest1 = getBatchRequest();
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
         when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
