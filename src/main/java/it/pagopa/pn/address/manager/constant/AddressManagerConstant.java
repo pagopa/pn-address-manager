@@ -20,4 +20,5 @@ public class AddressManagerConstant {
 	public static final String SEMANTIC_ERROR_CODE = "400.02";
 	public static final String PNADDR001_MESSAGE = "Address declared non-mailable by normalizer";
 	public static final String PNADDR002_MESSAGE = "Address with not Enabled postalCode / foreignState as destination";
+	public static final String RETRY_SUFFIX = ".RETRY_";
 }
