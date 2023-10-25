@@ -321,15 +321,10 @@ public class AddressBatchRequestService {
 
     public Mono<Void> updateBatchRequest(String batchId, BatchStatus status) {
         return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batchId, status)
-                .flatMapIterable(batchRequests -> batchRequests)
-                .flatMap(batchRequest -> {
-                    batchRequest.setStatus(ERROR.getValue());
-                    return addressBatchRequestRepository.update(batchRequest);
-                })
-                .doOnNext(request -> log.debug("Normalize Address - correlationId {} - set status in {}", request.getCorrelationId(), request.getStatus()))
-                .flatMap(this::sendToEventBridgeOrInDlq)
-                .collectList()
-                .then();
+                .flatMap(batchRequests -> {
+                    batchRequests.forEach(batchRequest -> batchRequest.setStatus(TAKEN_CHARGE.getValue()));
+                    return incrementAndCheckRetry(batchRequests, null, batchId).then();
+                });
     }
 
     public Mono<Void> updateBatchRequest(List<BatchRequest> batchRequests, String batchId) {
