@@ -10,6 +10,7 @@ import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -59,6 +60,8 @@ public class RecoveryService {
     }
 
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.recovery-delay}")
+    @SchedulerLock(name = "batchRequestRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
     public void recoveryBatchRequest() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchRequest start");
         addressBatchRequestRepository.getBatchRequestToRecovery()
@@ -77,12 +80,13 @@ public class RecoveryService {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchRequest end");
     }
 
-   @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.postel.recovery-delay}")
+    @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.postel.recovery-delay}")
+    @SchedulerLock(name = "postelBatch", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
     public void recoveryPostelActivation() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
         postelBatchRepository.getPostelBatchToRecover()
                 .flatMapIterable(postelBatch -> postelBatch)
-                .doOnNext(postelBatch -> postelBatch.setStatus(BatchStatus.NOT_WORKED.getValue()))
                 .flatMap(postelBatch -> postelBatchRepository.resetPostelBatchForRecovery(postelBatch)
                         .doOnError(ConditionalCheckFailedException.class,
                                 e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip recovery  batchId {}", postelBatch.getBatchId(), e))
@@ -96,6 +100,8 @@ public class RecoveryService {
 
 
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.eventbridge-recovery-delay}")
+    @SchedulerLock(name = "sendToEventBridgeRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
     public void recoveryBatchSendToEventbridge() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchSendToEventBridge start");
         Page<BatchRequest> page;
@@ -119,6 +125,8 @@ public class RecoveryService {
     }
 
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-clean-request}")
+    @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
     public void cleanStoppedRequest() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
         Page<PostelBatch> page = postelBatchRepository.getPostelBatchToClean()

@@ -32,6 +32,6 @@
     "PnAddressManagerNormalizerPostelTtl": "1209600",
     "PnAddressManagerNormalizerBatchRequestLockAtMost": "120000",
     "PnAddressManagerNormalizerBatchRequestLockAtLeast": "1000",
-    "PnAddressManagerNormalizerBatchRequestTimeToBreak": "10000"
+    "PnAddressManagerNormalizerBatchRecoveryLockAtMost": "120000"
   }
 }

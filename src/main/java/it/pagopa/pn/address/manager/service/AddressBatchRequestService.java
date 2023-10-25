@@ -300,6 +300,7 @@ public class AddressBatchRequestService {
                 .doOnNext(r -> {
                     int nextRetry = (r.getRetry() != null) ? (r.getRetry() + 1) : 1;
                     r.setRetry(nextRetry);
+                    r.setStatus(TAKEN_CHARGE.getValue());
                     r.setLastReserved(now);
                     if (nextRetry >= pnAddressManagerConfig.getNormalizer().getPostel().getMaxRetry()
                             || (throwable instanceof PnInternalAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())
