@@ -8,6 +8,7 @@ import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.api.DefaultApi;
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.POSTEL;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.RETRY_SUFFIX;
 
 
 @CustomLog
@@ -26,7 +27,7 @@ public class NormalizzatoreClient {
 		log.logInvokingExternalService(POSTEL, "Calling Activate Postel");
 
 		NormalizzazioneRequest activatePostelRequest = new NormalizzazioneRequest();
-		activatePostelRequest.setRequestId(postelBatch.getBatchId());
+		activatePostelRequest.setRequestId(postelBatch.getBatchId() + RETRY_SUFFIX + postelBatch.getRetry());
 		activatePostelRequest.setUri(postelBatch.getFileKey());
 		activatePostelRequest.setSha256(postelBatch.getSha256());
 		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)

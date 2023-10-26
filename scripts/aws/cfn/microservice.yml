@@ -333,9 +333,9 @@ Parameters:
     Description: 'minimum amount of time for which the lock should be kept'
     Default: '1000'
 
-  PnAddressManagerNormalizerBatchRequestTimeToBreak:
+  PnAddressManagerNormalizerBatchRecoveryLockAtMost:
     Type: String
-    Default: '1000'
+    Default: '120000'
 
   PnAddressManagerBatchCleanRequestDelay:
     Type: Number
@@ -415,7 +415,7 @@ Resources:
         ContainerEnvEntry22: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_DELAY=${PnAddressManagerNormalizerBatchRequestDelay}'
         ContainerEnvEntry23: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_LOCKATMOST=${PnAddressManagerNormalizerBatchRequestLockAtMost}'
         ContainerEnvEntry24: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_LOCKATLEAST=${PnAddressManagerNormalizerBatchRequestLockAtLeast}'
-        ContainerEnvEntry25: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_TIMETOBREAK=${PnAddressManagerNormalizerBatchRequestTimeToBreak}'
+        ContainerEnvEntry25: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHRECOVERY_LOCKATMOST=${PnAddressManagerNormalizerBatchRecoveryLockAtMost}'
         ContainerEnvEntry26: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYDELAY=${PnAddressManagerNormalizerBatchRequestRecoveryDelay}'
         ContainerEnvEntry27: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_RECOVERYAFTER=${PnAddressManagerNormalizerBatchRequestRecoveryAfter}'
         ContainerEnvEntry28: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHREQUEST_MAXRETRY=${PnAddressManagerNormalizerBatchRequestMaxRetry}'

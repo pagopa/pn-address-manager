@@ -60,7 +60,6 @@ public class PnAddressManagerConfig {
         private Integer eventBridgeRecoveryDelay;
         private Integer lockAtMost;
         private Integer lockAtLeast;
-        private Integer timeToBreak;
     }
 
     @Data

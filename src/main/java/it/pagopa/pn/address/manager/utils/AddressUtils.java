@@ -325,9 +325,9 @@ public class AddressUtils {
         return "noCorrelationId";
     }
 
-    public PostelCallbackSqsDto getPostelCallbackSqsDto(NormalizerCallbackRequest callbackRequest, String url) {
+    public PostelCallbackSqsDto getPostelCallbackSqsDto(NormalizerCallbackRequest callbackRequest, String url, String batchId) {
         return PostelCallbackSqsDto.builder()
-                .requestId(callbackRequest.getRequestId())
+                .requestId(batchId)
                 .outputFileKey(callbackRequest.getUri())
                 .outputFileUrl(url)
                 .error(callbackRequest.getError())

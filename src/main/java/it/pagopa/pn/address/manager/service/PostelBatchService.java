@@ -78,8 +78,8 @@ public class PostelBatchService {
         return batchRequest;
     }
 
-    public Mono<PostelBatch> findPostelBatch(String fileKey) {
-        return postelBatchRepository.findByBatchId(fileKey);
+    public Mono<PostelBatch> findPostelBatch(String requestId) {
+        return postelBatchRepository.findByBatchId(requestId);
     }
 
     private String verifyPostelAddressResponse(List<NormalizedAddress> normalizedAddresses, String correlationId) {

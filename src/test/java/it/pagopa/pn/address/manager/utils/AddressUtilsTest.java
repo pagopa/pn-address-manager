@@ -163,7 +163,7 @@ class AddressUtilsTest {
     @Test
     void getPostelCallbackSqsDto(){
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.getPostelCallbackSqsDto(new NormalizerCallbackRequest(), "url"));
+        assertNotNull(addressUtils.getPostelCallbackSqsDto(new NormalizerCallbackRequest(), "url", "batchId"));
     }
 
     @Test
