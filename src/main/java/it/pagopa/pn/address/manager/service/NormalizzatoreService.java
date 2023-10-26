@@ -80,7 +80,7 @@ public class NormalizzatoreService {
                     return normalizzatoreConverter.fileDownloadResponseDtoToFileDownloadResponse(fileCreationResponseDto, preLoadRequest.getPreloadIdx());
                 })
                 .onErrorResume(WebClientResponseException.class, error -> {
-                    log.error("Exception in call createFile - error={}", error);
+                    log.error("Exception in call createFile - error={}", error.getMessage(), error);
                     if (error.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
                         log.error(ADDRESS_NORMALIZER_ASYNC + "createFile error:{}", error.getMessage(), error);
                         return Mono.error(new PnAddressManagerException(error.getMessage(), HttpStatus.BAD_REQUEST.value(),
@@ -160,7 +160,7 @@ public class NormalizzatoreService {
 
     private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, PostelBatch postelBatch, String url) {
         LocalDateTime now = LocalDateTime.now();
-        return sqsService.pushToInputQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, url), AM_POSTEL_CALLBACK_EVENTTYPE)
+        return sqsService.pushToInputQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, url, postelBatch.getBatchId()), AM_POSTEL_CALLBACK_EVENTTYPE)
                 .map(sendMessageResponse -> {
                     postelBatch.setStatus(WORKED.name());
                     postelBatch.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getTtl()).toEpochSecond(ZoneOffset.UTC));

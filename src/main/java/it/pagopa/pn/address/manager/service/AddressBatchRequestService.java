@@ -109,7 +109,7 @@ public class AddressBatchRequestService {
         String batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
 
         Instant start = clock.instant();
-        log.debug(ADDRESS_NORMALIZER_ASYNC + "- batchPecRequest batchId: [{}] start from first {}", batchId, start);
+        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest batchId: [{}] start from first {}", batchId, start);
 
         Page<BatchRequest> page;
         Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
@@ -129,7 +129,7 @@ public class AddressBatchRequestService {
                 log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request available");
             }
             Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
-            log.debug(ADDRESS_NORMALIZER_ASYNC + "- batchId: [{}] end query. Time spent is {} millis", batchId, timeSpent.toMillis());
+            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end query. Time spent is {} millis", batchId, timeSpent.toMillis());
 
         } while (!CollectionUtils.isEmpty(lastEvaluatedKey) || csvCount >= pnAddressManagerConfig.getNormalizer().getMaxCsvSize());
 
