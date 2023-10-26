@@ -310,7 +310,7 @@ public class AddressBatchRequestService {
                     r.setLastReserved(now);
                     if (nextRetry >= pnAddressManagerConfig.getNormalizer().getPostel().getMaxRetry()
                             || (throwable instanceof PnInternalAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())
-                            || throwable instanceof PnPostelException ex && ex.getError().equals("NOR400")) {
+                            || throwable instanceof PnPostelException ex && StringUtils.hasText(ex.getError()) && ex.getError().equals("NOR400")) {
                         r.setStatus(BatchStatus.ERROR.getValue());
                         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - status in {} (retry: {})", postelBatch.getBatchId(), r.getStatus(), r.getRetry());
                     }
