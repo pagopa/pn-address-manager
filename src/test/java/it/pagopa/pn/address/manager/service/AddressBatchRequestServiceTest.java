@@ -73,7 +73,6 @@ class AddressBatchRequestServiceTest {
 
     private AddressBatchRequestService addressBatchRequestService;
     @Test
-    @Disabled
     void batchAddressRequest(){
         Instant now = Instant.now();
         when(clock.instant()).thenReturn(now);

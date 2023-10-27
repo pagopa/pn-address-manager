@@ -20,6 +20,7 @@
     "PnAddressManagerNormalizerBatchRequestMaxRetry": "3",
     "PnAddressManagerNormalizerBatchRequestMaxSize": "1000",
     "PnAddressManagerMaxCsvSize": "50000",
+    "PnAddressManagerMaxFileNumber": "2",
     "PnAddressManagerNormalizerEventBridgeRecoveryDelay": "120000",
     "PnAddressManagerNormalizerPostelRecoveryDelay": "120000",
     "PnAddressManagerNormalizerPostelRecoveryAfter": "600",

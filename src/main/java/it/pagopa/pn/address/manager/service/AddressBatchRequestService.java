@@ -148,7 +148,7 @@ public class AddressBatchRequestService {
             Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
             List<String> batchIdList = fileMap.keySet().stream().toList();
             log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end query. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
-        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) ||
+        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) &&
                 (pnAddressManagerConfig.getNormalizer().getMaxFileNumber() != 0 && (fileMap.size() + 1) <= pnAddressManagerConfig.getNormalizer().getMaxFileNumber()));
 
     }
@@ -164,8 +164,10 @@ public class AddressBatchRequestService {
 
     private void closeOpenedRequest() {
         if(!CollectionUtils.isEmpty(requestToProcess) && !CollectionUtils.isEmpty(listToConvert)){
-            requestToProcessMap.put(batchId,requestToProcess);
-            fileMap.put(batchId, listToConvert);
+            List<NormalizeRequestPostelInput> finalListToConvert = new ArrayList<>(listToConvert);
+            List<BatchRequest> finalRequestToProcess = new ArrayList<>(requestToProcess);
+            fileMap.put(batchId, finalListToConvert);
+            requestToProcessMap.put(batchId, finalRequestToProcess);
             clearList();
         }
     }
@@ -177,12 +179,15 @@ public class AddressBatchRequestService {
                 csvCount = processCsvRawAndIncrementCsvCount(csvCount, batchRequestAddresses, batchRequest);
             } else {
                 closeMaps();
-                csvCount = openNewRequest(csvCount, batchRequestAddresses, batchRequest);
+                csvCount = openNewRequest(batchRequestAddresses, batchRequest);
+                if(csvCount == pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
+                    break;
+                }
             }
         }
     }
 
-    private int openNewRequest(int csvCount, List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
+    private int openNewRequest(List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
         if(fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
             listToConvert.addAll(batchRequestAddresses);
             batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
@@ -191,12 +196,14 @@ public class AddressBatchRequestService {
                     .block();
             return batchRequestAddresses.size();
         }
-        return csvCount;
+        return pnAddressManagerConfig.getNormalizer().getMaxCsvSize();
     }
 
     private void closeMaps() {
-        fileMap.put(batchId, listToConvert);
-        requestToProcessMap.put(batchId, requestToProcess);
+        List<NormalizeRequestPostelInput> finalListToConvert = new ArrayList<>(listToConvert);
+        List<BatchRequest> finalRequestToProcess = new ArrayList<>(requestToProcess);
+        fileMap.put(batchId, finalListToConvert);
+        requestToProcessMap.put(batchId, finalRequestToProcess);
         clearList();
     }
 
