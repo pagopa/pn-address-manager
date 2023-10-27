@@ -4,6 +4,7 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
+import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
@@ -24,6 +25,7 @@ import java.util.Map;
 import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
 
 @Component
+@CustomLog
 public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRepository {
 
     private final PnAddressManagerConfig pnAddressManagerConfig;
@@ -50,7 +52,10 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
 
     @Override
     public Mono<BatchRequest> create(BatchRequest batchRequest) {
-        return Mono.fromFuture(table.putItem(batchRequest)).thenReturn(batchRequest);
+        log.debug("Inserting data {} in DynamoDB table {}", batchRequest, table);
+        return Mono.fromFuture(table.putItem(batchRequest))
+                .doOnNext(unused -> log.info("Inserted data in DynamoDB table {}", table))
+                .thenReturn(batchRequest);
     }
 
     @Override

@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import static com.opencsv.ICSVWriter.*;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_END_WRITING_CSV;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_START_WRITING_CSV;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 
@@ -50,11 +52,13 @@ public class CsvService {
     }
 
     public <T> String writeItemsOnCsvToString(List<T> items) {
+        log.logStartingProcess(PROCESS_START_WRITING_CSV);
         try (StringWriter writer = new StringWriter()) {
             CSVWriter cw = new CSVWriter(writer, ';' , DEFAULT_QUOTE_CHARACTER, DEFAULT_ESCAPE_CHARACTER, DEFAULT_LINE_END);
             StatefulBeanToCsv<T> beanToCsv = new StatefulBeanToCsvBuilder<T>(cw)
                     .build();
             beanToCsv.write(items);
+            log.logEndingProcess(PROCESS_END_WRITING_CSV);
             return writer.toString();
         } catch (IOException | CsvDataTypeMismatchException | CsvRequiredFieldEmptyException e) {
             throw new PnInternalAddressManagerException(ERROR_ADDRESS_MANAGER_WRITING_CSV, ERROR_ADDRESS_MANAGER_WRITING_CSV_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_WRITING_CSV_ERROR_CODE);

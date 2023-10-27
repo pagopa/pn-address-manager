@@ -45,7 +45,7 @@ Parameters:
 
   ApplicationLoadBalancerDomain:
     Type: String
-    Description: 'Base URL of the load balancer where the service is going to be reachable'
+    Description: Is the base URL of the load balancer where the service is going to be reachable.
   
   LogsKinesisSourceStreamArn:
     Type: String
@@ -77,7 +77,7 @@ Parameters:
     Default: 5
 
   HealthCheckPath:
-    Description: Path endpoint di health check
+    Description: It is used to specify the endpoint path for health checks and determines the path where health checks are performed.
     Type: String
     Default: '/actuator/health'
 
@@ -166,12 +166,12 @@ Parameters:
   flagCsv:
     Default: true
     Type: String
-    Description: flag to enable csv file check
+    Description: It Determines the behavior during the normalization or deduplication process. When set to "true," it triggers a search for the address within a CSV file. Otherwise, when set to "false," it calls the Postel service, passing the address to it for processing.
 
   enableWhitelisting:
     Default: true
     Type: String
-    Description: flag to enable verify whitelist in output
+    Description: It acts as a flag to control the verification of a whitelist in the application's output. When this parameter is set to "true," the application will check if certain conditions are met in the output data.
 
   LogAlarmStrategy:
     Type: String
@@ -179,26 +179,26 @@ Parameters:
 
   CountriesCsv:
     Type: String
-    Description: Foreign Countries CSV File
+    Description: It is the file path for a CSV file containing country data and is used in the code snippet to read the file.
 
   CapCsv:
     Type: String
-    Description: National CAP CSV File
+    Description: It is the file path for a CSV file containing CAP data and is used in the code snippet to read the file.
 
   EnablePatternValidation:
     Type: String
     Default: true
-    Description: Boolean to Enable address pattern validationù
+    Description: It determines whether address pattern validation is enabled or not.
     AllowedValues: [true, false]
 
   PhysicalAddressValidationCharsValue:
     Type: String
-    Description: 'Physical address validation. Allowed Characters'
+    Description: It defines the allowable characters for validating physical addresses.
     Default: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
 
   PnAddressManagerInputsQueueName:
     Type: String
-    Description: 'Name for NationalRegistryGatewayInputs'
+    Description: It specifies the name of the queue for handling inputs.
 
   PnAddressManagerInputsQueueARN:
     Type: String
@@ -206,7 +206,7 @@ Parameters:
 
   PnAddressManagerInputsDLQName:
     Type: String
-    Description: 'Queue name for PnAddressManagerInputsDLQ'
+    Description: It specifies DLQ for handling inputs.
 
   PnAddressManagerInputsDLQARN:
     Type: String
@@ -234,127 +234,128 @@ Parameters:
 
   BatchRequestTableName:
     Type: String
-    Description: 'NAME of DynamoDB table BatchRequest'
+    Description: It specifies the name of the DynamoDB table used for storing information related to batch requests.
 
   PostelBatchTableName:
     Type: String
-    Description: 'NAME of DynamoDB table PostelBatch'
+    Description: It specifies the name of the DynamoDB table used for storing information related to Postel batches.
 
   CountryTableName:
     Type: String
-    Description: 'NAME of DynamoDB table addressManagerCountry'
+    Description: It specifies the name of the DynamoDB table used for storing country-related information.
 
   CapTableName:
     Type: String
-    Description: 'NAME of DynamoDB table AddressManagerCap'
+    Description: It specifies the name of the DynamoDB table used for storing cap-related information.
 
   ApiKeyTableName:
     Type: String
-    Description: 'NAME of DynamoDB table AddressManagerApiKey'
+    Description: It specifies the name of the DynamoDB table used for storing and managing API keys.
 
   PnAddressManagerNormalizerBatchRequestTtl:
     Type: Number
-    Description: 'Postel BatchRequest TTL'
+    Description: It specifies the period after which the requests expire and should no longer be processed, providing a maximum time limit for their completion.
     Default: 1209600
 
   PnAddressManagerNormalizerBatchRequestDelay:
     Type: Number
-    Description: 'Postel batch request delay'
+    Description: It defines delay controls the interval at which the application checks for new batch requests to be processed.
     Default: 60000
 
   PnAddressManagerNormalizerBatchRequestRecoveryDelay:
     Type: Number
-    Description: 'Postel batch request recovery delay'
+    Description: It represents the delay time for Postel batch request recovery in the address normalization.
     Default: 30000
 
   PnAddressManagerNormalizerPostelRecoveryDelay:
     Type: Number
-    Description: 'Postel batch request recovery delay'
+    Description: It represents the delay time for Postel batch request recovery in the address normalization.
     Default: 30000
 
   PnAddressManagerNormalizerPostelRecoveryAfter:
     Type: Number
-    Description: 'Postel Activation recovery after'
+    Description: It specifies the duration that must pass before initiating the recovery of Postel Activation batches.
     Default: 3600
 
   PnAddressManagerNormalizerPostelMaxRetry:
     Type: Number
-    Description: 'Postel Activation request max retry'
+    Description: It represents the maximum number of retry attempts allowed for Postel Activation requests.
     Default: 3
 
   PnAddressManagerNormalizerBatchRequestRecoveryAfter:
     Type: Number
-    Description: 'Postel batch request recovery after'
+    Description: It represents the time interval after which Postel batch request recovery occurs in the address normalization.
     Default: 3600
 
   PnAddressManagerNormalizerBatchRequestMaxRetry:
     Type: Number
-    Description: 'Postel batch request max retry'
+    Description: It represents the maximum number of retries allowed for Postel batch requests.
     Default: 3
 
   PnAddressManagerNormalizerBatchRequestMaxSize:
     Type: Number
-    Description: 'process postel batch Request max size'
+    Description: It specifies the maximum number of batched address requests that can be processed in a single batch.
     Default: 100
 
   PnAddressManagerNormalizerEventBridgeRecoveryDelay:
     Type: Number
-    Description: 'EventBridge recovery delay'
+    Description: It is used to define the recovery delay for the EventBridge in the Normalizer.
     Default: 30000
 
   PostelCxId:
     Type: String
-    Description: 'Postel CxId'
+    Description: It is used to specify the "CxId" when making requests to the Postel service.
 
   NormalizerRequestPrefix:
     Type: String
-    Description: 'Normalize Request Prefix for Postel requestId'
+    Description: It represents a prefix used for generating Postel request IDs.
     Default: ''
 
   PnAddressManagerCxId:
     Type: String
-    Description: 'Address manager cxId'
+    Description: It specifies the cxId to pass in the Header.
 
   NormalizzatoreBasePath:
     Type: String
-    Description: 'Postel Normalizzatore base url'
+    Description: It defines the base URL for the Postel Normalizzatore.
 
   DeduplicaBasePath:
     Type: String
-    Description: 'Postel Deduplica base url'
+    Description: It defines the base URL for the Postel Deduplica.
 
   PnAddressManagerNormalizerBatchRequestLockAtMost:
     Type: String
-    Description: 'how long the lock should be kept in case the executing node dies'
+    Description: It specifies how long the lock should be kept in case the executing node dies.
     Default: '120000'
 
   PnAddressManagerNormalizerBatchRequestLockAtLeast:
     Type: String
-    Description: 'minimum amount of time for which the lock should be kept'
+    Description: It specifies minimum amount of time for which the lock should be kept.
     Default: '1000'
 
   PnAddressManagerNormalizerBatchRecoveryLockAtMost:
     Type: String
+    Description: It represents the maximum period for which a lock should be maintained during the batch request recovery process in the address normalization.
     Default: '120000'
 
   PnAddressManagerBatchCleanRequestDelay:
     Type: Number
-    Description: 'Delay to execute batch to reprocess stopped request'
+    Description: It determines the delay before executing a batch process to reprocess requests that were previously stopped.
     Default: 30000
 
   PnAddressManagerNormalizerPostelWorkingTtl:
     Type: Number
-    Description: 'Postel working TTL'
+    Description: It defines TTL duration in seconds for Postel working batches in the normalizer component of the application. When a Postel batch is marked as "WORKING," it remains in this state for the duration specified by the TTL. After the TTL period has elapsed, the batch is considered expired and should no longer be processed.
     Default: 1209600
 
   PnAddressManagerNormalizerPostelTtl:
     Type: Number
-    Description: 'Postel TTL'
+    Description: It defines TTL duration in seconds for Postel batches in the normalizer component of the application. When a Postel batch is created, it is associated with this TTL, which determines the maximum amount of time the batch is allowed to exist and be processed.
     Default: 1209600
 
   ShedLockTableName:
     Type: String
-    Description: 'Name of DynamoDB table PnAddressManagerShedLock'
+    Description: It specifies the name of the DynamoDB table used for implementing distributed locks.
 
   ShedLockTableArn:
     Type: String
@@ -362,7 +363,7 @@ Parameters:
 
   PnAddressManagerMaxCsvSize:
     Type: Number
-    Description: 'Csv Raw max Number'
+    Description: It is used to specify the maximum number of entries allowed in a CSV file.
     Default: 50000
 
 

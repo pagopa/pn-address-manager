@@ -18,7 +18,7 @@ import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.http.HttpStatus;
@@ -41,10 +41,11 @@ import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRE
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.NOT_SENT;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.SENT;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_POSTEL_ATTIVAZIONE;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
-@Slf4j
+@CustomLog
 public class AddressBatchRequestService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
@@ -215,7 +216,8 @@ public class AddressBatchRequestService {
     }
 
     public Mono<Void> callPostelActivationApi(PostelBatch postelBatch) {
-
+        log.logInvokingExternalService(PROCESS_SERVICE_POSTEL_ATTIVAZIONE, postelBatch.getBatchId());
+        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - calling postel activation", postelBatch.getBatchId());
         Mono.fromCallable(() -> postelClient.activatePostel(postelBatch))
                 .onErrorResume(throwable -> {
 					if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {

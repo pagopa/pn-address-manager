@@ -25,6 +25,8 @@ import java.time.ZoneOffset;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.WORKED;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_CHECKING_APIKEY;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_SAFE_STORAGE;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Service
@@ -63,6 +65,10 @@ public class NormalizzatoreService {
 
     public Mono<PreLoadResponseData> presignedUploadRequest(PreLoadRequestData request, String pnAddressManagerCxId, String xApiKey) {
         return checkApiKey(pnAddressManagerCxId, xApiKey)
+                .doOnNext(apiKeyModel -> {
+                    log.logCheckingOutcome(PROCESS_CHECKING_APIKEY, true);
+                    log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for safeStorage presignedUploadRequest.");
+                })
                 .flatMapIterable(apiKeyModel -> request.getPreloads())
                 .flatMap(preLoadRequest -> {
                     log.info("preloadDocuments contentType:{} preloadIdx:{}", preLoadRequest.getContentType(), preLoadRequest.getPreloadIdx());
@@ -74,6 +80,7 @@ public class NormalizzatoreService {
 
     private Mono<PreLoadResponse> createFile(String pnAddressManagerCxId, PreLoadRequest preLoadRequest) {
         FileCreationRequestDto fileCreationRequest = normalizzatoreConverter.preLoadRequestToFileCreationRequestDto(preLoadRequest);
+        log.logStartingProcess(PROCESS_SERVICE_SAFE_STORAGE + ": create file");
         return pnSafeStorageClient.createFile(fileCreationRequest, pnAddressManagerCxId, preLoadRequest.getSha256())
                 .map(fileCreationResponseDto -> {
                     log.info(ADDRESS_NORMALIZER_ASYNC + "created file with fileKey: [{}]", fileCreationResponseDto.getKey());
@@ -152,6 +159,7 @@ public class NormalizzatoreService {
     }
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
+        log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
         return apiKeyRepository.findById(cxId)
                 .filter(apiKeyModel -> apiKeyModel.getApiKey().equalsIgnoreCase(xApiKey))
                 .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Api Key not found")));

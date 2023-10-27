@@ -7,7 +7,7 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddres
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -15,10 +15,11 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL;
 
 @Component
-@Slf4j
+@CustomLog
 public class AddressConverter {
 
     public DeduplicaRequest createDeduplicaRequestFromDeduplicatesRequest(DeduplicatesRequest deduplicatesRequest) {

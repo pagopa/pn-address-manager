@@ -9,7 +9,7 @@ import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -35,7 +35,7 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
-@Slf4j
+@CustomLog
 public class RecoveryService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
