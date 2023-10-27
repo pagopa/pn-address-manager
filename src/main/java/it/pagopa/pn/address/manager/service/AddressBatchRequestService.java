@@ -113,55 +113,77 @@ public class AddressBatchRequestService {
 
         Page<BatchRequest> page;
         Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
-
-        int csvCount = 0;
         List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
         List<BatchRequest> requestToProcess = new ArrayList<>();
+        Map<String, List<BatchRequest>> requestToProcessMap = new HashMap<>();
+        Map<String, List<NormalizeRequestPostelInput>> fileMap = new HashMap<>();
 
         do {
+
+            int csvCount = 0;
+
             Instant startPagedQuery = clock.instant();
             page = getBatchRequest(lastEvaluatedKey);
             lastEvaluatedKey = page.lastEvaluatedKey();
 
             if (!page.items().isEmpty()) {
-                csvCount = processRequest(page.items(), csvCount, batchId, requestToProcess, listToConvert);
+                processRequest(page.items(), csvCount, batchId, requestToProcess, listToConvert, fileMap, requestToProcessMap);
             } else {
                 log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request available");
             }
             Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
             log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end query. Time spent is {} millis", batchId, timeSpent.toMillis());
 
-        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) || csvCount >= pnAddressManagerConfig.getNormalizer().getMaxCsvSize());
+        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) ||
+                (pnAddressManagerConfig.getNormalizer().getMaxFileNumber() != 0 && (fileMap.size() + 1) <= pnAddressManagerConfig.getNormalizer().getMaxFileNumber()));
+
+        if (!CollectionUtils.isEmpty(requestToProcessMap) && !CollectionUtils.isEmpty(fileMap)) {
+            fileMap.forEach((string, normalizeRequestPostelInputs) -> execBatchRequest(requestToProcessMap.get(batchId), batchId, normalizeRequestPostelInputs, start)
+                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + batchId))
+                    .block());
+        }
 
         Duration timeSpent = AddressUtils.getTimeSpent(start);
         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest - batchId: [{}] query end. Time spent is {} millis", batchId, timeSpent.toMillis());
-
-        if (!CollectionUtils.isEmpty(requestToProcess)) {
-            execBatchRequest(requestToProcess, batchId, listToConvert, start)
-                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + batchId))
-                    .block();
-        }
 
         if (timeSpent.compareTo(Duration.ofMillis(pnAddressManagerConfig.getNormalizer().getBatchRequest().getLockAtMost())) > 0) {
             log.error("Time spent is greater then lockAtMostFor. Multiple nodes could schedule the same actions.");
         }
     }
 
-    private int processRequest(List<BatchRequest> items, int csvCount, String batchId, List<BatchRequest> requestToProcess, List<NormalizeRequestPostelInput> listToConvert) {
+    private void processRequest(List<BatchRequest> items, int csvCount, String batchId, List<BatchRequest> requestToProcess, List<NormalizeRequestPostelInput> listToConvert, Map<String, List<NormalizeRequestPostelInput>> fileMap,
+                                Map<String, List<BatchRequest>> requestToProcessMap) {
         for (BatchRequest batchRequest : items) {
+
             List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
+
             if (csvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
                 listToConvert.addAll(batchRequestAddresses);
+                String finalBatchId = batchId;
                 startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
-                        .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + batchId))
+                        .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + finalBatchId))
                         .block();
                 csvCount += batchRequestAddresses.size();
+
             } else {
-                csvCount = pnAddressManagerConfig.getNormalizer().getMaxCsvSize();
-                break;
+                fileMap.put(batchId, listToConvert);
+                requestToProcessMap.put(batchId, requestToProcess);
+
+                if(fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
+                    csvCount = 0;
+                    listToConvert = new ArrayList<>();
+                    requestToProcess = new ArrayList<>();
+                    listToConvert.addAll(batchRequestAddresses);
+                    batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
+                    String finalBatchId1 = batchId;
+                    startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
+                            .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + finalBatchId1))
+                            .block();
+                    csvCount += batchRequestAddresses.size();
+                }
+
             }
         }
-        return csvCount;
     }
 
     private Mono<Void> startProcessingBatchRequest(BatchRequest request, String batchId, List<BatchRequest> requestToProcess) {
@@ -185,16 +207,17 @@ public class AddressBatchRequestService {
     }
 
     private Mono<Void> execBatchRequest(List<BatchRequest> items, String batchId, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
-        String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
-        String sha256 = addressUtils.computeSha256(csvContent.getBytes(StandardCharsets.UTF_8));
 
-        return safeStorageService.callSelfStorageCreateFileAndUpload(csvContent, sha256)
-                .onErrorResume(e -> {
-                    log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);
-                    return incrementAndCheckRetry(items, e, batchId)
-                            .then(Mono.error(e));
-                })
-                .flatMap(t -> activatePostelBatch(items, t, batchId, sha256, start));
+            String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
+            String sha256 = addressUtils.computeSha256(csvContent.getBytes(StandardCharsets.UTF_8));
+
+            return safeStorageService.callSelfStorageCreateFileAndUpload(csvContent, sha256)
+                    .onErrorResume(e -> {
+                        log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);
+                        return incrementAndCheckRetry(items, e, batchId)
+                                .then(Mono.error(e));
+                    })
+                    .flatMap(t -> activatePostelBatch(items, t, batchId, sha256, start));
     }
 
     private Mono<Void> activatePostelBatch(List<BatchRequest> items, FileCreationResponseDto fileCreationResponseDto, String batchId, String sha256, Instant start) {
@@ -218,12 +241,12 @@ public class AddressBatchRequestService {
 
         Mono.fromCallable(() -> postelClient.activatePostel(postelBatch))
                 .onErrorResume(throwable -> {
-					if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+                    if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
                         log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", postelBatch.getBatchId(), ex);
-						Mono.error(new PnPostelException("Error during call postel activation api", "NOR400", ex));
-					}
-					return Mono.error(throwable);
-				})
+                        Mono.error(new PnPostelException("Error during call postel activation api", "NOR400", ex));
+                    }
+                    return Mono.error(throwable);
+                })
                 .flatMap(activatePostelResponse -> {
                     log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - called postel activation", postelBatch.getBatchId());
                     if (!StringUtils.hasText(activatePostelResponse.getError())) {
