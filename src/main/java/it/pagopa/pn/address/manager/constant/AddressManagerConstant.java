@@ -1,6 +1,10 @@
 package it.pagopa.pn.address.manager.constant;
 
 
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor(access = AccessLevel.NONE)
 public class AddressManagerConstant {
 	public static final String ADDRESS_NORMALIZER_SYNC = "ADDRESS NORMALIZER SYNC - ";
     public static final String ADDRESS_NORMALIZER_ASYNC = "ADDRESS NORMALIZER ASYNC - ";
@@ -21,4 +25,5 @@ public class AddressManagerConstant {
 	public static final String PNADDR001_MESSAGE = "Address declared non-mailable by normalizer";
 	public static final String PNADDR002_MESSAGE = "Address with not Enabled postalCode / foreignState as destination";
 	public static final String RETRY_SUFFIX = ".RETRY_";
+	public static final String CONTEXT_BATCH_ID = "batch_id:";
 }

@@ -38,6 +38,7 @@ import java.time.*;
 import java.util.*;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.CONTEXT_BATCH_ID;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.NOT_SENT;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.SENT;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
@@ -58,6 +59,13 @@ public class AddressBatchRequestService {
     private final CsvService csvService;
     private final AddressUtils addressUtils;
     private final Clock clock;
+    private final List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
+    private final List<BatchRequest> requestToProcess = new ArrayList<>();
+    private final Map<String, List<BatchRequest>> requestToProcessMap = new HashMap<>();
+    private final Map<String, List<NormalizeRequestPostelInput>> fileMap = new HashMap<>();
+    private String batchId;
+
+
 
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
                                       PostelBatchRepository postelBatchRepository,
@@ -81,6 +89,7 @@ public class AddressBatchRequestService {
         this.csvService = csvService;
         this.addressUtils = addressUtils;
         this.clock = clock;
+        this.batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
     }
 
     //    lockAtMostFor specifies how long the lock should be kept in case the executing node dies. You have to set lockAtMostFor to a value which
@@ -89,13 +98,11 @@ public class AddressBatchRequestService {
 //    lockAtLeastFor specifies minimum amount of time for which the lock should be kept. is to prevent execution from multiple nodes
 //    in case of really short tasks and clock difference between the nodes.
 //
-
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.delay}")
     @SchedulerLock(name = "batchRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-request.lockAtMostFor}",
             lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
     protected void pollForNormalizeRequestProcessing() {
         try {
-            // To assert that the lock is held (prevents misconfiguration errors)
             LockAssert.assertLocked();
             log.info("batch request for new request start on: {}", LocalDateTime.now());
             batchAddressRequest();
@@ -106,85 +113,101 @@ public class AddressBatchRequestService {
 
     public void batchAddressRequest() {
 
-        String batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
-
         Instant start = clock.instant();
         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest batchId: [{}] start from first {}", batchId, start);
 
-        Page<BatchRequest> page;
-        Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
-        List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
-        List<BatchRequest> requestToProcess = new ArrayList<>();
-        Map<String, List<BatchRequest>> requestToProcessMap = new HashMap<>();
-        Map<String, List<NormalizeRequestPostelInput>> fileMap = new HashMap<>();
-
-        do {
-
-            int csvCount = 0;
-
-            Instant startPagedQuery = clock.instant();
-            page = getBatchRequest(lastEvaluatedKey);
-            lastEvaluatedKey = page.lastEvaluatedKey();
-
-            if (!page.items().isEmpty()) {
-                processRequest(page.items(), csvCount, batchId, requestToProcess, listToConvert, fileMap, requestToProcessMap);
-            } else {
-                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request available");
-            }
-            Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
-            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end query. Time spent is {} millis", batchId, timeSpent.toMillis());
-
-        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) ||
-                (pnAddressManagerConfig.getNormalizer().getMaxFileNumber() != 0 && (fileMap.size() + 1) <= pnAddressManagerConfig.getNormalizer().getMaxFileNumber()));
-
-        if (!CollectionUtils.isEmpty(requestToProcessMap) && !CollectionUtils.isEmpty(fileMap)) {
-            fileMap.forEach((string, normalizeRequestPostelInputs) -> execBatchRequest(requestToProcessMap.get(batchId), batchId, normalizeRequestPostelInputs, start)
-                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + batchId))
-                    .block());
-        }
+        retrieveAndProcessBatchRequest();
+        closeOpenedRequest();
+        createAndProcessFile(start);
 
         Duration timeSpent = AddressUtils.getTimeSpent(start);
-        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest - batchId: [{}] query end. Time spent is {} millis", batchId, timeSpent.toMillis());
+        List<String> batchIdList = fileMap.keySet().stream().toList();
+        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest - batchId: [{}] query end. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
 
         if (timeSpent.compareTo(Duration.ofMillis(pnAddressManagerConfig.getNormalizer().getBatchRequest().getLockAtMost())) > 0) {
             log.error("Time spent is greater then lockAtMostFor. Multiple nodes could schedule the same actions.");
         }
     }
 
-    private void processRequest(List<BatchRequest> items, int csvCount, String batchId, List<BatchRequest> requestToProcess, List<NormalizeRequestPostelInput> listToConvert, Map<String, List<NormalizeRequestPostelInput>> fileMap,
-                                Map<String, List<BatchRequest>> requestToProcessMap) {
-        for (BatchRequest batchRequest : items) {
+    private void retrieveAndProcessBatchRequest() {
+        Page<BatchRequest> page;
+        Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
 
-            List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
+        do {
+            int csvCount = 0;
+            Instant startPagedQuery = clock.instant();
+            page = getBatchRequest(lastEvaluatedKey);
+            lastEvaluatedKey = page.lastEvaluatedKey();
 
-            if (csvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
-                listToConvert.addAll(batchRequestAddresses);
-                String finalBatchId = batchId;
-                startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
-                        .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + finalBatchId))
-                        .block();
-                csvCount += batchRequestAddresses.size();
-
+            if (!page.items().isEmpty()) {
+                processRequest(page.items(), csvCount);
             } else {
-                fileMap.put(batchId, listToConvert);
-                requestToProcessMap.put(batchId, requestToProcess);
+                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request available");
+            }
 
-                if(fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
-                    csvCount = 0;
-                    listToConvert = new ArrayList<>();
-                    requestToProcess = new ArrayList<>();
-                    listToConvert.addAll(batchRequestAddresses);
-                    batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
-                    String finalBatchId1 = batchId;
-                    startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
-                            .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + finalBatchId1))
-                            .block();
-                    csvCount += batchRequestAddresses.size();
-                }
+            Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+            List<String> batchIdList = fileMap.keySet().stream().toList();
+            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end query. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
+        } while (!CollectionUtils.isEmpty(lastEvaluatedKey) ||
+                (pnAddressManagerConfig.getNormalizer().getMaxFileNumber() != 0 && (fileMap.size() + 1) <= pnAddressManagerConfig.getNormalizer().getMaxFileNumber()));
 
+    }
+
+    private void createAndProcessFile(Instant start) {
+        if (!CollectionUtils.isEmpty(requestToProcessMap) && !CollectionUtils.isEmpty(fileMap)) {
+            fileMap.forEach((key, normalizeRequestPostelInputs) -> execBatchRequest(requestToProcessMap.get(key), key, normalizeRequestPostelInputs, start)
+                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + key))
+                    .block());
+            clearMap();
+        }
+    }
+
+    private void closeOpenedRequest() {
+        if(!CollectionUtils.isEmpty(requestToProcess) && !CollectionUtils.isEmpty(listToConvert)){
+            requestToProcessMap.put(batchId,requestToProcess);
+            fileMap.put(batchId, listToConvert);
+            clearList();
+        }
+    }
+
+    private void processRequest(List<BatchRequest> items, int csvCount) {
+        for (BatchRequest batchRequest : items) {
+            List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
+            if (csvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
+                csvCount = processCsvRawAndIncrementCsvCount(csvCount, batchRequestAddresses, batchRequest);
+            } else {
+                closeMaps();
+                csvCount = openNewRequest(csvCount, batchRequestAddresses, batchRequest);
             }
         }
     }
+
+    private int openNewRequest(int csvCount, List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
+        if(fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
+            listToConvert.addAll(batchRequestAddresses);
+            batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
+            startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
+                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + batchId))
+                    .block();
+            return batchRequestAddresses.size();
+        }
+        return csvCount;
+    }
+
+    private void closeMaps() {
+        fileMap.put(batchId, listToConvert);
+        requestToProcessMap.put(batchId, requestToProcess);
+        clearList();
+    }
+
+    private int processCsvRawAndIncrementCsvCount(int csvCount, List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
+            listToConvert.addAll(batchRequestAddresses);
+            startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
+                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + batchId))
+                    .block();
+            return csvCount + batchRequestAddresses.size();
+    }
+
 
     private Mono<Void> startProcessingBatchRequest(BatchRequest request, String batchId, List<BatchRequest> requestToProcess) {
         setNewDataOnBatchRequest(request, batchId);
@@ -404,5 +427,15 @@ public class AddressBatchRequestService {
                     log.debug("Sent event result: {}", putEventsResult.getEntries());
                 })
                 .doOnError(throwable -> log.error("Send event with correlationId {} failed", batchRequest.getCorrelationId(), throwable));
+    }
+
+    private void clearList() {
+        requestToProcess.clear();
+        listToConvert.clear();
+    }
+
+    private void clearMap() {
+        requestToProcessMap.clear();
+        fileMap.clear();
     }
 }
