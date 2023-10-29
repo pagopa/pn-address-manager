@@ -365,6 +365,11 @@ Parameters:
     Description: 'Csv Raw max Number'
     Default: 50000
 
+  PnAddressManagerMaxFileNumber:
+    Type: Number
+    Description: 'Max number of csv files per batch'
+    Default: 2
+
 
 Resources:
 
@@ -431,7 +436,8 @@ Resources:
         ContainerEnvEntry38: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
         ContainerEnvEntry39: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHCLEANREQUESTDELAY=${PnAddressManagerBatchCleanRequestDelay}'
         ContainerEnvEntry40: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXCSVSIZE=${PnAddressManagerMaxCsvSize}'
-        ContainerEnvEntry41: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
+        ContainerEnvEntry41: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXFILENUMBER=${PnAddressManagerMaxFileNumber}'
+        ContainerEnvEntry42: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets

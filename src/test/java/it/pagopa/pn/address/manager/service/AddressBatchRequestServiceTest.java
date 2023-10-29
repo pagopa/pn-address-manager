@@ -8,14 +8,12 @@ import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
 import it.pagopa.pn.address.manager.middleware.client.NormalizzatoreClient;
 import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.jetbrains.annotations.NotNull;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -23,14 +21,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.*;
@@ -73,7 +69,6 @@ class AddressBatchRequestServiceTest {
 
     private AddressBatchRequestService addressBatchRequestService;
     @Test
-    @Disabled
     void batchAddressRequest(){
         Instant now = Instant.now();
         when(clock.instant()).thenReturn(now);
