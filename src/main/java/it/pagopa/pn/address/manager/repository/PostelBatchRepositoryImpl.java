@@ -83,7 +83,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
         expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getNormalizer().getBatchRequest().getMaxRetry())).build());
+        expressionValues.put(":retry", AttributeValue.builder().n(Integer.toString(pnAddressManagerConfig.getNormalizer().getPostel().getMaxRetry())).build());
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, AttributeValue.builder()
                 .s(LocalDateTime.now(ZoneOffset.UTC).minusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getRecoveryAfter()).toString())
                 .build());
