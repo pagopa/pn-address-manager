@@ -4,8 +4,9 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
+import it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.api.DeduplicaApi;
 import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.ApiClient;
-import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.api.DefaultApi;
+import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.api.NormalizzatoreApi;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -22,9 +23,7 @@ import static org.mockito.Mockito.*;
 @ExtendWith (SpringExtension.class)
 class NormalizzatoreClientTest {
 	@MockBean
-	DefaultApi defaultApi;
-	@MockBean
-	NormalizzatoreWebClient postelWebClient;
+	NormalizzatoreApi defaultApi;
 	@MockBean
 	ResponseExchangeFilter responseExchangeFilter;
 	@MockBean
@@ -32,7 +31,6 @@ class NormalizzatoreClientTest {
 	@Test
 	@Disabled
 	void testActivatePostel () {
-		when(postelWebClient.init()).thenReturn(apiClient);
 		PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
 		normalizer.setPostelAuthKey("Postel Auth Key");
 		PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
@@ -41,8 +39,7 @@ class NormalizzatoreClientTest {
 		pnAddressManagerConfig.setPagoPaCxId("cxId");
 		pnAddressManagerConfig.setNormalizzatoreBasePath("http://localhost:8080");
 		pnAddressManagerConfig.setNormalizer(normalizer);
-		NormalizzatoreClient normalizzatoreClient = new NormalizzatoreClient(
-				new NormalizzatoreWebClient(responseExchangeFilter, pnAddressManagerConfig), pnAddressManagerConfig);
+		NormalizzatoreClient normalizzatoreClient = new NormalizzatoreClient(defaultApi, pnAddressManagerConfig);
 		PostelBatch postelBatch = new PostelBatch();
 		postelBatch.setBatchId("batchId");
 		postelBatch.setFileKey("fileKey");

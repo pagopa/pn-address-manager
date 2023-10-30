@@ -2,11 +2,15 @@ openapi: 3.0.3
 info:
   title:  API fornite dal normalizzatore - servizio di deduplica
   version: 1.0.0
+tags:
+  - Deduplica
 paths:
 
   /send-normalizzatore-ingress/v1/deduplica:
     post:
       operationId: deduplica
+      tags:
+        - Deduplica
       summary: PN richiede la deduplica online
       parameters:
         - $ref: '#/components/parameters/xPagopaAddrManCxId'

@@ -1,7 +1,7 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.api.DefaultApi;
+import it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.api.DeduplicaApi;
 import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.ApiClient;
 import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.api.NormalizzatoreApi;
 import it.pagopa.pn.commons.pnclients.CommonBaseClient;
@@ -39,10 +39,10 @@ public class PostelWebClient  {
     class DeduplicaClientConfig extends CommonBaseClient {
 
         @Bean
-        DefaultApi deduplicaApi(PnAddressManagerConfig cfg) {
+        DeduplicaApi deduplicaApi(PnAddressManagerConfig cfg) {
             var apiClient = new it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.ApiClient(initWebClient(ApiClient.buildWebClientBuilder()));
             apiClient.setBasePath(cfg.getDeduplicaBasePath());
-            return new DefaultApi(apiClient);
+            return new DeduplicaApi(apiClient);
         }
     }
 
