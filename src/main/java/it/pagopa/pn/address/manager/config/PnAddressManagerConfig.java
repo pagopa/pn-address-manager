@@ -47,7 +47,6 @@ public class PnAddressManagerConfig {
         private Integer recoveryAfter;
         private Integer recoveryDelay;
         private String requestPrefix;
-        private String clientTimeout;
     }
 
     @Data
