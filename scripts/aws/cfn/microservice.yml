@@ -365,10 +365,16 @@ Parameters:
     Description: 'Csv Raw max Number'
     Default: 50000
 
+  PnAddressManagerMaxFileNumber:
+    Type: Number
+    Description: 'Max number of csv files per batch'
+    Default: 2
+
   PnAddressManagerNormalizerPostelClientTimeout:
     Type: String
     Description: 'Custom read timeout for postel Client'
     Default: 30000
+
 
 Resources:
 
@@ -436,7 +442,8 @@ Resources:
         ContainerEnvEntry39: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
         ContainerEnvEntry40: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHCLEANREQUESTDELAY=${PnAddressManagerBatchCleanRequestDelay}'
         ContainerEnvEntry41: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXCSVSIZE=${PnAddressManagerMaxCsvSize}'
-        ContainerEnvEntry42: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
+        ContainerEnvEntry42: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXFILENUMBER=${PnAddressManagerMaxFileNumber}'
+        ContainerEnvEntry43: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets

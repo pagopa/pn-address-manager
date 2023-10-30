@@ -37,6 +37,7 @@ public class PnAddressManagerConfig {
         private Postel postel;
         private String postelAuthKey;
         private Integer maxCsvSize;
+        private Integer maxFileNumber;
     }
 
     @Data
