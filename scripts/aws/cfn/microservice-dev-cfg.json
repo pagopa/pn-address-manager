@@ -19,7 +19,8 @@
     "PnAddressManagerNormalizerBatchRequestRecoveryAfter": "600",
     "PnAddressManagerNormalizerBatchRequestMaxRetry": "3",
     "PnAddressManagerNormalizerBatchRequestMaxSize": "1000",
-    "PnAddressManagerMaxCsvSize": "50000",
+    "PnAddressManagerMaxCsvSize": "50",
+    "PnAddressManagerMaxFileNumber": "2",
     "PnAddressManagerNormalizerEventBridgeRecoveryDelay": "120000",
     "PnAddressManagerNormalizerPostelRecoveryDelay": "120000",
     "PnAddressManagerNormalizerPostelRecoveryAfter": "600",
@@ -32,6 +33,7 @@
     "PnAddressManagerNormalizerPostelTtl": "1209600",
     "PnAddressManagerNormalizerBatchRequestLockAtMost": "120000",
     "PnAddressManagerNormalizerBatchRequestLockAtLeast": "1000",
-    "PnAddressManagerNormalizerBatchRecoveryLockAtMost": "120000"
+    "PnAddressManagerNormalizerBatchRecoveryLockAtMost": "120000",
+    "PnAddressManagerNormalizerPostelClientTimeout": "30000"
   }
 }

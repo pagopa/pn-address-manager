@@ -366,6 +366,16 @@ Parameters:
     Description: It is used to specify the maximum number of entries allowed in a CSV file.
     Default: 50000
 
+  PnAddressManagerMaxFileNumber:
+    Type: Number
+    Description: 'Max number of csv files per batch'
+    Default: 2
+
+  PnAddressManagerNormalizerPostelClientTimeout:
+    Type: String
+    Description: 'Custom read timeout for postel Client'
+    Default: 30000
+
 
 Resources:
 
@@ -429,10 +439,12 @@ Resources:
         ContainerEnvEntry35: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_REQUESTPREFIX=${NormalizerRequestPrefix}'
         ContainerEnvEntry36: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_WORKINGTTL=${PnAddressManagerNormalizerPostelWorkingTtl}'
         ContainerEnvEntry37: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_TTL=${PnAddressManagerNormalizerPostelTtl}'
-        ContainerEnvEntry38: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
-        ContainerEnvEntry39: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHCLEANREQUESTDELAY=${PnAddressManagerBatchCleanRequestDelay}'
-        ContainerEnvEntry40: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXCSVSIZE=${PnAddressManagerMaxCsvSize}'
-        ContainerEnvEntry41: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
+        ContainerEnvEntry38: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_CLIENTTIMEOUT=${PnAddressManagerNormalizerPostelClientTimeout}'
+        ContainerEnvEntry39: !Sub 'PN_ADDRESSMANAGER_PAGOPACXID=${PnAddressManagerCxId}'
+        ContainerEnvEntry40: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_BATCHCLEANREQUESTDELAY=${PnAddressManagerBatchCleanRequestDelay}'
+        ContainerEnvEntry41: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXCSVSIZE=${PnAddressManagerMaxCsvSize}'
+        ContainerEnvEntry42: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXFILENUMBER=${PnAddressManagerMaxFileNumber}'
+        ContainerEnvEntry43: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets
