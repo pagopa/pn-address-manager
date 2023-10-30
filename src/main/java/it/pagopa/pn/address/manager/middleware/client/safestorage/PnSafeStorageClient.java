@@ -8,6 +8,7 @@ import it.pagopa.pn.address.manager.msclient.generated.pn.safe.storage.v1.api.Fi
 import it.pagopa.pn.address.manager.msclient.generated.pn.safe.storage.v1.api.FileUploadApi;
 import it.pagopa.pn.commons.log.PnLogger;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
@@ -23,15 +24,11 @@ import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.SHA25
 
 @CustomLog
 @Component
+@RequiredArgsConstructor
 public class PnSafeStorageClient {
 
     private final FileUploadApi fileUploadApi;
     private final FileDownloadApi fileDownloadApi;
-    public PnSafeStorageClient(PnSafeStorageWebClient pnSafeStorageWebClient) {
-
-        this.fileUploadApi = new FileUploadApi(pnSafeStorageWebClient.init());
-        this.fileDownloadApi = new FileDownloadApi(pnSafeStorageWebClient.init());
-    }
 
     public Mono<FileDownloadResponseDto> getFile(String fileKey, String cxId) {
         log.debug("Req params : {}", fileKey);
