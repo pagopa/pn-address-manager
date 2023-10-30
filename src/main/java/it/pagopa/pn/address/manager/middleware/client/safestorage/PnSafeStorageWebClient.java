@@ -6,18 +6,15 @@ import it.pagopa.pn.address.manager.msclient.generated.pn.safe.storage.v1.ApiCli
 import it.pagopa.pn.address.manager.msclient.generated.pn.safe.storage.v1.api.FileDownloadApi;
 import it.pagopa.pn.address.manager.msclient.generated.pn.safe.storage.v1.api.FileUploadApi;
 import it.pagopa.pn.commons.pnclients.CommonBaseClient;
-import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@RequiredArgsConstructor
 public class PnSafeStorageWebClient extends CommonBaseClient {
 
-    private final ResponseExchangeFilter responseExchangeFilter;
 
     @Bean
-    FileUploadApi fileUploadApi(PnAddressManagerConfig cfg) {
+    FileUploadApi fileUploadApi(PnAddressManagerConfig cfg, ResponseExchangeFilter responseExchangeFilter) {
         ApiClient apiClient = new ApiClient(super.initWebClient(ApiClient.buildWebClientBuilder()
                 .filters(f -> f.add(responseExchangeFilter))));
         apiClient.setBasePath(cfg.getSafeStorageBasePath());
@@ -25,7 +22,7 @@ public class PnSafeStorageWebClient extends CommonBaseClient {
     }
 
     @Bean
-    FileDownloadApi fileDownloadApi(PnAddressManagerConfig cfg) {
+    FileDownloadApi fileDownloadApi(PnAddressManagerConfig cfg, ResponseExchangeFilter responseExchangeFilter) {
         ApiClient apiClient = new ApiClient(super.initWebClient(ApiClient.buildWebClientBuilder()
                 .filters(f -> f.add(responseExchangeFilter))));
         apiClient.setBasePath(cfg.getSafeStorageBasePath());
