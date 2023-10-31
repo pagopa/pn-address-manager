@@ -119,6 +119,7 @@ public class AddressBatchRequestService {
         retrieveAndProcessBatchRequest();
         closeOpenedRequest();
         createAndProcessFile(start);
+        batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
 
         Duration timeSpent = AddressUtils.getTimeSpent(start);
         List<String> batchIdList = fileMap.keySet().stream().toList();
