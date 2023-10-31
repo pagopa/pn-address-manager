@@ -120,6 +120,7 @@ public class AddressBatchRequestService {
         retrieveAndProcessBatchRequest();
         closeOpenedRequest();
         createAndProcessFile(start);
+        batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
 
         Duration timeSpent = AddressUtils.getTimeSpent(start);
         List<String> batchIdList = fileMap.keySet().stream().toList();
@@ -189,12 +190,13 @@ public class AddressBatchRequestService {
     }
 
     private int openNewRequest(List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
+        String newBatchId =  pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
         if(fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
             listToConvert.addAll(batchRequestAddresses);
-            batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
-            startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
-                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + batchId))
+            startProcessingBatchRequest(batchRequest, newBatchId, requestToProcess)
+                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + newBatchId))
                     .block();
+            batchId = newBatchId;
             return batchRequestAddresses.size();
         }
         return pnAddressManagerConfig.getNormalizer().getMaxCsvSize();
@@ -237,7 +239,7 @@ public class AddressBatchRequestService {
                 });
     }
 
-    private Mono<Void> execBatchRequest(List<BatchRequest> items, String batchId, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
+    private Mono<Void> execBatchRequest(List<BatchRequest> items, String key, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
 
             String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
             String sha256 = addressUtils.computeSha256(csvContent.getBytes(StandardCharsets.UTF_8));
@@ -245,18 +247,18 @@ public class AddressBatchRequestService {
             return safeStorageService.callSelfStorageCreateFileAndUpload(csvContent, sha256)
                     .onErrorResume(e -> {
                         log.error(ADDRESS_NORMALIZER_ASYNC + "failed to create file", e);
-                        return incrementAndCheckRetry(items, e, batchId)
+                        return incrementAndCheckRetry(items, e, key)
                                 .then(Mono.error(e));
                     })
-                    .flatMap(t -> activatePostelBatch(items, t, batchId, sha256, start));
+                    .flatMap(t -> activatePostelBatch(items, t, key, sha256, start));
     }
 
-    private Mono<Void> activatePostelBatch(List<BatchRequest> items, FileCreationResponseDto fileCreationResponseDto, String batchId, String sha256, Instant start) {
-        return createPostelBatch(fileCreationResponseDto.getKey(), batchId, sha256)
-                .onErrorResume(v -> incrementAndCheckRetry(items, v, batchId).then(Mono.error(v)))
+    private Mono<Void> activatePostelBatch(List<BatchRequest> items, FileCreationResponseDto fileCreationResponseDto, String key, String sha256, Instant start) {
+        return createPostelBatch(fileCreationResponseDto.getKey(), key, sha256)
+                .onErrorResume(v -> incrementAndCheckRetry(items, v, key).then(Mono.error(v)))
                 .doOnNext(postelBatch -> {
                     Duration timeSpent = AddressUtils.getTimeSpent(start);
-                    log.debug(ADDRESS_NORMALIZER_ASYNC + "PostelBatch with batchId: {} created. Time spent is {} millis", batchId, timeSpent.toMillis());
+                    log.debug(ADDRESS_NORMALIZER_ASYNC + "PostelBatch with batchId: {} created. Time spent is {} millis", key, timeSpent.toMillis());
                 })
                 .flatMap(this::callPostelActivationApi);
     }
@@ -304,17 +306,17 @@ public class AddressBatchRequestService {
     }
 
 
-    private Mono<PostelBatch> createPostelBatch(String fileKey, String batchId, String sha256) {
-        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - creating PostelBatch with fileKey: {}", batchId, fileKey);
-        return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(batchId, fileKey, sha256))
+    private Mono<PostelBatch> createPostelBatch(String fileKey, String key, String sha256) {
+        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - creating PostelBatch with fileKey: {}", key, fileKey);
+        return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(key, fileKey, sha256))
                 .flatMap(polling -> {
-                    log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey);
-                    return setBatchRequestStatusToWorking(batchId)
+                    log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
+                    return setBatchRequestStatusToWorking(key)
                             .map(batchRequests -> {
-                                log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", batchId, fileKey);
+                                log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
                                 return polling;
                             })
-                            .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to create PostelBatch with fileKey: {}", batchId, fileKey, e));
+                            .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to create PostelBatch with fileKey: {}", key, fileKey, e));
                 });
     }
 
