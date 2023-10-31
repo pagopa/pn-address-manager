@@ -114,7 +114,7 @@ public class AddressBatchRequestService {
     public void batchAddressRequest() {
 
         Instant start = clock.instant();
-        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest batchId: [{}] start from first {}", batchId, start);
+        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest start from first {}", start);
 
         retrieveAndProcessBatchRequest();
         closeOpenedRequest();
@@ -133,15 +133,15 @@ public class AddressBatchRequestService {
     private void retrieveAndProcessBatchRequest() {
         Page<BatchRequest> page;
         Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
+        int csvCount = 0;
 
         do {
-            int csvCount = 0;
+
             Instant startPagedQuery = clock.instant();
             page = getBatchRequest(lastEvaluatedKey);
             lastEvaluatedKey = page.lastEvaluatedKey();
-
             if (!page.items().isEmpty()) {
-                processRequest(page.items(), csvCount);
+               csvCount = processRequest(page.items(), csvCount);
             } else {
                 log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request available");
             }
@@ -173,19 +173,20 @@ public class AddressBatchRequestService {
         }
     }
 
-    private void processRequest(List<BatchRequest> items, int csvCount) {
+    private int processRequest(List<BatchRequest> items, int lastCsvCount) {
         for (BatchRequest batchRequest : items) {
             List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
-            if (csvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
-                csvCount = processCsvRawAndIncrementCsvCount(csvCount, batchRequestAddresses, batchRequest);
+            if (lastCsvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
+                lastCsvCount = processCsvRawAndIncrementCsvCount(lastCsvCount, batchRequestAddresses, batchRequest);
             } else {
                 closeMaps();
-                csvCount = openNewRequest(batchRequestAddresses, batchRequest);
-                if(csvCount == pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
+                lastCsvCount = openNewRequest(batchRequestAddresses, batchRequest);
+                if(lastCsvCount == pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
                     break;
                 }
             }
         }
+        return lastCsvCount;
     }
 
     private int openNewRequest(List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
