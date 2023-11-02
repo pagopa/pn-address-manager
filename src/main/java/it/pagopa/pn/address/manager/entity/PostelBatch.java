@@ -26,6 +26,11 @@ public class PostelBatch {
     private String fileKey;
 
     @Getter(onMethod = @__({
+            @DynamoDbAttribute(COL_OUTPUT_FILE_KEY),
+    }))
+    private String outputFileKey;
+
+    @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_SHA256)
     }))
     private String sha256;
@@ -61,4 +66,14 @@ public class PostelBatch {
             @DynamoDbAttribute(COL_TIMESTAMP)
     }))
     private LocalDateTime createdAt;
+
+    @Getter(onMethod = @__({
+            @DynamoDbAttribute(COL_CALLBACK_TIMESTAMP)
+    }))
+    private LocalDateTime callbackTimeStamp;
+
+    @Getter(onMethod = @__({
+            @DynamoDbAttribute(COL_ERROR)
+    }))
+    private String error;
 }

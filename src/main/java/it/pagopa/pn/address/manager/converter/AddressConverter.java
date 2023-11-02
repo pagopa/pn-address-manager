@@ -7,7 +7,7 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddres
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -18,7 +18,7 @@ import java.time.ZoneOffset;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
-@Slf4j
+@CustomLog
 public class AddressConverter {
 
     public DeduplicaRequest createDeduplicaRequestFromDeduplicatesRequest(DeduplicatesRequest deduplicatesRequest) {
@@ -68,7 +68,7 @@ public class AddressConverter {
                     case DED001 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD01.name());
                     case DED002 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD02.name());
                     case DED003 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD03.name());
-                    default -> deduplicatesResponse.setResultDetails(null); //Todo: Possiamo mettere il caso 3 in default per non avere questo null impossibile?
+                    default -> deduplicatesResponse.setResultDetails(null);
                 }
             }
         }
@@ -91,6 +91,7 @@ public class AddressConverter {
             deduplicatesResponse.setNormalizedAddress(analogAddress);
             deduplicatesResponse.setEqualityResult(risultatoDeduplica.getRisultatoDedu());
         } else {
+            log.fatal(ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL + ": " + ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL);
             throw new PnInternalException(ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL, ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL);
         }
     }

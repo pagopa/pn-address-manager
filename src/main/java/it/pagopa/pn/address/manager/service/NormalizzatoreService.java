@@ -94,11 +94,20 @@ public class NormalizzatoreService {
     public Mono<OperationResultCodeResponse> callbackNormalizedAddress(NormalizerCallbackRequest callbackRequestData, String pnAddressManagerCxId, String xApiKey) {
         return checkApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> findPostelBatch(callbackRequestData.getRequestId().split(RETRY_SUFFIX)[0]))
+                .flatMap(postelBatch -> updateWithFileKeyTimestampAndError(postelBatch, callbackRequestData))
                 .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, postelBatch))
                 .onErrorResume(throwable -> {
                     log.error(CALLBACK_ERROR_LOG, throwable.getMessage(), throwable);
                     return Mono.error(throwable);
                 });
+    }
+
+    private Mono<PostelBatch> updateWithFileKeyTimestampAndError(PostelBatch postelBatch, NormalizerCallbackRequest callbackRequestData) {
+        postelBatch.setOutputFileKey(callbackRequestData.getUri());
+        postelBatch.setCallbackTimeStamp(LocalDateTime.now());
+        postelBatch.setError(callbackRequestData.getError());
+
+        return postelBatchRepository.update(postelBatch);
     }
 
     private Mono<PostelBatch> findPostelBatch(String idLavorazione) {
