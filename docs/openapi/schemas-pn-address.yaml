@@ -144,4 +144,8 @@ components:
           type: string
           description: "In caso di destinatario estero, diventa obbligatoria l’indicazione\
             \ della nazione di destinazione,  in standard UPU o altro standard condiviso."
+        nameRow2:
+          x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
+          type: string
+          description: Seconda riga sulla busta.
       

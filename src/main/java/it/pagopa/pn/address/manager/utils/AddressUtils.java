@@ -99,6 +99,7 @@ public class AddressUtils {
         analogAddress.setAddressRow2(Optional.ofNullable(analogAddress.getAddressRow2()).map(s -> StringUtils.normalizeSpace(s).toUpperCase()).orElse(null));
         analogAddress.setCity2(Optional.ofNullable(analogAddress.getCity2()).map(s -> StringUtils.normalizeSpace(s).toUpperCase()).orElse(null));
         analogAddress.setCountry(Optional.ofNullable(analogAddress.getCountry()).map(s -> StringUtils.normalizeSpace(s).toUpperCase()).orElse(null));
+        analogAddress.setNameRow2(Optional.ofNullable(analogAddress.getNameRow2()).map(s -> StringUtils.normalizeSpace(s).toUpperCase()).orElse(null));
         return analogAddress;
     }
 
