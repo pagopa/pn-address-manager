@@ -8,15 +8,16 @@ import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageC
 import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.SAFE_STORAGE_URL_PREFIX;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_SAFE_STORAGE;
 
 @Service
-@Slf4j
+@CustomLog
 public class SafeStorageService {
     private final PnSafeStorageClient pnSafeStorageClient;
     private final UploadDownloadClient uploadDownloadClient;
@@ -40,7 +41,7 @@ public class SafeStorageService {
     public Mono<FileCreationResponseDto> callSelfStorageCreateFileAndUpload(String csvContent, String sha256) {
 
         FileCreationRequestDto fileCreationRequestDto = addressUtils.getFileCreationRequest();
-
+        log.logStartingProcess(PROCESS_SERVICE_SAFE_STORAGE + ": create file");
         return pnSafeStorageClient.createFile(fileCreationRequestDto, pnAddressManagerConfig.getPagoPaCxId(), sha256)
                 .flatMap(fileCreationResponseDto -> uploadDownloadClient.uploadContent(csvContent, fileCreationResponseDto, sha256)
                         .doOnNext(response -> log.info("file {} uploaded", fileCreationResponseDto.getKey()))

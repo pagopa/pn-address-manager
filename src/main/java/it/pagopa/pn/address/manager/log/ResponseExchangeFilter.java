@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.log;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.jetbrains.annotations.NotNull;
 import org.reactivestreams.Publisher;
 import org.springframework.core.io.buffer.DataBuffer;
@@ -11,7 +11,7 @@ import reactor.core.publisher.Mono;
 
 import java.nio.charset.StandardCharsets;
 
-@Slf4j
+@CustomLog
 @Component
 public class ResponseExchangeFilter implements ExchangeFilterFunction {
 

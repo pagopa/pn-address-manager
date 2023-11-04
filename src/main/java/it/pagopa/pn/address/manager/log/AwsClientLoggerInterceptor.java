@@ -1,9 +1,9 @@
 package it.pagopa.pn.address.manager.log;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import software.amazon.awssdk.core.interceptor.*;
 
-@Slf4j
+@CustomLog
 public class AwsClientLoggerInterceptor implements ExecutionInterceptor {
 
     private static final ExecutionAttribute<String> SERVICE_NAME = SdkExecutionAttribute.SERVICE_NAME;

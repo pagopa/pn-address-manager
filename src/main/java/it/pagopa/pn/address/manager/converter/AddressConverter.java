@@ -15,7 +15,8 @@ import org.springframework.util.StringUtils;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL;
 
 @Component
 @CustomLog
