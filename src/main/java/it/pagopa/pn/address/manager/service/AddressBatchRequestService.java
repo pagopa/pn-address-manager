@@ -155,10 +155,10 @@ public class AddressBatchRequestService {
     private void retrieveAndProcessBatchRequest() {
         Page<BatchRequest> page;
         Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
+        int csvCount = 0;
 
         do {
-            // Initialize a variable to keep track of the number of CSV rows.
-            int csvCount = 0;
+
             Instant startPagedQuery = clock.instant();
 
             page = getBatchRequest(lastEvaluatedKey);
@@ -175,8 +175,8 @@ public class AddressBatchRequestService {
             log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end query. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
 
         } while (!CollectionUtils.isEmpty(lastEvaluatedKey) &&
-                (pnAddressManagerConfig.getNormalizer().getMaxFileNumber() == 0
-                        || (fileMap.size() + 1) <= pnAddressManagerConfig.getNormalizer().getMaxFileNumber()));
+                (pnAddressManagerConfig.getNormalizer().getMaxFileNumber() == 0 || (fileMap.size() + 1) <= pnAddressManagerConfig.getNormalizer().getMaxFileNumber()));
+
     }
 
     /**
@@ -186,10 +186,9 @@ public class AddressBatchRequestService {
      */
     private void createAndProcessFile(Instant start) {
         if (!CollectionUtils.isEmpty(requestToProcessMap) && !CollectionUtils.isEmpty(fileMap)) {
-            fileMap.forEach((key, normalizeRequestPostelInputs) ->
-                    execBatchRequest(requestToProcessMap.get(key), key, normalizeRequestPostelInputs, start)
-                            .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + key))
-                            .block());
+            fileMap.forEach((key, normalizeRequestPostelInputs) -> execBatchRequest(requestToProcessMap.get(key), key, normalizeRequestPostelInputs, start)
+                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + key))
+                    .block());
             clearMap();
         }
     }
@@ -200,7 +199,7 @@ public class AddressBatchRequestService {
      * then it adds them to a map with the current batchId as key.
      */
     private void closeOpenedRequest() {
-        if (!CollectionUtils.isEmpty(requestToProcess) && !CollectionUtils.isEmpty(listToConvert)) {
+        if(!CollectionUtils.isEmpty(requestToProcess) && !CollectionUtils.isEmpty(listToConvert)){
             List<NormalizeRequestPostelInput> finalListToConvert = new ArrayList<>(listToConvert);
             List<BatchRequest> finalRequestToProcess = new ArrayList<>(requestToProcess);
             fileMap.put(batchId, finalListToConvert);
@@ -239,10 +238,9 @@ public class AddressBatchRequestService {
      * It creates a new batch request and starts processing it.
      */
     private int openNewRequest(List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
-        String newBatchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
-        if (fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
+        String newBatchId =  pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
+        if(fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
             listToConvert.addAll(batchRequestAddresses);
-
             startProcessingBatchRequest(batchRequest, newBatchId, requestToProcess)
                     .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + newBatchId))
                     .block();
@@ -269,12 +267,11 @@ public class AddressBatchRequestService {
     }
 
     private int processCsvRawAndIncrementCsvCount(int csvCount, List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
-        listToConvert.addAll(batchRequestAddresses);
-
-        startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
-                .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + batchId))
-                .block();
-        return csvCount + batchRequestAddresses.size();
+            listToConvert.addAll(batchRequestAddresses);
+            startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
+                    .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + batchId))
+                    .block();
+            return csvCount + batchRequestAddresses.size();
     }
 
     /**
@@ -284,7 +281,6 @@ public class AddressBatchRequestService {
      */
     private Mono<Void> startProcessingBatchRequest(BatchRequest request, String batchId, List<BatchRequest> requestToProcess) {
         setNewDataOnBatchRequest(request, batchId);
-
         return addressBatchRequestRepository.setNewBatchIdToBatchRequest(request)
                 .doOnError(ConditionalCheckFailedException.class,
                         e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip correlationId: {}", request.getCorrelationId(), e))
@@ -345,7 +341,6 @@ public class AddressBatchRequestService {
                 })
                 .flatMap(this::callPostelActivationApi);
     }
-
 
     private void setNewDataOnBatchRequest(BatchRequest item, String batchId) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
