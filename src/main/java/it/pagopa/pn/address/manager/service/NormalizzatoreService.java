@@ -98,6 +98,13 @@ public class NormalizzatoreService {
                 });
     }
 
+    /**
+     * The callbackNormalizedAddress function is called by the PN Address Manager service when it has completed normalizing a batch of addresses.
+     * The function checks that the API key provided in the request matches one stored in our database, and then finds the PostelBatch object
+     * associated with this callback request. It then checks that the output fileKey received exists in safeStorage and verify given checksum
+     * with sha256 retrieved from safeStorage, and if so, send to internalQueue the normalized callback request,
+     * Finally send synchronous response to the caller with successfully or error response.
+     */
     public Mono<OperationResultCodeResponse> callbackNormalizedAddress(NormalizerCallbackRequest callbackRequestData, String pnAddressManagerCxId, String xApiKey) {
         return checkApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> findPostelBatch(callbackRequestData.getRequestId().split(RETRY_SUFFIX)[0]))

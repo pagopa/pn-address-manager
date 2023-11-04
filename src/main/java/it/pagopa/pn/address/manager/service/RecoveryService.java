@@ -26,13 +26,11 @@ import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESSMANAGER_BATCHREQUEST;
-import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
 @CustomLog
@@ -59,6 +57,12 @@ public class RecoveryService {
         this.postelBatchRepository = postelBatchRepository;
     }
 
+    /**
+     * The recoveryBatchRequest function is responsible for recovering batch requests that have been
+     * assigned to a batch but not yet processed. This function will recover all the requests
+     * that are in the TAKEN_CHARGE status and have lastReserved data more than configurable delay have
+     * passed since the last processing (lastReserved column)
+     */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.recovery-delay}")
     @SchedulerLock(name = "batchRequestRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
             lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
@@ -80,6 +84,15 @@ public class RecoveryService {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchRequest end");
     }
 
+    /**
+     * The recoveryPostelActivation function is a scheduled function that checks the
+     * postelBatchRepository for any batches that have been marked as failed,
+     * and resets them to be ready for recovery.
+     * The resetPostelBatchForRecovery function in the PostelBatchRepository class uses conditional check expressions to ensure
+     * that only batches with a status of FAILED are updated.
+     * Finally, recall postel Normalizer for each postel batch.
+     * If there are no such batches, then nothing happens and the scheduler waits until its next run time before checking again.
+     */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.postel.recovery-delay}")
     @SchedulerLock(name = "postelBatch", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
             lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
@@ -99,6 +112,14 @@ public class RecoveryService {
     }
 
 
+    /**
+     * The recoveryBatchSendToEventbridge function is a scheduled function that recovers any batch requests
+     * that were not sent to EventBridge due to an error in the sendToEventbridge function.
+     * The recoveryBatchSendToEventbridge function uses the getBatchRequest() method, which queries DynamoDB for all BatchRequests with
+     * a sendStatus of NOT_SENT;.
+     * If there are no pending batch requests, then it logs this information and ends execution.
+     * Otherwise, it creates a reservationId (a UUID) and executes execBatchSendToEventBridge().
+     */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.eventbridge-recovery-delay}")
     @SchedulerLock(name = "sendToEventBridgeRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
             lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
@@ -110,11 +131,9 @@ public class RecoveryService {
             page = getBatchRequest(lastEvaluatedKey);
             lastEvaluatedKey = page.lastEvaluatedKey();
             if (!page.items().isEmpty()) {
-                String reservationId = UUID.randomUUID().toString();
                 Mono.just(page.items())
                         .flatMap(requestToRecover -> execBatchSendToEventBridge(requestToRecover)
                                 .thenReturn(requestToRecover.size()))
-                        .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, "batch_id:" + reservationId))
                         .subscribe(c -> log.info(ADDRESS_NORMALIZER_ASYNC + "executed batch EventBridge recovery on {} requests", c),
                                 e -> log.error(ADDRESS_NORMALIZER_ASYNC + "failed execution of batch request EventBridge recovery", e));
             } else {
@@ -124,6 +143,12 @@ public class RecoveryService {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchSendToEventBridge end");
     }
 
+    /**
+     * The cleanStoppedRequest function is a scheduled function that checks for any PostelBatch objects in the DynamoDB table
+     * with a status of WORKING and workingTtl expires.
+     * If it finds any, it will then retrieve any related batchRequest, reset them and call incrementAndCheckRetry for these batch requests.
+     * Finally, delete any expired postelBatch
+     */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-clean-request}")
     @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
             lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
