@@ -67,8 +67,8 @@ public class PostelBatchService {
     private BatchRequest retrieveNormalizedAddressAndSetToBatchRequestMessage(BatchRequest batchRequest, Map<String, List<NormalizedAddress>> map) {
         log.info("Start check postel response for normalizeRequest with correlationId: [{}]", batchRequest.getCorrelationId());
         if (map.get(batchRequest.getCorrelationId()) != null
-                && map.get(batchRequest.getCorrelationId()).size() == addressUtils.getNormalizeRequestFromBatchRequest(batchRequest).size()) {
-            log.info("Postel response for request with correlationId: [{}] is complete", batchRequest.getCorrelationId());
+                && map.get(batchRequest.getCorrelationId() + "#" + batchRequest.getCreatedAt()).size() == addressUtils.getNormalizeRequestFromBatchRequest(batchRequest).size()) {
+            log.info("Postel response for request with correlationId: [{}] and createdAt: [{}] is complete", batchRequest.getCorrelationId(), batchRequest.getCreatedAt());
             batchRequest.setStatus(BatchStatus.WORKED.name());
             batchRequest.setMessage(verifyPostelAddressResponse(map.get(batchRequest.getCorrelationId()), batchRequest.getCorrelationId()));
         } else {

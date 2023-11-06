@@ -24,6 +24,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -203,7 +204,7 @@ class AddressUtilsTest {
         normalizeRequest.setId("id");
         normalizeRequestList.add(normalizeRequest);
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.toNormalizeRequestPostelInput(normalizeRequestList,"correlationId"));
+        assertNotNull(addressUtils.toNormalizeRequestPostelInput(normalizeRequestList,"correlationId", LocalDateTime.now()));
     }
 
 
@@ -255,7 +256,7 @@ class AddressUtilsTest {
     @Test
     void getCorrelationId(){
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.getCorrelationId("prova"));
+        assertNotNull(addressUtils.getCorrelationId("prova#id#id"));
         assertNotNull(addressUtils.getCorrelationId(""));
     }
 
