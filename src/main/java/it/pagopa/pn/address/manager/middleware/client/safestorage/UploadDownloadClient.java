@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.middleware.client.safestorage;
 
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -13,10 +13,11 @@ import reactor.core.publisher.Mono;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_UPLOAD_DOWNLOAD_FILE;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
-@Slf4j
+@CustomLog
 public class UploadDownloadClient {
 
     private final WebClient webClient;
@@ -29,6 +30,7 @@ public class UploadDownloadClient {
 
     public Mono<String> uploadContent(String content, FileCreationResponseDto fileCreationResponse, String sha256) {
         HttpMethod httpMethod = fileCreationResponse.getUploadMethod() == FileCreationResponseDto.UploadMethodEnum.POST ? HttpMethod.POST : HttpMethod.PUT;
+        log.logStartingProcess(PROCESS_SERVICE_UPLOAD_DOWNLOAD_FILE);
         log.info("start to upload file to: {}", fileCreationResponse.getUploadUrl());
         return webClient.method(httpMethod)
                 .uri(URI.create(fileCreationResponse.getUploadUrl()))
@@ -46,6 +48,8 @@ public class UploadDownloadClient {
     }
 
     public Mono<byte[]> downloadContent(String downloadUrl) {
+        log.logStartingProcess(PROCESS_SERVICE_UPLOAD_DOWNLOAD_FILE);
+        log.info("start to download file to: {}", downloadUrl);
         return webClient.get()
                 .uri(URI.create(downloadUrl))
                 .retrieve()

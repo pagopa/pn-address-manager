@@ -1,11 +1,11 @@
 package it.pagopa.pn.address.manager.constant;
 
+import lombok.CustomLog;
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
 import java.util.Objects;
 @Getter
-@Slf4j
+@CustomLog
 public enum PostelNErrorNorm {
 	ERROR_001(1, "IL CAP NON E' PRESENTE IN INPUT"),
 	ERROR_002(2, "LA PROVINCIA NON E' PRESENTE IN INPUT"),

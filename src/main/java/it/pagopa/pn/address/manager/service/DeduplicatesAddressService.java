@@ -10,15 +10,17 @@ import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_SYNC;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_CHECKING_APIKEY;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.APIKEY_DOES_NOT_EXISTS;
 
 @Service
-@Slf4j
+@CustomLog
 public class DeduplicatesAddressService {
 
     private final AddressUtils addressUtils;
@@ -43,8 +45,11 @@ public class DeduplicatesAddressService {
     }
 
     public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request, String pnAddressManagerCxId, String xApiKey) {
+
         return checkApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> {
+                    log.logCheckingOutcome(PROCESS_CHECKING_APIKEY, true);
+                    log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for request: [{}]", request.getCorrelationId());
                     if(Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())){
                         return Mono.just(createDeduplicatesResponseByDeduplicatesRequest(request));
                     }
@@ -67,6 +72,7 @@ public class DeduplicatesAddressService {
     }
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
+        log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
         return apiKeyRepository.findById(cxId)
                 .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
 

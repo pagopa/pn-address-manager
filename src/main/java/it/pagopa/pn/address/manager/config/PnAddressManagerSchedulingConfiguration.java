@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.config;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import net.javacrumbs.shedlock.core.LockProvider;
 import net.javacrumbs.shedlock.provider.dynamodb2.DynamoDBLockProvider;
 import net.javacrumbs.shedlock.spring.annotation.EnableSchedulerLock;
@@ -12,7 +12,7 @@ import software.amazon.awssdk.services.dynamodb.DynamoDbClient;
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "10m")
 @Configuration
-@Slf4j
+@CustomLog
 public class PnAddressManagerSchedulingConfiguration {
 
     @Bean

@@ -13,6 +13,7 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.POSTEL;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_DEDUPLICA;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_POSTEL_CLIENT;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_POSTEL_CLIENT;
 
@@ -26,7 +27,7 @@ public class DeduplicaClient {
 
 
     public Mono<DeduplicaResponse> deduplica(DeduplicaRequest inputDeduplica) {
-        log.logInvokingExternalService(POSTEL, "Calling DeduplicaNormalizzaRest");
+        log.logInvokingExternalService(PROCESS_SERVICE_DEDUPLICA, "Calling DeduplicaNormalizzaRest");
         return postelApi.deduplica(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), inputDeduplica)
                 .onErrorMap(throwable -> {
                     if (throwable instanceof WebClientResponseException ex) {

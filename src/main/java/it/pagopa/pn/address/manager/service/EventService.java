@@ -1,19 +1,18 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.amazonaws.handlers.AsyncHandler;
 import com.amazonaws.services.eventbridge.AmazonEventBridgeAsync;
 import com.amazonaws.services.eventbridge.model.PutEventsRequest;
 import com.amazonaws.services.eventbridge.model.PutEventsRequestEntry;
 import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Slf4j
+@CustomLog
 @Component
 public class EventService {
 
