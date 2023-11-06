@@ -117,7 +117,9 @@ public class NormalizzatoreService {
     }
 
     private Mono<PostelBatch> updateWithFileKeyTimestampAndError(PostelBatch postelBatch, NormalizerCallbackRequest callbackRequestData) {
-        postelBatch.setOutputFileKey(callbackRequestData.getUri());
+        if(StringUtils.hasText(callbackRequestData.getUri())) {
+            postelBatch.setOutputFileKey(callbackRequestData.getUri().replace(SAFE_STORAGE_URL_PREFIX, ""));
+        }
         postelBatch.setCallbackTimeStamp(LocalDateTime.now());
         postelBatch.setError(callbackRequestData.getError());
 
