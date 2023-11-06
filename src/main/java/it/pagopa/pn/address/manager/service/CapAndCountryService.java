@@ -8,6 +8,7 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.Deduplicates
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.repository.CapRepository;
 import it.pagopa.pn.address.manager.repository.CountryRepository;
+import lombok.CustomLog;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -18,7 +19,7 @@ import java.time.LocalDateTime;
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.PNADDR002_MESSAGE;
 
 @Component
-@Slf4j
+@CustomLog
 public class CapAndCountryService {
 
     private final CapRepository capRepository;
@@ -85,11 +86,13 @@ public class CapAndCountryService {
     }
 
     private Mono<CountryModel> verifyCountry(String country) {
+        log.logChecking("checking country");
         return countryRepository.findByName(country)
                 .flatMap(this::checkValidity);
     }
 
     private Mono<CapModel> verifyCap(String cap) {
+        log.logChecking("checking cap");
         return capRepository.findValidCap(cap)
                 .flatMap(this::checkValidity);
     }

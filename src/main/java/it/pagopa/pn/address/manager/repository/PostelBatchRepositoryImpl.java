@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.repository;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
+import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -22,6 +23,7 @@ import java.util.Map;
 import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
 import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.GSI_SWT;
 @Component
+@CustomLog
 public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
     private final DynamoDbAsyncTable<PostelBatch> table;
@@ -39,7 +41,10 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
     @Override
     public Mono<PostelBatch> create(PostelBatch postelBatch) {
-        return Mono.fromFuture(table.putItem(postelBatch)).thenReturn(postelBatch);
+        log.debug("Inserting data {} in DynamoDB table {}", postelBatch, table);
+        return Mono.fromFuture(table.putItem(postelBatch))
+                .doOnNext(unused -> log.info("Inserted data in DynamoDB table {}", table))
+                .thenReturn(postelBatch);
     }
 
     @Override

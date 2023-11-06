@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.middleware.queue.consumer;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCallbackEvent;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
+import lombok.CustomLog;
 import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +14,7 @@ import reactor.core.scheduler.Scheduler;
 import java.util.function.Consumer;
 
 @Configuration
-@lombok.CustomLog
+@CustomLog
 public class NormalizeInputsHandler {
 
     private final NormalizeAddressService normalizeAddressService;

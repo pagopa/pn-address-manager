@@ -7,7 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.common.rest.error.v1.dto.Problem;
 import it.pagopa.pn.commons.exceptions.ExceptionHelper;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.OperationResultCodeResponse;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -36,7 +36,7 @@ import java.util.Objects;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 
-@Slf4j
+@CustomLog
 @Order(-2)
 @Configuration
 @Import(ExceptionHelper.class)

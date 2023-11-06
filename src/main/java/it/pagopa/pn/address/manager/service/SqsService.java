@@ -7,7 +7,7 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeReq
 import it.pagopa.pn.address.manager.model.InternalCodeSqsDto;
 import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 
-@Slf4j
+@CustomLog
 @Component
 public class SqsService {
 

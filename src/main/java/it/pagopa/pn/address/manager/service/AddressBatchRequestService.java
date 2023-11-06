@@ -18,7 +18,7 @@ import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.http.HttpStatus;
@@ -42,10 +42,11 @@ import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.CONTE
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.NOT_SENT;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.SENT;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_POSTEL_ATTIVAZIONE;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
-@Slf4j
+@CustomLog
 public class AddressBatchRequestService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
@@ -61,10 +62,16 @@ public class AddressBatchRequestService {
     private final Clock clock;
     private final List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
     private final List<BatchRequest> requestToProcess = new ArrayList<>();
+
+    /** Keeps track of all BatchRequest object involved in a single batch (key: batchId, value: batchRequest list).*/
     private final Map<String, List<BatchRequest>> requestToProcessMap = new HashMap<>();
+
+    /**
+     * Keeps track of all files created during a batch.
+     * Each file will be liked to a call to the Postel activation service (key: batchId, value: list of file addresses).
+     */
     private final Map<String, List<NormalizeRequestPostelInput>> fileMap = new HashMap<>();
     private String batchId;
-
 
 
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
@@ -111,25 +118,40 @@ public class AddressBatchRequestService {
         }
     }
 
-    public void batchAddressRequest() {
+    /**
+     * The batchAddressRequest function is responsible for retrieving and processing the batch request.
+     * The records, which contain a list of address each, can fill many files (it depends on the maximum csv file size
+     * allowed and on the maximum number of files allowed (configurable value)), which means multiple calls, one for each csv files created
+     * during the process, to the Postel activation service.
+     */
 
+    public void batchAddressRequest() {
         Instant start = clock.instant();
         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest start from first {}", start);
 
         retrieveAndProcessBatchRequest();
+
         closeOpenedRequest();
+
         createAndProcessFile(start);
+
         batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
 
         Duration timeSpent = AddressUtils.getTimeSpent(start);
+
         List<String> batchIdList = fileMap.keySet().stream().toList();
         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest - batchId: [{}] query end. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
 
         if (timeSpent.compareTo(Duration.ofMillis(pnAddressManagerConfig.getNormalizer().getBatchRequest().getLockAtMost())) > 0) {
-            log.error("Time spent is greater then lockAtMostFor. Multiple nodes could schedule the same actions.");
+            log.warn("Time spent is greater than lockAtMostFor. Multiple nodes could schedule the same actions.");
         }
     }
 
+    /**
+     * The retrieveAndProcessBatchRequest function retrieves a batch of requests from the database and processes them.
+     * The function will continue to retrieve batches until there are no more requests in the database
+     * or until it has reached maximum number of csv files which can be processed in parallel.
+     */
     private void retrieveAndProcessBatchRequest() {
         Page<BatchRequest> page;
         Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
@@ -138,6 +160,7 @@ public class AddressBatchRequestService {
         do {
 
             Instant startPagedQuery = clock.instant();
+
             page = getBatchRequest(lastEvaluatedKey);
             lastEvaluatedKey = page.lastEvaluatedKey();
             if (!page.items().isEmpty()) {
@@ -147,13 +170,20 @@ public class AddressBatchRequestService {
             }
 
             Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+
             List<String> batchIdList = fileMap.keySet().stream().toList();
             log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end query. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
+
         } while (!CollectionUtils.isEmpty(lastEvaluatedKey) &&
                 (pnAddressManagerConfig.getNormalizer().getMaxFileNumber() == 0 || (fileMap.size() + 1) <= pnAddressManagerConfig.getNormalizer().getMaxFileNumber()));
 
     }
 
+    /**
+     * The createAndProcessFile function is called when the timer fires.
+     * It checks to see if there are any requests in the requestToProcessMap and fileMap,
+     * then it iterates through each entry in fileMap and calls execBatchRequest for each entry.
+     */
     private void createAndProcessFile(Instant start) {
         if (!CollectionUtils.isEmpty(requestToProcessMap) && !CollectionUtils.isEmpty(fileMap)) {
             fileMap.forEach((key, normalizeRequestPostelInputs) -> execBatchRequest(requestToProcessMap.get(key), key, normalizeRequestPostelInputs, start)
@@ -163,6 +193,11 @@ public class AddressBatchRequestService {
         }
     }
 
+    /**
+     * The closeOpenedRequest function is called when the batchId changes.
+     * It checks if there are any requests to process and listToConvert objects in memory,
+     * then it adds them to a map with the current batchId as key.
+     */
     private void closeOpenedRequest() {
         if(!CollectionUtils.isEmpty(requestToProcess) && !CollectionUtils.isEmpty(listToConvert)){
             List<NormalizeRequestPostelInput> finalListToConvert = new ArrayList<>(listToConvert);
@@ -173,8 +208,17 @@ public class AddressBatchRequestService {
         }
     }
 
+    /**
+     * The processRequest function takes a list of BatchRequest objects and an integer representing the number of addresses
+     * currently in the CSV file. It then iterates through each BatchRequest object, converting it into a format suitable for
+     * Postel processing. If adding these batch requests to the current CSV file would not exceed its maximum size, they are added
+     * to that file and csvCount is incremented by their number. Otherwise, closeMaps() is called (which put new Object on fileMap
+     * and batchRequest map), openNewRequest() is called (which start to create new Maps object),
+     * and csvCount is set equal to either 0 or maxCsv
+     */
     private int processRequest(List<BatchRequest> items, int lastCsvCount) {
         for (BatchRequest batchRequest : items) {
+
             List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
             if (lastCsvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
                 lastCsvCount = processCsvRawAndIncrementCsvCount(lastCsvCount, batchRequestAddresses, batchRequest);
@@ -189,6 +233,10 @@ public class AddressBatchRequestService {
         return lastCsvCount;
     }
 
+    /**
+     * The openNewRequest function is called when the current batch request has reached its maximum size.
+     * It creates a new batch request and starts processing it.
+     */
     private int openNewRequest(List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
         String newBatchId =  pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
         if(fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
@@ -202,9 +250,17 @@ public class AddressBatchRequestService {
         return pnAddressManagerConfig.getNormalizer().getMaxCsvSize();
     }
 
+
+    /**
+     * The closeMaps function is called when the batch requests has been processed, and it is ready to be stored in a csv file .
+     * It stores the list of NormalizeRequestPostelInput objects and BatchRequest objects in maps,
+     * using the batchId as a key.  The lists are then cleared to prepare for processing another batch file (clearList() method)
+     */
     private void closeMaps() {
         List<NormalizeRequestPostelInput> finalListToConvert = new ArrayList<>(listToConvert);
         List<BatchRequest> finalRequestToProcess = new ArrayList<>(requestToProcess);
+
+        // Store processed batch requests in maps.
         fileMap.put(batchId, finalListToConvert);
         requestToProcessMap.put(batchId, finalRequestToProcess);
         clearList();
@@ -218,7 +274,11 @@ public class AddressBatchRequestService {
             return csvCount + batchRequestAddresses.size();
     }
 
-
+    /**
+     * The startProcessingBatchRequest function is responsible for setting new data on the batch request, including the
+     * batch ID. It then updates the batch request in the repository, and after its completion add to requestToProcess List all
+     * updated batchRequest
+     */
     private Mono<Void> startProcessingBatchRequest(BatchRequest request, String batchId, List<BatchRequest> requestToProcess) {
         setNewDataOnBatchRequest(request, batchId);
         return addressBatchRequestRepository.setNewBatchIdToBatchRequest(request)
@@ -230,6 +290,11 @@ public class AddressBatchRequestService {
     }
 
 
+    /**
+     * The getBatchRequest function is used to retrieve a batch of address normalization requests from the DynamoDB table.
+     * It retrieves all the BATCH_REQUEST records that have not been assigned to any batch yet (i.e., their BATCH_ID field is null) and
+     * that have status like NOT_WORKED.
+     */
     private Page<BatchRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
         return addressBatchRequestRepository.getBatchRequestByNotBatchId(lastEvaluatedKey, pnAddressManagerConfig.getNormalizer().getBatchRequest().getQueryMaxSize())
                 .blockOptional()
@@ -239,6 +304,13 @@ public class AddressBatchRequestService {
                 });
     }
 
+
+    /**
+     * The execBatchRequest function is responsible for converting a list of batch requests into a CSV file content,
+     * computing the SHA-256 hash of the CSV content, creating and uploading the CSV file to safe storage service.
+     * If an error occurs during any of these steps, it will check for retry conditions and increment retry counters if necessary.
+     * If no errors occur during these steps then it will call activatePostelBatch function with all required parameters.
+     */
     private Mono<Void> execBatchRequest(List<BatchRequest> items, String key, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
 
             String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
@@ -253,6 +325,13 @@ public class AddressBatchRequestService {
                     .flatMap(t -> activatePostelBatch(items, t, key, sha256, start));
     }
 
+    /**
+     * The activatePostelBatch function is responsible for creating a Postel batch record in DB with the file key, batch ID,
+     * and SHA-256 hash.
+     * If an error occurs while creating the PostelBatch, then it will increment the retry count and check if it has exceeded its limit.
+     * If so, then an exception is thrown to indicate that we have reached our maximum number of retries. Otherwise, we try again to create a PostelBatch.
+     * Once created successfully call Postel Normalizer.
+     */
     private Mono<Void> activatePostelBatch(List<BatchRequest> items, FileCreationResponseDto fileCreationResponseDto, String key, String sha256, Instant start) {
         return createPostelBatch(fileCreationResponseDto.getKey(), key, sha256)
                 .onErrorResume(v -> incrementAndCheckRetry(items, v, key).then(Mono.error(v)))
@@ -271,7 +350,8 @@ public class AddressBatchRequestService {
     }
 
     public Mono<Void> callPostelActivationApi(PostelBatch postelBatch) {
-
+        log.logInvokingExternalService(PROCESS_SERVICE_POSTEL_ATTIVAZIONE, postelBatch.getBatchId());
+        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - calling postel activation", postelBatch.getBatchId());
         Mono.fromCallable(() -> postelClient.activatePostel(postelBatch))
                 .onErrorResume(throwable -> {
                     if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
@@ -331,6 +411,10 @@ public class AddressBatchRequestService {
     }
 
 
+    /**
+     * The incrementAndCheckRetry function is used to increment the retry count of a batch request and check if it has reached its maximum number of retries.
+     * If the maximum number of retries has been reached, then the status will be set to ERROR and sent to DLQ.
+     */
     protected Mono<Void> incrementAndCheckRetry(List<BatchRequest> requests, Throwable throwable, String batchId) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         return Flux.fromStream(requests.stream())
@@ -356,6 +440,11 @@ public class AddressBatchRequestService {
                 });
     }
 
+    /**
+     * The incrementAndCheckRetry function is used to increment the retry count of a PostelBatch object and check if it has reached its maximum number of retries.
+     * If the maximum number of retries has been reached, then an error status will be set on the PostelBatch object, restore related batch
+     * request's status on TAKEN_CHARGE and call incrementAndCheckRetry for these batchRequests
+     */
     protected Mono<Void> incrementAndCheckRetry(PostelBatch postelBatch, Throwable throwable) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         return Mono.just(postelBatch)
@@ -401,6 +490,12 @@ public class AddressBatchRequestService {
                 .flatMap(batchRequestList -> incrementAndCheckRetry(batchRequestList, null, batchId));
     }
 
+    /**
+     * The sendToEventBridgeOrInDlq function is a switch statement that determines what to do with the BatchRequest
+     * based on its status. If the status is WORKED, then it sends events to EventBridge and updates the request's
+     * sendStatus and ttl fields. If there was an error sending events, then it sets sendStatus to NOT_SENT. Otherwise,
+     * if the status is ERROR it sends the request to a Dead Letter Queue (DLQ). Other status is ignored.
+     */
     private Mono<BatchRequest> sendToEventBridgeOrInDlq(BatchRequest request) {
         LocalDateTime now = LocalDateTime.now();
 

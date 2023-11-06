@@ -9,7 +9,7 @@ import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -21,7 +21,7 @@ import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
 import static java.util.stream.Collectors.groupingBy;
 
 @Component
-@Slf4j
+@CustomLog
 public class PostelBatchService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
