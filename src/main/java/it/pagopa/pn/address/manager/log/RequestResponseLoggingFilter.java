@@ -1,7 +1,7 @@
 package it.pagopa.pn.address.manager.log;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -12,7 +12,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-@Slf4j
+@CustomLog
 @Component
 public class RequestResponseLoggingFilter implements WebFilter {
 

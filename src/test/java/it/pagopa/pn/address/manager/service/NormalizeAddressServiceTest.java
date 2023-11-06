@@ -7,9 +7,7 @@ import it.pagopa.pn.address.manager.config.SchedulerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCallbackEvent;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
@@ -114,7 +112,18 @@ class NormalizeAddressServiceTest {
         normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         when(addressUtils.normalizeRequestToResult(any())).thenReturn(new NormalizeItemsResult());
         when(addressUtils.toJson(any())).thenReturn("json");
-        StepVerifier.create(normalizeAddressService.handleRequest(PnNormalizeRequestEvent.Payload.builder().build())).expectComplete();
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corrId");
+        NormalizeRequest item = new NormalizeRequest();
+        item.setId("id");
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setCity("Roma");
+        analogAddress.setCap("00178");
+        analogAddress.setPr("RM");
+        item.setAddress(analogAddress);
+        request.setRequestItems(List.of(item));
+        StepVerifier.create(normalizeAddressService.handleRequest(PnNormalizeRequestEvent.Payload.builder()
+                .normalizeItemsRequest(request).build())).expectComplete();
     }
 
     @Test

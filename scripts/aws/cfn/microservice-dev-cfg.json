@@ -29,7 +29,7 @@
     "NormalizerRequestPrefix": "",
     "PnAddressManagerCxId": "pn-address-manager",
     "PnAddressManagerBatchCleanRequestDelay": "120000",
-    "PnAddressManagerNormalizerPostelWorkingTtl": "604800000",
+    "PnAddressManagerNormalizerPostelWorkingTtl": "604800",
     "PnAddressManagerNormalizerPostelTtl": "1209600",
     "PnAddressManagerNormalizerBatchRequestLockAtMost": "120000",
     "PnAddressManagerNormalizerBatchRequestLockAtLeast": "1000",

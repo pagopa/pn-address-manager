@@ -14,6 +14,7 @@ import it.pagopa.pn.address.manager.model.*;
 import it.pagopa.pn.address.manager.service.CsvService;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.NormalizerCallbackRequest;
+import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -33,7 +34,7 @@ import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 @Component
-@lombok.CustomLog
+@CustomLog
 public class AddressUtils {
     private static final String ERROR_DURING_VERIFY_CSV = "Error during verify csv";
     private final List<CapModel> capList;

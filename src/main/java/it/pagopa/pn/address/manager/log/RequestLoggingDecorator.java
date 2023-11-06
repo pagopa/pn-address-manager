@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.log;
 
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 
 import static it.pagopa.pn.address.manager.log.RequestResponseLoggingFilter.LOG_REQUEST_BODY;
 
-@Slf4j
+@CustomLog
 public class RequestLoggingDecorator extends ServerHttpRequestDecorator {
 
     private final StringBuilder body = new StringBuilder();

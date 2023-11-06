@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.middleware.queue.consumer;
 
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.commons.utils.MDCUtils;
+import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.cloud.function.context.MessageRoutingCallback;
@@ -15,7 +16,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 @Configuration
-@lombok.CustomLog
+@CustomLog
 @RequiredArgsConstructor
 public class PnEventInboundService {
 

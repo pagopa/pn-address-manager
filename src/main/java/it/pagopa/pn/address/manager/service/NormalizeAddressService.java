@@ -15,17 +15,18 @@ import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
-import lombok.extern.slf4j.Slf4j;
+import lombok.CustomLog;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
+import static it.pagopa.pn.address.manager.constant.ProcessStatus.*;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
 
-@Slf4j
+@CustomLog
 @Service
 public class NormalizeAddressService {
 
@@ -53,6 +54,7 @@ public class NormalizeAddressService {
     }
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
+        log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
         return apiKeyRepository.findById(cxId)
                 .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
 
@@ -60,7 +62,10 @@ public class NormalizeAddressService {
 
     public Mono<AcceptedResponse> normalizeAddress(String xApiKey, String cxId, NormalizeItemsRequest normalizeItemsRequest) {
         return checkApiKey(cxId, xApiKey)
-                .doOnNext(apiKeyModel -> log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for request: [{}]", normalizeItemsRequest.getCorrelationId()))
+                .doOnNext(apiKeyModel -> {
+                    log.logCheckingOutcome(PROCESS_CHECKING_APIKEY, true);
+                    log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for request: [{}]", normalizeItemsRequest.getCorrelationId());
+                })
                 .flatMap(apiKeyModel -> sqsService.pushToInputQueue(InternalCodeSqsDto.builder()
                                 .xApiKey(xApiKey)
                                 .pnAddressManagerCxId(cxId)
@@ -77,6 +82,8 @@ public class NormalizeAddressService {
     }
 
     public Mono<Void> handleRequest(PnNormalizeRequestEvent.Payload payload) {
+        log.logStartingProcess(PROCESS_SERVICE_NORMALIZE_ADDRESS);
+        log.info("Received normalizeAddressAsync request for correlationId: {}", payload.getNormalizeItemsRequest().getCorrelationId());
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())) {
             return Mono.fromCallable(() -> addressUtils.normalizeRequestToResult(payload.getNormalizeItemsRequest()))
                     .doOnNext(normalizeItemsResult -> {
@@ -95,6 +102,8 @@ public class NormalizeAddressService {
     }
 
     public Mono<Void> handlePostelCallback(PnPostelCallbackEvent.Payload payload) {
+        log.logStartingProcess(PROCESS_SERVICE_POSTEL_CALLBACK);
+        log.info("Received postel callback for requestId: {}", payload.getRequestId());
         return postelBatchService.findPostelBatch(payload.getRequestId())
                 .flatMap(postelBatch -> {
                     if (StringUtils.hasText(payload.getError())) {
