@@ -50,6 +50,10 @@ public class SqsService {
     public Mono<Void> sendToDlqQueue(BatchRequest batchRequest) {
         InternalCodeSqsDto internalCodeSqsDto = toInternalCodeSqsDto(batchRequest);
         return pushToInputDlqQueue(internalCodeSqsDto, batchRequest.getClientId())
+                .onErrorResume(throwable -> {
+                    log.error("error during push message for correlationId: [{}] to DLQ", batchRequest.getCorrelationId());
+                    return Mono.empty();
+                })
                 .then();
     }
 
