@@ -142,7 +142,9 @@ public class AddressBatchRequestService {
 
         Duration timeSpent = AddressUtils.getTimeSpent(start);
 
-        List<String> batchIdList = fileMap.keySet().stream().toList();
+        List<String> batchIdList = new ArrayList<>(fileMap.keySet().stream().toList());
+        batchIdList.add(batchId);
+
         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest - batchId: [{}] query end. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
 
         if (timeSpent.compareTo(Duration.ofMillis(pnAddressManagerConfig.getNormalizer().getBatchRequest().getLockAtMost())) > 0) {
