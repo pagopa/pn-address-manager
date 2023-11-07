@@ -58,7 +58,7 @@ public class RecoveryService {
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.recovery-delay}")
     @SchedulerLock(name = "batchRequestRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
     public void recoveryBatchRequest() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchRequest start");
         addressBatchRequestRepository.getBatchRequestToRecovery()
@@ -88,7 +88,7 @@ public class RecoveryService {
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.postel.recovery-delay}")
     @SchedulerLock(name = "postelBatch", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
     public void recoveryPostelActivation() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
         postelBatchRepository.getPostelBatchToRecover()
@@ -115,7 +115,7 @@ public class RecoveryService {
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.eventbridge-recovery-delay}")
     @SchedulerLock(name = "sendToEventBridgeRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
     public void recoveryBatchSendToEventbridge() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchSendToEventBridge start");
         Page<BatchRequest> page;
@@ -144,7 +144,7 @@ public class RecoveryService {
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-clean-request}")
     @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
     public void cleanStoppedRequest() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
         Page<PostelBatch> page = postelBatchRepository.getPostelBatchToClean()
