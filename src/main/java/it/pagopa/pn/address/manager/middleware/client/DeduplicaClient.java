@@ -6,6 +6,7 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.api.DeduplicaApi;
+import it.pagopa.pn.commons.log.PnLogger;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -27,8 +28,9 @@ public class DeduplicaClient {
 
 
     public Mono<DeduplicaResponse> deduplica(DeduplicaRequest inputDeduplica) {
-        log.logInvokingExternalService(PROCESS_SERVICE_DEDUPLICA, "Calling DeduplicaNormalizzaRest");
+        log.logInvokingExternalDownstreamService(POSTEL, PROCESS_SERVICE_DEDUPLICA);
         return postelApi.deduplica(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), inputDeduplica)
+                .doOnError(throwable -> log.logInvokationResultDownstreamFailed(POSTEL, throwable.getMessage()))
                 .onErrorMap(throwable -> {
                     if (throwable instanceof WebClientResponseException ex) {
                         throw new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT

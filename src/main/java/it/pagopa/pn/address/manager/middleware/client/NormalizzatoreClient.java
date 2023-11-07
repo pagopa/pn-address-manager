@@ -23,13 +23,14 @@ public class NormalizzatoreClient {
 	private final PnAddressManagerConfig pnAddressManagerConfig;
 
 	public NormalizzazioneResponse activatePostel(PostelBatch postelBatch) {
-		log.logInvokingExternalService(POSTEL, "Calling Activate Postel");
+		log.logInvokingExternalDownstreamService(POSTEL, "Calling Activate Postel");
 
 		NormalizzazioneRequest activatePostelRequest = new NormalizzazioneRequest();
 		activatePostelRequest.setRequestId(postelBatch.getBatchId() + RETRY_SUFFIX + postelBatch.getRetry());
 		activatePostelRequest.setUri(postelBatch.getFileKey());
 		activatePostelRequest.setSha256(postelBatch.getSha256());
-		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest)
+		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest).
+				doOnError(throwable -> log.logInvokationResultDownstreamFailed(POSTEL, throwable.getMessage()))
 				.block();
 
 	}
