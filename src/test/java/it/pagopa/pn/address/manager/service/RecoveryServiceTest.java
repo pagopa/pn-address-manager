@@ -7,6 +7,7 @@ import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -37,9 +38,13 @@ class RecoveryServiceTest {
 
     @MockBean PostelBatchRepository postelBatchRepository;
 
+
+    @MockBean
+    AddressUtils addressUtils;
+
     @Test
     void recoveryBatchRequest(){
-        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, postelBatchRepository);
+        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
         BatchRequest batchRequest = getBatchRequest();
         when( addressBatchRequestRepository.getBatchRequestToRecovery()).thenReturn(Mono.just(List.of(batchRequest)));
@@ -51,7 +56,7 @@ class RecoveryServiceTest {
 
     @Test
     void recoveryPostelActivation(){
-        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, postelBatchRepository);
+        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
         PostelBatch postelBatch = new PostelBatch();
         postelBatch.setBatchId("id");
@@ -78,7 +83,7 @@ class RecoveryServiceTest {
         normalizer.setMaxCsvSize(100);
         normalizer.setBatchRequest(batchRequest);
         pnAddressManagerConfig.setNormalizer(normalizer);
-        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, postelBatchRepository);
+        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
         BatchRequest batchRequest1 = getBatchRequest();
         BatchRequest batchRequest2 = getBatchRequest();
@@ -117,7 +122,7 @@ class RecoveryServiceTest {
         normalizer.setBatchRequest(batchRequest);
         pnAddressManagerConfig.setNormalizer(normalizer);
         recoveryService = new RecoveryService(addressBatchRequestRepository,
-                addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, postelBatchRepository);
+                addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
         BatchRequest batchRequest1= getBatchRequest();
         PostelBatch postelBatch1 = new PostelBatch();
         postelBatch1.setBatchId("id1");

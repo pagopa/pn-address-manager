@@ -77,6 +77,8 @@ public class PnAddressManagerConfig {
     public static class Sqs{
         private String inputQueueName;
         private String inputDlqQueueName;
+        private String callbackQueueName;
+        private String callbackDlqQueueName;
     }
 
     @Data

@@ -7,9 +7,14 @@ import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
+import it.pagopa.pn.address.manager.model.EventDetail;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -34,6 +39,7 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 
 @Service
 @CustomLog
+@RequiredArgsConstructor
 public class RecoveryService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
@@ -41,21 +47,8 @@ public class RecoveryService {
     private final SqsService sqsService;
     private final EventService eventService;
     private final PnAddressManagerConfig pnAddressManagerConfig;
-
+    private final AddressUtils addressUtils;
     private final PostelBatchRepository postelBatchRepository;
-
-    public RecoveryService(AddressBatchRequestRepository addressBatchRequestRepository,
-                           AddressBatchRequestService addressBatchRequestService,
-                           SqsService sqsService, EventService eventService,
-                           PnAddressManagerConfig pnAddressManagerConfig,
-                           PostelBatchRepository postelBatchRepository) {
-        this.addressBatchRequestRepository = addressBatchRequestRepository;
-        this.addressBatchRequestService = addressBatchRequestService;
-        this.sqsService = sqsService;
-        this.eventService = eventService;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-        this.postelBatchRepository = postelBatchRepository;
-    }
 
     /**
      * The recoveryBatchRequest function is responsible for recovering batch requests that have been
@@ -198,29 +191,39 @@ public class RecoveryService {
                 });
     }
 
-    private Mono<Void> execBatchSendToEventBridge(List<BatchRequest> batchRequest) {
+    private Mono<Void> execBatchSendToEventBridge(List<BatchRequest> batchRequestList) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        return Flux.fromStream(batchRequest.stream())
+        return Flux.fromStream(batchRequestList.stream())
                 .doOnNext(item -> item.setLastReserved(now))
                 .flatMap(item -> addressBatchRequestRepository.setNewReservationIdToBatchRequest(item)
                         .doOnError(ConditionalCheckFailedException.class,
                                 e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip correlationId: {}", item.getCorrelationId(), e))
                         .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty()))
                 .flatMap(this::evaluateStatusAndSendStatus)
-                .filter(item -> BatchSendStatus.ERROR.getValue().equalsIgnoreCase(item.getSendStatus()))
-                .flatMap(item -> sqsService.sendToDlqQueue(item)
-                        .thenReturn(item)
-                        .doOnNext(r -> {
-                            log.info(ADDRESS_NORMALIZER_ASYNC + "sent to dlq queue message for correlationId: {}", item.getCorrelationId());
-                            item.setSendStatus(BatchSendStatus.SENT_TO_DLQ.name());
-                        }))
+                .flatMap(this::checkSendStatusToSendToDLQ)
                 .flatMap(addressBatchRequestRepository::update)
                 .then();
     }
 
+    private Mono<BatchRequest> checkSendStatusToSendToDLQ(BatchRequest item) {
+        if(BatchSendStatus.ERROR.getValue().equalsIgnoreCase(item.getSendStatus())) {
+            return sqsService.sendToDlqQueue(item)
+                    .thenReturn(item)
+                    .doOnNext(r -> {
+                        log.info(ADDRESS_NORMALIZER_ASYNC + "sent to dlq queue message for correlationId: {}", item.getCorrelationId());
+                        item.setSendStatus(BatchSendStatus.SENT_TO_DLQ.name());
+                    });
+        }
+        return Mono.just(item);
+    }
+
     private Mono<BatchRequest> evaluateStatusAndSendStatus(BatchRequest item) {
         if (!BatchStatus.ERROR.getValue().equalsIgnoreCase(item.getStatus())) {
-            String message = item.getMessage();
+
+            NormalizeItemsResult normalizeItemsResult = constructNormalizeItemResult(item);
+            EventDetail eventDetail = new EventDetail(normalizeItemsResult, item.getClientId());
+            String message = addressUtils.toJson(eventDetail);
+
             return eventService.sendEvent(message)
                     .doOnNext(putEventsResult -> {
                         log.info("Event with correlationId {} sent successfully", item.getCorrelationId());
@@ -240,5 +243,13 @@ public class RecoveryService {
             item.setSendStatus(BatchSendStatus.ERROR.getValue());
             return Mono.just(item);
         }
+    }
+
+    private NormalizeItemsResult constructNormalizeItemResult(BatchRequest item) {
+        NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
+        List<NormalizeResult> itemsResult = addressUtils.getNormalizeResultFromBatchRequest(item);
+        normalizeItemsResult.setResultItems(itemsResult);
+        normalizeItemsResult.setCorrelationId(item.getCorrelationId());
+        return normalizeItemsResult;
     }
 }

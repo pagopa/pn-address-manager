@@ -177,11 +177,11 @@ public class AddressUtils {
         return normalizeResult;
     }
 
-    public List<NormalizeRequestPostelInput> toNormalizeRequestPostelInput(List<NormalizeRequest> normalizeRequestList, String correlationId) {
+    public List<NormalizeRequestPostelInput> toNormalizeRequestPostelInput(List<NormalizeRequest> normalizeRequestList, String correlationId, LocalDateTime createdAt) {
         return normalizeRequestList.stream()
                 .map(normalizeRequest -> {
                     NormalizeRequestPostelInput normalizeRequestPostelInput = new NormalizeRequestPostelInput();
-                    normalizeRequestPostelInput.setIdCodiceCliente(correlationId + "#" + normalizeRequest.getId());
+                    normalizeRequestPostelInput.setIdCodiceCliente(correlationId + "#" + createdAt + "#" + normalizeRequest.getId());
                     normalizeRequestPostelInput.setCap(normalizeRequest.getAddress().getCap());
                     normalizeRequestPostelInput.setLocalita(normalizeRequest.getAddress().getCity());
                     normalizeRequestPostelInput.setProvincia(normalizeRequest.getAddress().getPr());
@@ -205,7 +205,7 @@ public class AddressUtils {
     }
 
     public List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(BatchRequest batchRequest) {
-        return toNormalizeRequestPostelInput(getNormalizeRequestFromBatchRequest(batchRequest), batchRequest.getCorrelationId());
+        return toNormalizeRequestPostelInput(getNormalizeRequestFromBatchRequest(batchRequest), batchRequest.getCorrelationId(), batchRequest.getCreatedAt());
     }
 
     public String computeSha256(byte[] content) {
@@ -284,11 +284,11 @@ public class AddressUtils {
         return normalizedAddresses.stream().map(normalizedAddress -> {
             NormalizeResult result = new NormalizeResult();
             String[] index = normalizedAddress.getId().split("#");
-            if (index.length == 2) {
-                result.setId(index[1]);
-                log.info("Address with correlationId: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1],
+            if (index.length == 3) {
+                result.setId(index[2]);
+                log.info("Address with correlationId: [{}], createdAt: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1], index[2],
                         normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
-                if (normalizedAddress.getFPostalizzabile() == 0) {
+                if (normalizedAddress.getFPostalizzabile() != null && normalizedAddress.getFPostalizzabile() == 0) {
                     result.setError(decodeErrorErroreNorm(normalizedAddress, index));
                 } else {
                     result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
@@ -320,11 +320,16 @@ public class AddressUtils {
     }
 
 
-    public String getCorrelationId(String id) {
+    public String getCorrelationIdCreatedAt(String id) {
         if (org.springframework.util.StringUtils.hasText(id)) {
-            return id.split("#")[0];
+            String[] splittedId = id.split("#");
+            return splittedId[0] + "#" + splittedId[1];
         }
         return "noCorrelationId";
+    }
+
+    public String getCorrelationIdCreatedAt(BatchRequest batchRequest) {
+        return batchRequest.getCorrelationId() + "#" + batchRequest.getCreatedAt();
     }
 
     public PostelCallbackSqsDto getPostelCallbackSqsDto(NormalizerCallbackRequest callbackRequest, String url, String batchId) {
