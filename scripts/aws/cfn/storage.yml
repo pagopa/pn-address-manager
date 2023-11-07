@@ -73,6 +73,21 @@ Resources:
         MaxReceiveCount: 10
         DelaySeconds: 1
 
+  # Coda per interna per memorizzare chiamate alla callback da parte di Postel
+  # NB: usati i valori di default per: DelaySeconds, DeadLetterQueueName, MessageRetentionPeriod, MaxReceiveCount, DeadLetterMessageRetentionPeriod,
+  PnAddressManagerCallbackQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-address_manager_callback'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 300
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
   BatchRequestTable:
     Type: AWS::DynamoDB::Table
     UpdateReplacePolicy: Retain
@@ -284,6 +299,19 @@ Outputs:
     Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueURL
   PnAddressManagerInputsDLQARN:
     Value: !GetAtt PnAddressManagerInputsQueue.Outputs.DeadLetterQueueARN
+
+  # PnAddressManagerCallback Queue
+  PnAddressManagerCallbackQueueName:
+    Value: !GetAtt PnAddressManagerCallbackQueue.Outputs.QueueName
+  PnAddressManagerCallbackQueueARN:
+    Value: !GetAtt PnAddressManagerCallbackQueue.Outputs.QueueARN
+  PnAddressManagerCallbackDLQName:
+    Value: !GetAtt PnAddressManagerCallbackQueue.Outputs.DeadLetterQueueName
+  PnAddressManagerCallbackDLQURL:
+    Value: !GetAtt PnAddressManagerCallbackQueue.Outputs.DeadLetterQueueURL
+  PnAddressManagerCallbackDLQARN:
+    Value: !GetAtt PnAddressManagerCallbackQueue.Outputs.DeadLetterQueueARN
+
 
   ShedLockTableName:
     Value: !Ref ShedLockTable
