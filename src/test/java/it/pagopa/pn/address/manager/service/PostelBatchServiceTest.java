@@ -70,7 +70,7 @@ class PostelBatchServiceTest {
         NormalizedAddress normalizedAddress = new NormalizedAddress();
         normalizedAddress.setId("id");
         when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),0)).thenReturn(List.of(normalizedAddress));
-        when(addressUtils.getCorrelationId(anyString())).thenReturn("id");
+        when(addressUtils.getCorrelationIdCreatedAt(anyString())).thenReturn("id");
         BatchRequest batchRequest = new BatchRequest();
         batchRequest.setCorrelationId("id");
         batchRequest.setAddresses("yourAddresses");
@@ -102,7 +102,7 @@ class PostelBatchServiceTest {
         NormalizedAddress normalizedAddress = new NormalizedAddress();
         normalizedAddress.setId("id");
         when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),1)).thenReturn(List.of(normalizedAddress));
-        when(addressUtils.getCorrelationId(anyString())).thenReturn("id");
+        when(addressUtils.getCorrelationIdCreatedAt(anyString())).thenReturn("id");
         BatchRequest batchRequest = new BatchRequest();
         batchRequest.setBatchId("id");
         batchRequest.setCorrelationId("id");
@@ -139,7 +139,7 @@ class PostelBatchServiceTest {
         NormalizedAddress normalizedAddress = new NormalizedAddress();
         normalizedAddress.setId("id");
         when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),1)).thenReturn(List.of(normalizedAddress));
-        when(addressUtils.getCorrelationId(anyString())).thenReturn("id");
+        when(addressUtils.getCorrelationIdCreatedAt(anyString())).thenReturn("id");
         BatchRequest batchRequest = new BatchRequest();
         batchRequest.setBatchId("id");
         batchRequest.setCorrelationId("id");

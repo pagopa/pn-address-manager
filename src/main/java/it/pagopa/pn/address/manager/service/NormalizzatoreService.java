@@ -109,7 +109,7 @@ public class NormalizzatoreService {
         return checkApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> findPostelBatch(callbackRequestData.getRequestId().split(RETRY_SUFFIX)[0]))
                 .flatMap(postelBatch -> updateWithFileKeyTimestampAndError(postelBatch, callbackRequestData))
-                .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, postelBatch))
+                .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, postelBatch, pnAddressManagerCxId))
                 .onErrorResume(throwable -> {
                     log.error(CALLBACK_ERROR_LOG, throwable.getMessage(), throwable);
                     return Mono.error(throwable);
@@ -132,13 +132,13 @@ public class NormalizzatoreService {
                         SEMANTIC_ERROR_CODE)));
     }
 
-    private Mono<OperationResultCodeResponse> checkOutputFileOnFileStorage(NormalizerCallbackRequest normalizerCallbackRequest, PostelBatch postelBatch) {
+    private Mono<OperationResultCodeResponse> checkOutputFileOnFileStorage(NormalizerCallbackRequest normalizerCallbackRequest, PostelBatch postelBatch, String pnAddressManagerCxId) {
         OperationResultCodeResponse response = getOperationResultCodeOK();
         if (!StringUtils.hasText(normalizerCallbackRequest.getError())) {
             return getFile(normalizerCallbackRequest.getUri())
                     .flatMap(fileDownloadResponse -> {
                         log.info(ADDRESS_NORMALIZER_ASYNC + "callbackNormalizedAddress fileDownloadResponse:{}", fileDownloadResponse);
-                        return verifyCheckSumAndSendToInternalQueue(normalizerCallbackRequest, fileDownloadResponse, postelBatch)
+                        return verifyCheckSumAndSendToInternalQueue(normalizerCallbackRequest, fileDownloadResponse, postelBatch, pnAddressManagerCxId)
                                 .thenReturn(response);
                     })
                     .onErrorResume(throwable -> {
@@ -146,7 +146,7 @@ public class NormalizzatoreService {
                         return Mono.error(throwable);
                     });
         }
-        return sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, postelBatch, null)
+        return sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, postelBatch, null, pnAddressManagerCxId)
                 .thenReturn(response);
     }
 
@@ -158,12 +158,12 @@ public class NormalizzatoreService {
         return response;
     }
 
-    private Mono<Void> verifyCheckSumAndSendToInternalQueue(NormalizerCallbackRequest callbackRequestData, FileDownloadResponse fileDownloadResponse, PostelBatch postelBatch) {
+    private Mono<Void> verifyCheckSumAndSendToInternalQueue(NormalizerCallbackRequest callbackRequestData, FileDownloadResponse fileDownloadResponse, PostelBatch postelBatch, String pnAddressManagerCxId) {
         if (!fileDownloadResponse.getChecksum().equalsIgnoreCase(callbackRequestData.getSha256())) {
             return Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM, callbackRequestData.getUri()),
                     HttpStatus.BAD_REQUEST.value(), SEMANTIC_ERROR_CODE));
         }
-        return sendToInternalQueueAndUpdatePostelBatchStatus(callbackRequestData, postelBatch, fileDownloadResponse.getDownload().getUrl());
+        return sendToInternalQueueAndUpdatePostelBatchStatus(callbackRequestData, postelBatch, fileDownloadResponse.getDownload().getUrl(), pnAddressManagerCxId);
     }
 
     public Mono<FileDownloadResponse> getFile(String fileKey) {
@@ -184,9 +184,9 @@ public class NormalizzatoreService {
 
     }
 
-    private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, PostelBatch postelBatch, String url) {
+    private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, PostelBatch postelBatch, String url, String pnAddressManagerCxId) {
         LocalDateTime now = LocalDateTime.now();
-        return sqsService.pushToInputQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, url, postelBatch.getBatchId()), AM_POSTEL_CALLBACK_EVENTTYPE)
+        return sqsService.pushToCallbackQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, url, postelBatch.getBatchId()), AM_POSTEL_CALLBACK_EVENTTYPE, pnAddressManagerCxId)
                 .map(sendMessageResponse -> {
                     postelBatch.setStatus(WORKED.name());
                     postelBatch.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getTtl()).toEpochSecond(ZoneOffset.UTC));

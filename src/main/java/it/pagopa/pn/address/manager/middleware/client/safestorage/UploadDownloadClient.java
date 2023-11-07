@@ -3,14 +3,18 @@ package it.pagopa.pn.address.manager.middleware.client.safestorage;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import lombok.CustomLog;
+import org.springframework.core.io.buffer.DataBuffer;
+import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_UPLOAD_DOWNLOAD_FILE;
@@ -50,13 +54,28 @@ public class UploadDownloadClient {
     public Mono<byte[]> downloadContent(String downloadUrl) {
         log.logStartingProcess(PROCESS_SERVICE_UPLOAD_DOWNLOAD_FILE);
         log.info("start to download file to: {}", downloadUrl);
-        return webClient.get()
-                .uri(URI.create(downloadUrl))
-                .retrieve()
-                .bodyToMono(byte[].class)
-                .onErrorMap(ex -> {
-                    log.error("downloadContent Exception downloading content", ex);
-                    return new PnInternalAddressManagerException(ex.getMessage(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_CODE);
-                });
+        try {
+            Flux<DataBuffer> dataBufferFlux = WebClient.create()
+                    .get()
+                    .uri(new URI(downloadUrl))
+                    .retrieve()
+                    .bodyToFlux(DataBuffer.class)
+                    .doOnError(ex -> log.error("Error in WebClient", ex));
+
+            return DataBufferUtils.join(dataBufferFlux)
+                    .map(dataBuffer -> {
+                        byte[] bytes = new byte[dataBuffer.readableByteCount()];
+                        dataBuffer.read(bytes);
+                        DataBufferUtils.release(dataBuffer);
+                        return bytes;
+                    })
+                    .onErrorMap(ex -> {
+                        log.error("downloadContent Exception downloading content", ex);
+                        return new PnInternalAddressManagerException(ex.getMessage(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_CODE);
+                    });
+        } catch (URISyntaxException ex) {
+            log.error("error in URI ", ex);
+            return Mono.error(new PnInternalAddressManagerException(ex.getMessage(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_DESCRIPTION, HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_ADDRESS_MANAGER_CSV_DOWNLOAD_FAILED_ERROR_CODE));
+        }
     }
 }
