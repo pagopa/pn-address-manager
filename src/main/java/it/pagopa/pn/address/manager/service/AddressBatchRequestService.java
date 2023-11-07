@@ -143,9 +143,9 @@ public class AddressBatchRequestService {
         Duration timeSpent = AddressUtils.getTimeSpent(start);
 
         List<String> batchIdList = new ArrayList<>(fileMap.keySet().stream().toList());
-        batchIdList.add(batchId);
-
         log.debug(ADDRESS_NORMALIZER_ASYNC + "batchPecRequest - batchId: [{}] query end. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
+
+        clearMap();
 
         if (timeSpent.compareTo(Duration.ofMillis(pnAddressManagerConfig.getNormalizer().getBatchRequest().getLockAtMost())) > 0) {
             log.warn("Time spent is greater than lockAtMostFor. Multiple nodes could schedule the same actions.");
@@ -194,7 +194,6 @@ public class AddressBatchRequestService {
             fileMap.forEach((key, normalizeRequestPostelInputs) -> execBatchRequest(requestToProcessMap.get(key), key, normalizeRequestPostelInputs, start)
                     .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + key))
                     .block());
-            clearMap();
         }
     }
 
