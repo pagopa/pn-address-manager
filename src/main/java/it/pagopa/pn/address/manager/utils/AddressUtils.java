@@ -288,7 +288,7 @@ public class AddressUtils {
                 result.setId(index[2]);
                 log.info("Address with correlationId: [{}], createdAt: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1], index[2],
                         normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
-                if (normalizedAddress.getFPostalizzabile() == 0) {
+                if (normalizedAddress.getFPostalizzabile() != null && normalizedAddress.getFPostalizzabile() == 0) {
                     result.setError(decodeErrorErroreNorm(normalizedAddress, index));
                 } else {
                     result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
@@ -320,12 +320,16 @@ public class AddressUtils {
     }
 
 
-    public String getCorrelationId(String id) {
+    public String getCorrelationIdCreatedAt(String id) {
         if (org.springframework.util.StringUtils.hasText(id)) {
             String[] splittedId = id.split("#");
             return splittedId[0] + "#" + splittedId[1];
         }
         return "noCorrelationId";
+    }
+
+    public String getCorrelationIdCreatedAt(BatchRequest batchRequest) {
+        return batchRequest.getCorrelationId() + "#" + batchRequest.getCreatedAt();
     }
 
     public PostelCallbackSqsDto getPostelCallbackSqsDto(NormalizerCallbackRequest callbackRequest, String url, String batchId) {

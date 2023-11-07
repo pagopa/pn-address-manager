@@ -53,7 +53,7 @@ public class PostelBatchService {
         return uploadDownloadClient.downloadContent(url)
                 .flatMap(bytes -> {
                     List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0);
-                    Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationId(normalizedAddress.getId())));
+                    Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
                     return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(postelBatch.getBatchId(), BatchStatus.WORKING)
                             .flatMapIterable(requests -> requests)
                             .map(batchRequest -> retrieveNormalizedAddressAndSetToBatchRequestMessage(batchRequest, map))
@@ -66,11 +66,12 @@ public class PostelBatchService {
 
     private BatchRequest retrieveNormalizedAddressAndSetToBatchRequestMessage(BatchRequest batchRequest, Map<String, List<NormalizedAddress>> map) {
         log.info("Start check postel response for normalizeRequest with correlationId: [{}]", batchRequest.getCorrelationId());
-        if (map.get(batchRequest.getCorrelationId()) != null
-                && map.get(batchRequest.getCorrelationId() + "#" + batchRequest.getCreatedAt()).size() == addressUtils.getNormalizeRequestFromBatchRequest(batchRequest).size()) {
+        String correlationIdCreatedAt = addressUtils.getCorrelationIdCreatedAt(batchRequest);
+        if (map.get(correlationIdCreatedAt) != null
+                && map.get(correlationIdCreatedAt).size() == addressUtils.getNormalizeRequestFromBatchRequest(batchRequest).size()) {
             log.info("Postel response for request with correlationId: [{}] and createdAt: [{}] is complete", batchRequest.getCorrelationId(), batchRequest.getCreatedAt());
             batchRequest.setStatus(BatchStatus.WORKED.name());
-            batchRequest.setMessage(verifyPostelAddressResponse(map.get(batchRequest.getCorrelationId()), batchRequest.getCorrelationId()));
+            batchRequest.setMessage(verifyPostelAddressResponse(map.get(correlationIdCreatedAt), batchRequest.getCorrelationId()));
         } else {
             log.error("Postel response for request with correlationId: [{}] is not complete", batchRequest.getCorrelationId());
             batchRequest.setStatus(TAKEN_CHARGE.name());

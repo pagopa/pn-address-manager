@@ -22,8 +22,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -256,8 +254,8 @@ class AddressUtilsTest {
     @Test
     void getCorrelationId(){
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.getCorrelationId("prova#id#id"));
-        assertNotNull(addressUtils.getCorrelationId(""));
+        assertNotNull(addressUtils.getCorrelationIdCreatedAt("prova#id#id"));
+        assertNotNull(addressUtils.getCorrelationIdCreatedAt(""));
     }
 
     @Test

@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.service;
 
 import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
@@ -63,7 +64,9 @@ public class AddressBatchRequestService {
     private final List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
     private final List<BatchRequest> requestToProcess = new ArrayList<>();
 
-    /** Keeps track of all BatchRequest object involved in a single batch (key: batchId, value: batchRequest list).*/
+    /**
+     * Keeps track of all BatchRequest object involved in a single batch (key: batchId, value: batchRequest list).
+     */
     private final Map<String, List<BatchRequest>> requestToProcessMap = new HashMap<>();
 
     /**
@@ -436,7 +439,15 @@ public class AddressBatchRequestService {
                 .filter(l -> !l.isEmpty())
                 .flatMap(l -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - call batch to send to SQS");
-                    return sqsService.sendListToDlqQueue(l);
+                    return sqsService.sendListToDlqQueue(l)
+                            .thenReturn(l)
+                            .flatMapIterable(batchRequests -> batchRequests)
+                            .map(batchRequest -> {
+                                log.info(ADDRESS_NORMALIZER_ASYNC + "sent to dlq queue message for correlationId: {}", batchRequest.getCorrelationId());
+                                batchRequest.setSendStatus(BatchSendStatus.SENT_TO_DLQ.name());
+                                return addressBatchRequestRepository.update(batchRequest);
+                            })
+                            .then();
                 });
     }
 
