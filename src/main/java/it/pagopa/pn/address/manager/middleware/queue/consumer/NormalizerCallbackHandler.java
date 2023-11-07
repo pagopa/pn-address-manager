@@ -1,6 +1,5 @@
 package it.pagopa.pn.address.manager.middleware.queue.consumer;
 
-import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCallbackEvent;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
 import lombok.CustomLog;
@@ -15,34 +14,34 @@ import java.util.function.Consumer;
 
 @Configuration
 @CustomLog
-public class NormalizeInputsHandler {
+public class NormalizerCallbackHandler {
+
+    private static final String HANDLER_POSTEL_CALLBACK = "pnAddressManagerPostelCallbackConsumer";
 
     private final NormalizeAddressService normalizeAddressService;
-
-    private static final String HANDLER_REQUEST = "pnAddressManagerRequestConsumer";
 
     @Qualifier("addressManagerScheduler")
     private final Scheduler scheduler;
 
-    public NormalizeInputsHandler(NormalizeAddressService normalizeAddressService, Scheduler scheduler) {
+    public NormalizerCallbackHandler(NormalizeAddressService normalizeAddressService, Scheduler scheduler) {
         this.normalizeAddressService = normalizeAddressService;
         this.scheduler = scheduler;
     }
 
     @Bean
-    public Consumer<Message<PnNormalizeRequestEvent.Payload>> pnAddressManagerRequestConsumer() {
+    public Consumer<Message<PnPostelCallbackEvent.Payload>> pnAddressManagerPostelCallbackConsumer() {
         return message -> {
-            log.logStartingProcess(HANDLER_REQUEST);
-            log.debug(HANDLER_REQUEST + "- message: {}", message);
-            MDC.put("correlationId", message.getPayload().getNormalizeItemsRequest().getCorrelationId());
-            normalizeAddressService.handleRequest(message.getPayload())
-                    .subscribeOn(scheduler).subscribe(normalizeItemsResult -> log.logEndingProcess(HANDLER_REQUEST),
+            log.logStartingProcess(HANDLER_POSTEL_CALLBACK);
+            log.debug(HANDLER_POSTEL_CALLBACK + "- message: {}", message);
+            MDC.put("batchId", message.getPayload().getRequestId());
+
+            normalizeAddressService.handlePostelCallback(message.getPayload())
+                    .subscribeOn(scheduler).subscribe(normalizeItemsResult -> log.logEndingProcess(HANDLER_POSTEL_CALLBACK),
                             throwable -> {
-                                log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage());
+                                log.logEndingProcess(HANDLER_POSTEL_CALLBACK, false, throwable.getMessage());
                                 HandleEventUtils.handleException(message.getHeaders(), throwable);
                             });
         };
     }
-
 
 }
