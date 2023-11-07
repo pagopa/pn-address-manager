@@ -31,9 +31,10 @@
     "PnAddressManagerBatchCleanRequestDelay": "120000",
     "PnAddressManagerNormalizerPostelWorkingTtl": "604800",
     "PnAddressManagerNormalizerPostelTtl": "3600",
-    "PnAddressManagerNormalizerBatchRequestLockAtMost": "600000",
-    "PnAddressManagerNormalizerBatchRequestLockAtLeast": "1000",
-    "PnAddressManagerNormalizerBatchRecoveryLockAtMost": "600000",
+    "PnAddressManagerNormalizerBatchRequestLockAtMost": "1800000",
+    "PnAddressManagerNormalizerBatchRequestLockAtLeast": "1800000",
+    "PnAddressManagerNormalizerBatchRecoveryLockAtMost": "120000",
+    "PnAddressManagerNormalizerBatchRecoveryLockAtLeast": "1000",
     "PnAddressManagerNormalizerPostelClientTimeout": "30000"
   }
 }
