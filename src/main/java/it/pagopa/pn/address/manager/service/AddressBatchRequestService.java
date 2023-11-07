@@ -176,8 +176,7 @@ public class AddressBatchRequestService {
 
             Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
 
-            List<String> batchIdList = fileMap.keySet().stream().toList();
-            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end query. Time spent is {} millis", String.join(",", batchIdList), timeSpent.toMillis());
+            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batchId, timeSpent.toMillis());
 
         } while (!CollectionUtils.isEmpty(lastEvaluatedKey) &&
                 (pnAddressManagerConfig.getNormalizer().getMaxFileNumber() == 0 || (fileMap.size() + 1) <= pnAddressManagerConfig.getNormalizer().getMaxFileNumber()));
