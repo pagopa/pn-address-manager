@@ -6,10 +6,10 @@ import reactor.core.scheduler.Scheduler;
 import reactor.core.scheduler.Schedulers;
 
 @Configuration
-public class SchedulerConfig {
+public class BatchSchedulerConfig {
 
-    @Bean("addressManagerScheduler")
-    public Scheduler scheduler() {
+    @Bean("addressManagerBatchScheduler")
+    public Scheduler schedulerBatch() {
         return Schedulers.boundedElastic();
     }
 

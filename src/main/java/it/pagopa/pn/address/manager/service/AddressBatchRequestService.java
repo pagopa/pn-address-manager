@@ -78,7 +78,7 @@ public class AddressBatchRequestService {
     private final Map<String, List<NormalizeRequestPostelInput>> fileMap = new HashMap<>();
     private String batchId;
 
-    @Qualifier("addressManagerScheduler")
+    @Qualifier("addressManagerBatchScheduler")
     private final Scheduler scheduler;
 
 
