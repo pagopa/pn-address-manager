@@ -13,4 +13,9 @@ public class SchedulerConfig {
         return Schedulers.boundedElastic();
     }
 
+    @Bean("addressManagerbatchScheduler")
+    public Scheduler schedulerBatch() {
+        return Schedulers.boundedElastic();
+    }
+
 }

@@ -22,6 +22,7 @@ import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -30,6 +31,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
@@ -76,6 +78,9 @@ public class AddressBatchRequestService {
     private final Map<String, List<NormalizeRequestPostelInput>> fileMap = new HashMap<>();
     private String batchId;
 
+    @Qualifier("addressManagerScheduler")
+    private final Scheduler scheduler;
+
 
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
                                       PostelBatchRepository postelBatchRepository,
@@ -87,7 +92,8 @@ public class AddressBatchRequestService {
                                       EventService eventService,
                                       CsvService csvService,
                                       AddressUtils addressUtils,
-                                      Clock clock) {
+                                      Clock clock,
+                                      Scheduler scheduler) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.addressConverter = addressConverter;
@@ -99,6 +105,7 @@ public class AddressBatchRequestService {
         this.csvService = csvService;
         this.addressUtils = addressUtils;
         this.clock = clock;
+        this.scheduler = scheduler;
         this.batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
     }
 
@@ -285,6 +292,7 @@ public class AddressBatchRequestService {
     private Mono<Void> startProcessingBatchRequest(BatchRequest request, String batchId, List<BatchRequest> requestToProcess) {
         setNewDataOnBatchRequest(request, batchId);
         return addressBatchRequestRepository.setNewBatchIdToBatchRequest(request)
+                .publishOn(scheduler)
                 .doOnError(ConditionalCheckFailedException.class,
                         e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip correlationId: {}", request.getCorrelationId(), e))
                 .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty())
@@ -300,6 +308,7 @@ public class AddressBatchRequestService {
      */
     private Page<BatchRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
         return addressBatchRequestRepository.getBatchRequestByNotBatchId(lastEvaluatedKey, pnAddressManagerConfig.getNormalizer().getBatchRequest().getQueryMaxSize())
+                .publishOn(scheduler)
                 .blockOptional()
                 .orElseThrow(() -> {
                     log.warn(ADDRESS_NORMALIZER_ASYNC + "can not get batch request - DynamoDB Mono<Page> is null");
@@ -355,7 +364,7 @@ public class AddressBatchRequestService {
     public Mono<Void> callPostelActivationApi(PostelBatch postelBatch) {
         log.logInvokingExternalService(PROCESS_SERVICE_POSTEL_ATTIVAZIONE, postelBatch.getBatchId());
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - calling postel activation", postelBatch.getBatchId());
-        Mono.fromCallable(() -> postelClient.activatePostel(postelBatch))
+        return Mono.fromCallable(() -> postelClient.activatePostel(postelBatch))
                 .onErrorResume(throwable -> {
                     if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
                         log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", postelBatch.getBatchId(), ex);
@@ -372,9 +381,7 @@ public class AddressBatchRequestService {
                 })
                 .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute call to Activation Postel Api", postelBatch.getBatchId(), e))
                 .onErrorResume(v -> incrementAndCheckRetry(postelBatch, v).then(Mono.error(v)))
-                .subscribe();
-
-        return Mono.empty();
+                .then();
     }
 
     private Mono<Void> updatePostelBatchToWorking(PostelBatch postelBatch) {
@@ -391,6 +398,7 @@ public class AddressBatchRequestService {
     private Mono<PostelBatch> createPostelBatch(String fileKey, String key, String sha256) {
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - creating PostelBatch with fileKey: {}", key, fileKey);
         return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(key, fileKey, sha256))
+                .publishOn(scheduler)
                 .flatMap(polling -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
                     return setBatchRequestStatusToWorking(key)
