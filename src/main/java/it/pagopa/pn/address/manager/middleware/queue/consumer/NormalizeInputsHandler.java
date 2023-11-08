@@ -21,12 +21,9 @@ public class NormalizeInputsHandler {
 
     private static final String HANDLER_REQUEST = "pnAddressManagerRequestConsumer";
 
-    @Qualifier("addressManagerScheduler")
-    private final Scheduler scheduler;
 
-    public NormalizeInputsHandler(NormalizeAddressService normalizeAddressService, Scheduler scheduler) {
+    public NormalizeInputsHandler(NormalizeAddressService normalizeAddressService) {
         this.normalizeAddressService = normalizeAddressService;
-        this.scheduler = scheduler;
     }
 
     @Bean
@@ -36,11 +33,11 @@ public class NormalizeInputsHandler {
             log.debug(HANDLER_REQUEST + "- message: {}", message);
             MDC.put("correlationId", message.getPayload().getNormalizeItemsRequest().getCorrelationId());
             normalizeAddressService.handleRequest(message.getPayload())
-                    .subscribeOn(scheduler).subscribe(normalizeItemsResult -> log.logEndingProcess(HANDLER_REQUEST),
-                            throwable -> {
-                                log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage());
-                                HandleEventUtils.handleException(message.getHeaders(), throwable);
-                            });
+                    .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))
+                    .doOnError(throwable ->  {
+                        log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage());
+                        HandleEventUtils.handleException(message.getHeaders(), throwable);
+                    });
         };
     }
 
