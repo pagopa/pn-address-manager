@@ -78,9 +78,6 @@ public class AddressBatchRequestService {
     private final Map<String, List<NormalizeRequestPostelInput>> fileMap = new HashMap<>();
     private String batchId;
 
-    @Qualifier("addressManagerBatchScheduler")
-    private final Scheduler scheduler;
-
 
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
                                       PostelBatchRepository postelBatchRepository,
@@ -92,8 +89,7 @@ public class AddressBatchRequestService {
                                       EventService eventService,
                                       CsvService csvService,
                                       AddressUtils addressUtils,
-                                      Clock clock,
-                                      Scheduler scheduler) {
+                                      Clock clock) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.addressConverter = addressConverter;
@@ -105,7 +101,6 @@ public class AddressBatchRequestService {
         this.csvService = csvService;
         this.addressUtils = addressUtils;
         this.clock = clock;
-        this.scheduler = scheduler;
         this.batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
     }
 
@@ -292,7 +287,6 @@ public class AddressBatchRequestService {
     private Mono<Void> startProcessingBatchRequest(BatchRequest request, String batchId, List<BatchRequest> requestToProcess) {
         setNewDataOnBatchRequest(request, batchId);
         return addressBatchRequestRepository.setNewBatchIdToBatchRequest(request)
-                .publishOn(scheduler)
                 .doOnError(ConditionalCheckFailedException.class,
                         e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip correlationId: {}", request.getCorrelationId(), e))
                 .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty())
@@ -308,7 +302,6 @@ public class AddressBatchRequestService {
      */
     private Page<BatchRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
         return addressBatchRequestRepository.getBatchRequestByNotBatchId(lastEvaluatedKey, pnAddressManagerConfig.getNormalizer().getBatchRequest().getQueryMaxSize())
-                .publishOn(scheduler)
                 .blockOptional()
                 .orElseThrow(() -> {
                     log.warn(ADDRESS_NORMALIZER_ASYNC + "can not get batch request - DynamoDB Mono<Page> is null");
@@ -398,7 +391,6 @@ public class AddressBatchRequestService {
     private Mono<PostelBatch> createPostelBatch(String fileKey, String key, String sha256) {
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - creating PostelBatch with fileKey: {}", key, fileKey);
         return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(key, fileKey, sha256))
-                .publishOn(scheduler)
                 .flatMap(polling -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
                     return setBatchRequestStatusToWorking(key)
