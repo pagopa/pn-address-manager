@@ -90,6 +90,27 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
+    public Mono<Page<BatchRequest>> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastKey, String batchId, BatchStatus status) {
+        Map<String, String> expressionNames = new HashMap<>();
+        expressionNames.put(STATUS_ALIAS, COL_STATUS);
+
+        Map<String, AttributeValue> expressionValues = new HashMap<>();
+        expressionValues.put(STATUS_PLACEHOLDER, AttributeValue.builder().s(status.getValue()).build());
+
+        QueryEnhancedRequest.Builder queryEnhancedRequestBuilder = QueryEnhancedRequest.builder()
+                .filterExpression(expressionBuilder(STATUS_EQ, expressionValues, expressionNames))
+                .queryConditional(QueryConditional.keyEqualTo(keyBuilder(batchId)))
+                .limit(pnAddressManagerConfig.getNormalizer().getBatchRequest().getQueryMaxSize());
+
+        if (!CollectionUtils.isEmpty(lastKey)) {
+            queryEnhancedRequestBuilder.exclusiveStartKey(lastKey);
+        }
+
+        QueryEnhancedRequest queryEnhancedRequest = queryEnhancedRequestBuilder.build();
+        return Mono.from(table.index(GSI_BL).query(queryEnhancedRequest));
+    }
+
+    @Override
     public Mono<BatchRequest> setNewBatchIdToBatchRequest(BatchRequest batchRequest) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#batchId", COL_BATCH_ID);
