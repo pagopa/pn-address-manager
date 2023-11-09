@@ -60,7 +60,7 @@ public class PostelBatchService {
 
     private Mono<Void> retrieveAndProcessRelatedRequest(String batchId, Map<String, List<NormalizedAddress>> map) {
         return Flux.defer(() -> processBatchRequests(batchId, map, getBatchRequestByBatchIdAndStatusReactive(Map.of(), batchId)))
-                .then(Mono.empty());
+                .then();
     }
 
     private Mono<Page<BatchRequest>> processBatchRequests(String batchId, Map<String, List<NormalizedAddress>> map, Mono<Page<BatchRequest>> pageMono) {
