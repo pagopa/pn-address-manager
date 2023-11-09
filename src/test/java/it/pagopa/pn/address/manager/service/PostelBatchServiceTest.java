@@ -34,7 +34,6 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @ContextConfiguration(classes = {PostelBatchService.class})
-@Disabled
 class PostelBatchServiceTest {
 
     @Autowired
