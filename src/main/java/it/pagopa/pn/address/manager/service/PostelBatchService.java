@@ -66,7 +66,7 @@ public class PostelBatchService {
                     List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0);
                     return normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
                 })
-                .flatMap(map -> retrieveAndProcessRelatedRequest(postelBatch.getBatchId(), map))
+                .flatMap(map -> Mono.defer(() -> retrieveAndProcessRelatedRequest(postelBatch.getBatchId(), map)))
                 .onErrorResume(throwable -> {
                     log.warn("Error in getResponse with postelBatch: {}. Increment", postelBatch.getBatchId(), throwable);
                     return addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable);
