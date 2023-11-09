@@ -29,6 +29,7 @@ import java.util.Map;
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.mapping;
 
 @Component
 @CustomLog
@@ -52,6 +53,20 @@ public class PostelBatchService {
                     Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
                     return retrieveAndProcessRelatedRequest(postelBatch.getBatchId(), map);
                 })
+                .onErrorResume(throwable -> {
+                    log.warn("Error in getResponse with postelBatch: {}. Increment", postelBatch.getBatchId(), throwable);
+                    return addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable);
+                })
+                .then();
+    }
+
+    public Mono<Void> getResponseTwo(String url, PostelBatch postelBatch) {
+        return uploadDownloadClient.downloadContent(url)
+                .map(bytes -> {
+                    List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0);
+                    return normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
+                })
+                .flatMap(map -> retrieveAndProcessRelatedRequest(postelBatch.getBatchId(), map))
                 .onErrorResume(throwable -> {
                     log.warn("Error in getResponse with postelBatch: {}. Increment", postelBatch.getBatchId(), throwable);
                     return addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable);
