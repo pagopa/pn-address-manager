@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
@@ -167,6 +168,10 @@ public class PostelBatchService {
 
     private Page<BatchRequest> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastEvaluatedKey, String batchId) {
         return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId, BatchStatus.WORKING)
-                .block();
+                .blockOptional()
+                .orElseThrow(() -> {
+                    log.warn(ADDRESS_NORMALIZER_ASYNC + "can not get batch request - DynamoDB Mono<Page> is null");
+                    return new PostelException(ADDRESS_NORMALIZER_ASYNC + "can not get batch request");
+                });
     }
 }
