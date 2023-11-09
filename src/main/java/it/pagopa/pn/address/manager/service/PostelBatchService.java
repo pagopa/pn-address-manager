@@ -106,7 +106,7 @@ public class PostelBatchService {
                 && map.get(correlationIdCreatedAt).size() == addressUtils.getNormalizeRequestFromBatchRequest(batchRequest).size()) {
             log.info("Postel response for request with correlationId: [{}] and createdAt: [{}] is complete", batchRequest.getCorrelationId(), batchRequest.getCreatedAt());
             batchRequest.setStatus(BatchStatus.WORKED.name());
-            batchRequest.setMessage(verifyPostelAddressResponse(map.get(correlationIdCreatedAt), batchRequest.getCorrelationId()));
+            batchRequest.setMessage(verifyPostelAddressResponseAndRetrieveMessage(map.get(correlationIdCreatedAt), batchRequest));
         } else {
             log.error("Postel response for request with correlationId: [{}] is not complete", batchRequest.getCorrelationId());
             batchRequest.setStatus(TAKEN_CHARGE.name());
@@ -118,10 +118,10 @@ public class PostelBatchService {
         return postelBatchRepository.findByBatchId(requestId);
     }
 
-    private String verifyPostelAddressResponse(List<NormalizedAddress> normalizedAddresses, String correlationId) {
+    private String verifyPostelAddressResponseAndRetrieveMessage(List<NormalizedAddress> normalizedAddresses, BatchRequest batchRequest) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
-        normalizeItemsResult.setCorrelationId(correlationId);
-        normalizeItemsResult.setResultItems(addressUtils.toResultItem(normalizedAddresses));
+        normalizeItemsResult.setCorrelationId(batchRequest.getCorrelationId());
+        normalizeItemsResult.setResultItems(addressUtils.toResultItem(normalizedAddresses, batchRequest));
         return Flux.fromIterable(normalizeItemsResult.getResultItems())
                 .flatMap(capAndCountryService::verifyCapAndCountryList)
                 .collectList()

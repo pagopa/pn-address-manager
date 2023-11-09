@@ -266,7 +266,7 @@ class AddressUtilsTest {
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses));
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new BatchRequest()));
     }
     @Test
     void toResultItemNotPostalizzabile(){
@@ -276,7 +276,7 @@ class AddressUtilsTest {
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses));
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new BatchRequest()));
     }
     @NotNull
     private static NormalizedAddress getNormalizedAddressNotPostalizzabile(int nRisultatoNorm) {
