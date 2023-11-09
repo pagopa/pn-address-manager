@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
@@ -10,18 +11,28 @@ import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.time.Clock;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
 import static java.util.stream.Collectors.groupingBy;
 
 @Component
 @CustomLog
+@RequiredArgsConstructor
 public class PostelBatchService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
@@ -29,39 +40,63 @@ public class PostelBatchService {
     private final CsvService csvService;
     private final AddressUtils addressUtils;
     private final UploadDownloadClient uploadDownloadClient;
-
     private final AddressBatchRequestService addressBatchRequestService;
     private final CapAndCountryService capAndCountryService;
+    private final Clock clock;
 
-    public PostelBatchService(AddressBatchRequestRepository addressBatchRequestRepository,
-                              PostelBatchRepository postelBatchRepository,
-                              CsvService csvService,
-                              AddressUtils addressUtils,
-                              UploadDownloadClient uploadDownloadClient,
-                              AddressBatchRequestService addressBatchRequestService,
-                              CapAndCountryService capAndCountryService) {
-        this.addressBatchRequestRepository = addressBatchRequestRepository;
-        this.postelBatchRepository = postelBatchRepository;
-        this.csvService = csvService;
-        this.addressUtils = addressUtils;
-        this.uploadDownloadClient = uploadDownloadClient;
-        this.addressBatchRequestService = addressBatchRequestService;
-        this.capAndCountryService = capAndCountryService;
-    }
 
     public Mono<Void> getResponse(String url, PostelBatch postelBatch) {
+        byte[] bytes = downloadCSV(url, postelBatch);
+        List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0);
+        Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
+        return retrieveAndProcessRelatedRequest(postelBatch.getBatchId(), map)
+                .onErrorResume(throwable -> {
+                    log.warn("Error in getResponse with postelBatch: {}. Increment", postelBatch.getBatchId(), throwable);
+                    return addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable);
+                });
+    }
+
+    public byte[] downloadCSV(String url, PostelBatch postelBatch) {
         return uploadDownloadClient.downloadContent(url)
-                .flatMap(bytes -> {
-                    List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0);
-                    Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
-                    return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(postelBatch.getBatchId(), BatchStatus.WORKING)
-                            .flatMapIterable(requests -> requests)
-                            .map(batchRequest -> retrieveNormalizedAddressAndSetToBatchRequestMessage(batchRequest, map))
-                            .collectList()
-                            .flatMap(batchRequestList -> addressBatchRequestService.updateBatchRequest(batchRequestList, postelBatch.getBatchId()));
+                .doOnNext(bytes -> log.debug("Downloaded CSV for batchId: {}", postelBatch.getBatchId()))
+                .doOnError(throwable -> {
+                    log.warn("Error in getResponse with postelBatch: {}. Increment", postelBatch.getBatchId(), throwable);
+                    addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable).block();
                 })
-                .onErrorResume(throwable -> addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable))
-                .then();
+                .block();
+    }
+
+    private Mono<Void> retrieveAndProcessRelatedRequest(String batchId, Map<String, List<NormalizedAddress>> map ) {
+        Page<BatchRequest> page;
+        Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
+
+        do {
+            Instant startPagedQuery = clock.instant();
+
+            page = getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId);
+
+            lastEvaluatedKey = page.lastEvaluatedKey();
+            if (!page.items().isEmpty()) {
+                processCallbackResponse(page.items(), batchId, map)
+                        .block();
+            } else {
+                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request founded for: {}", batchId);
+            }
+
+            Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+
+            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batchId, timeSpent.toMillis());
+
+        } while (!CollectionUtils.isEmpty(lastEvaluatedKey));
+
+        return Mono.empty();
+    }
+
+    private Mono<Void> processCallbackResponse(List<BatchRequest> items, String batchId, Map<String, List<NormalizedAddress>> map ) {
+        return Flux.fromIterable(items)
+                .map(batchRequest -> retrieveNormalizedAddressAndSetToBatchRequestMessage(batchRequest, map))
+                .collectList()
+                .flatMap(batchRequestList -> addressBatchRequestService.updateBatchRequest(batchRequestList, batchId));
     }
 
     private BatchRequest retrieveNormalizedAddressAndSetToBatchRequestMessage(BatchRequest batchRequest, Map<String, List<NormalizedAddress>> map) {
@@ -103,10 +138,47 @@ public class PostelBatchService {
     }
 
     private Mono<Void> updateBatchRequest(PostelBatch batch) {
-        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batch.getBatchId(), BatchStatus.WORKING)
-                .flatMap(batchRequests -> {
-                    batchRequests.forEach(batchRequest -> batchRequest.setStatus(TAKEN_CHARGE.getValue()));
-                    return addressBatchRequestService.incrementAndCheckRetry(batchRequests, null, batch.getBatchId()).then();
+        Page<BatchRequest> page;
+        Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
+
+        do {
+            Instant startPagedQuery = clock.instant();
+
+            page = getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batch.getBatchId());
+
+            lastEvaluatedKey = page.lastEvaluatedKey();
+            if (!page.items().isEmpty()) {
+                updateRequestAndIncrementRetry(page.items(), batch.getBatchId())
+                        .block();
+            } else {
+                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request available");
+            }
+
+            Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+
+            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batch.getBatchId(), timeSpent.toMillis());
+
+        } while (!CollectionUtils.isEmpty(lastEvaluatedKey));
+
+        return Mono.empty();
+    }
+
+    private Mono<Void> updateRequestAndIncrementRetry(List<BatchRequest> items, String batchId) {
+        return Flux.fromIterable(items)
+                .map(item -> {
+                    item.setStatus(TAKEN_CHARGE.getValue());
+                    return item;
+                })
+                .collectList()
+                .flatMap(batchRequests -> addressBatchRequestService.incrementAndCheckRetry(batchRequests, null, batchId));
+    }
+
+    private Page<BatchRequest> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastEvaluatedKey, String batchId) {
+        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId, BatchStatus.WORKING)
+                .blockOptional()
+                .orElseThrow(() -> {
+                    log.warn(ADDRESS_NORMALIZER_ASYNC + "can not get batch request - DynamoDB Mono<Page> is null");
+                    return new PostelException(ADDRESS_NORMALIZER_ASYNC + "can not get batch request");
                 });
     }
 }
