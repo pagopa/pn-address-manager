@@ -51,7 +51,10 @@ public class PostelBatchService {
                     Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
                     return retrieveAndProcessRelatedRequest(postelBatch.getBatchId(), map);
                 })
-                .onErrorResume(throwable -> addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable))
+                .onErrorResume(throwable -> {
+                    log.warn("Error in getResponse with postelBatch: {}. Increment", postelBatch.getBatchId(), throwable);
+                    return addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable);
+                })
                 .then();
     }
 
