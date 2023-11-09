@@ -58,30 +58,33 @@ public class PostelBatchService {
                 .then();
     }
 
-    private Mono<Void> retrieveAndProcessRelatedRequest(String batchId, Map<String, List<NormalizedAddress>> map ) {
-        Page<BatchRequest> page;
-        Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
+    private Mono<Void> retrieveAndProcessRelatedRequest(String batchId, Map<String, List<NormalizedAddress>> map) {
+        return Flux.defer(() -> processBatchRequests(batchId, map, getBatchRequestByBatchIdAndStatusReactive(Map.of(), batchId)))
+                .then(Mono.empty());
+    }
 
-        do {
-            Instant startPagedQuery = clock.instant();
-
-            page = getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId);
-
-            lastEvaluatedKey = page.lastEvaluatedKey();
-            if (!page.items().isEmpty()) {
-                processCallbackResponse(page.items(), batchId, map)
-                        .block();
-            } else {
-                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request founded for: {}", batchId);
+    private Mono<Page<BatchRequest>> processBatchRequests(String batchId, Map<String, List<NormalizedAddress>> map, Mono<Page<BatchRequest>> pageMono) {
+        return pageMono.flatMap(page -> {
+            if (page.items().isEmpty()) {
+                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request found for: {}", batchId);
+                return Mono.just(page);
             }
 
-            Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
-
-            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batchId, timeSpent.toMillis());
-
-        } while (!CollectionUtils.isEmpty(lastEvaluatedKey));
-
-        return Mono.empty();
+            Instant startPagedQuery = clock.instant();
+            return processCallbackResponse(page.items(), batchId, map)
+                    .thenReturn(page)
+                    .doOnTerminate(() -> {
+                        Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+                        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batchId, timeSpent.toMillis());
+                    })
+                    .flatMap(lastProcessedPage -> {
+                        if (lastProcessedPage.lastEvaluatedKey() != null) {
+                            return processBatchRequests(batchId, map, getBatchRequestByBatchIdAndStatusReactive(lastProcessedPage.lastEvaluatedKey(), batchId));
+                        } else {
+                            return Mono.just(lastProcessedPage);
+                        }
+                    });
+        });
     }
 
     private Mono<Void> processCallbackResponse(List<BatchRequest> items, String batchId, Map<String, List<NormalizedAddress>> map ) {
@@ -168,5 +171,9 @@ public class PostelBatchService {
     private Page<BatchRequest> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastEvaluatedKey, String batchId) {
         return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId, BatchStatus.WORKING)
                 .block();
+    }
+
+    private Mono<Page<BatchRequest>> getBatchRequestByBatchIdAndStatusReactive(Map<String, AttributeValue> lastEvaluatedKey, String batchId) {
+        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId, BatchStatus.WORKING);
     }
 }
