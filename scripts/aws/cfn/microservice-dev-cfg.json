@@ -25,7 +25,7 @@
     "PnAddressManagerNormalizerPostelRecoveryDelay": "120000",
     "PnAddressManagerNormalizerPostelRecoveryAfter": "600",
     "PnAddressManagerNormalizerPostelMaxRetry": "12",
-    "PostelCxId": "pn-cons-000",
+    "PostelCxId": "pn-norm-000",
     "NormalizerRequestPrefix": "",
     "PnAddressManagerCxId": "pn-address-manager",
     "PnAddressManagerBatchCleanRequestDelay": "120000",
