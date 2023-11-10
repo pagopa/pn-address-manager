@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.CapModel;
@@ -12,6 +13,8 @@ import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
+import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadInfo;
+import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -54,6 +57,12 @@ class PostelBatchServiceTest {
     AddressBatchRequestService addressBatchRequestService;
     @MockBean
     CapAndCountryService capAndCountryService;
+
+    @MockBean
+    PnAddressManagerConfig pnAddressManagerConfig;
+
+    @MockBean
+    SafeStorageService safeStorageService;
 
     @MockBean
     Clock clock;
@@ -100,6 +109,11 @@ class PostelBatchServiceTest {
         when(addressBatchRequestService.updateBatchRequest(anyList(),anyString())).thenReturn(Mono.empty());
         PostelBatch postelBatch = new PostelBatch();
         postelBatch.setBatchId("id");
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        FileDownloadInfo info = new FileDownloadInfo();
+        info.setUrl("http://url.it");
+        fileDownloadResponse.setDownload(info);
+        when(safeStorageService.getFile(any(), any())).thenReturn(Mono.just(fileDownloadResponse));
         StepVerifier.create(postelBatchService.getResponse("url", postelBatch)).verifyComplete();
     }
 
@@ -132,6 +146,11 @@ class PostelBatchServiceTest {
         when(addressUtils.toResultItem(any(), any())).thenReturn(List.of(normalizeResult));
         when(addressUtils.toJson(anyString())).thenReturn("json");
         when(clock.instant()).thenReturn(Instant.now());
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        FileDownloadInfo info = new FileDownloadInfo();
+        info.setUrl("http://url.it");
+        fileDownloadResponse.setDownload(info);
+        when(safeStorageService.getFile(any(), any())).thenReturn(Mono.just(fileDownloadResponse));
         CapModel capModel = new CapModel();
         capModel.setCap("00010");
         capModel.setEndValidity(LocalDateTime.now());
@@ -169,6 +188,11 @@ class PostelBatchServiceTest {
         when(clock.instant()).thenReturn(Instant.now());
         when(addressUtils.toResultItem(any(), any())).thenReturn(List.of(normalizeResult));
         when(addressUtils.toJson(anyString())).thenReturn("json");
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        FileDownloadInfo info = new FileDownloadInfo();
+        info.setUrl("http://url.it");
+        fileDownloadResponse.setDownload(info);
+        when(safeStorageService.getFile(any(), any())).thenReturn(Mono.just(fileDownloadResponse));
         StepVerifier.create(postelBatchService.getResponse("url", postelBatch)).verifyComplete();
     }
 }
