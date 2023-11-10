@@ -14,6 +14,7 @@ import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -31,6 +32,7 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 
 @Service
 @CustomLog
+@RequiredArgsConstructor
 public class NormalizzatoreService {
     private final PnSafeStorageClient pnSafeStorageClient;
     private final NormalizzatoreConverter normalizzatoreConverter;
@@ -43,25 +45,6 @@ public class NormalizzatoreService {
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private static final String CALLBACK_ERROR_LOG = "callbackNormalizedAddress error:{}";
 
-    public NormalizzatoreService(PnSafeStorageClient pnSafeStorageClient,
-                                 NormalizzatoreConverter normalizzatoreConverter,
-                                 PostelBatchService postelBatchService,
-                                 SqsService sqsService,
-                                 SafeStorageService safeStorageService,
-                                 PostelBatchRepository postelBatchRepository,
-                                 ApiKeyRepository apiKeyRepository,
-                                 AddressUtils addressUtils,
-                                 PnAddressManagerConfig pnAddressManagerConfig) {
-        this.pnSafeStorageClient = pnSafeStorageClient;
-        this.normalizzatoreConverter = normalizzatoreConverter;
-        this.postelBatchService = postelBatchService;
-        this.sqsService = sqsService;
-        this.safeStorageService = safeStorageService;
-        this.postelBatchRepository = postelBatchRepository;
-        this.apiKeyRepository = apiKeyRepository;
-        this.addressUtils = addressUtils;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-    }
 
     public Mono<PreLoadResponseData> presignedUploadRequest(PreLoadRequestData request, String pnAddressManagerCxId, String xApiKey) {
         return checkApiKey(pnAddressManagerCxId, xApiKey)
@@ -146,7 +129,7 @@ public class NormalizzatoreService {
                         return Mono.error(throwable);
                     });
         }
-        return sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, postelBatch, null, pnAddressManagerCxId)
+        return sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, postelBatch)
                 .thenReturn(response);
     }
 
@@ -163,7 +146,7 @@ public class NormalizzatoreService {
             return Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM, callbackRequestData.getUri()),
                     HttpStatus.BAD_REQUEST.value(), SEMANTIC_ERROR_CODE));
         }
-        return sendToInternalQueueAndUpdatePostelBatchStatus(callbackRequestData, postelBatch, fileDownloadResponse.getDownload().getUrl(), pnAddressManagerCxId);
+        return Mono.empty();
     }
 
     public Mono<FileDownloadResponse> getFile(String fileKey) {
@@ -184,9 +167,9 @@ public class NormalizzatoreService {
 
     }
 
-    private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, PostelBatch postelBatch, String url, String pnAddressManagerCxId) {
+    private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, PostelBatch postelBatch) {
         LocalDateTime now = LocalDateTime.now();
-        return sqsService.pushToCallbackQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, url, postelBatch.getBatchId()), AM_POSTEL_CALLBACK_EVENTTYPE, pnAddressManagerCxId)
+        return sqsService.pushToCallbackQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, postelBatch.getBatchId()))
                 .map(sendMessageResponse -> {
                     postelBatch.setStatus(WORKED.name());
                     postelBatch.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getTtl()).toEpochSecond(ZoneOffset.UTC));
