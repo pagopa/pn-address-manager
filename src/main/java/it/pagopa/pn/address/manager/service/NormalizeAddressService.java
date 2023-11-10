@@ -109,7 +109,7 @@ public class NormalizeAddressService {
                     if (StringUtils.hasText(payload.getError())) {
                         return postelBatchService.resetRelatedBatchRequestForRetry(postelBatch);
                     }
-                    return postelBatchService.getResponse(payload.getOutputFileUrl(), postelBatch);
+                    return postelBatchService.getResponse(payload.getOutputFileKey(), postelBatch);
                 });
     }
 
