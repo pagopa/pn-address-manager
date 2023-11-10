@@ -70,7 +70,7 @@ public class NormalizeAddressService {
                                 .xApiKey(xApiKey)
                                 .pnAddressManagerCxId(cxId)
                                 .normalizeItemsRequest(normalizeItemsRequest)
-                                .build(), cxId, AM_NORMALIZE_INPUT_EVENTTYPE)
+                                .build(), cxId)
                         .map(sendMessageResponse -> {
                             log.info(ADDRESS_NORMALIZER_SYNC + "Sent request with correlationId: [{}] to {}", normalizeItemsRequest.getCorrelationId(), pnAddressManagerConfig.getSqs().getInputQueueName());
                             return addressUtils.mapToAcceptedResponse(normalizeItemsRequest);

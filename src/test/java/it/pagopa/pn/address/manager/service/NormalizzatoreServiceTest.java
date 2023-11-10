@@ -104,7 +104,7 @@ class NormalizzatoreServiceTest {
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         PostelCallbackSqsDto postelCallbackSqsDto = mock(PostelCallbackSqsDto.class);
         when(addressUtils.getPostelCallbackSqsDto(any(),anyString(), anyString())).thenReturn(postelCallbackSqsDto);
-        when(sqsService.pushToCallbackQueue(any(),anyString(), any())).thenReturn(Mono.just(SendMessageResponse.builder().build()));
+        when(sqsService.pushToCallbackQueue(any())).thenReturn(Mono.just(SendMessageResponse.builder().build()));
         StepVerifier.create(normalizzatoreService.callbackNormalizedAddress(normalizerCallbackRequest,"id","id")).expectError().verify();
     }
 }
