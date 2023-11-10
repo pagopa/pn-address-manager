@@ -270,27 +270,27 @@ Parameters:
 
   PnAddressManagerNormalizerBatchRequestTtl:
     Type: Number
-    Description: TTL of batch request table setting after PN request completion
+    Description: TTL of batch request table setting after PN request completion (seconds)
     Default: 1209600
 
   PnAddressManagerNormalizerBatchRequestDelay:
     Type: Number
-    Description: It defines the time interval between each batch of new PN Requests to be processed
+    Description: It defines the time interval between each batch of new PN Requests to be processed (milliseconds)
     Default: 60000
 
   PnAddressManagerNormalizerBatchRequestRecoveryDelay:
     Type: Number
-    Description: It defines the time interval between each batch of recovery for PN Requests
+    Description: It defines the time interval between each batch of recovery for PN Requests (milliseconds)
     Default: 30000
 
   PnAddressManagerNormalizerPostelRecoveryDelay:
     Type: Number
-    Description: It defines the time interval between each batch of recovery for Normalize Requests
+    Description: It defines the time interval between each batch of recovery for Normalize Requests (milliseconds)
     Default: 30000
 
   PnAddressManagerNormalizerPostelRecoveryAfter:
     Type: Number
-    Description: It specifies the minimum time after which a NormalizzatoreBatch record can be processed again
+    Description: It specifies the minimum time after which a NormalizzatoreBatch record can be processed again (seconds)
     Default: 3600
 
   PnAddressManagerNormalizerPostelMaxRetry:
@@ -300,7 +300,7 @@ Parameters:
 
   PnAddressManagerNormalizerBatchRequestRecoveryAfter:
     Type: Number
-    Description: It specifies the minimum time after which a PN Request can be processed again
+    Description: It specifies the minimum time after which a PN Request can be processed again (seconds)
     Default: 3600
 
   PnAddressManagerNormalizerBatchRequestMaxRetry:
@@ -315,7 +315,7 @@ Parameters:
 
   PnAddressManagerNormalizerEventBridgeRecoveryDelay:
     Type: Number
-    Description: It defines the time interval between each batch of recovery for Send message to EventBridge
+    Description: It defines the time interval between each batch of recovery for Send message to EventBridge (milliseconds)
     Default: 30000
 
   PostelCxId:
@@ -341,37 +341,37 @@ Parameters:
 
   PnAddressManagerNormalizerBatchRequestLockAtMost:
     Type: String
-    Description: It specifies how long the lock should be kept in case the executing node dies for PN Requests Batch
+    Description: It specifies how long the lock should be kept in case the executing node dies for PN Requests Batch (milliseconds)
     Default: '120000'
 
   PnAddressManagerNormalizerBatchRequestLockAtLeast:
     Type: String
-    Description: It specifies minimum amount of time for which the lock should be kept
+    Description: It specifies minimum amount of time for which the lock should be kept (milliseconds)
     Default: '1000'
 
   PnAddressManagerNormalizerBatchRecoveryLockAtMost:
     Type: String
-    Description: It specifies how long the lock should be kept in case the executing node dies for Recovery batches
+    Description: It specifies how long the lock should be kept in case the executing node dies for Recovery batches (milliseconds)
     Default: '120000'
 
   PnAddressManagerNormalizerBatchRecoveryLockAtLeast:
     Type: String
-    Description: It specifies minimum amount of time for which the lock should be kept
+    Description: It specifies minimum amount of time for which the lock should be kept (milliseconds)
     Default: '1000'
 
   PnAddressManagerBatchCleanRequestDelay:
     Type: Number
-    Description: It defines the time interval between each batch of clean expires working requests
+    Description: It defines the time interval between each batch of clean expires working requests (milliseconds)
     Default: 30000
 
   PnAddressManagerNormalizerPostelWorkingTtl:
     Type: Number
-    Description: NormalizzatoreBatch remains in WORKING status for the duration specified by the TTL after which its manually deleted
+    Description: NormalizzatoreBatch remains in WORKING status for the duration specified by the TTL after which its manually deleted (seconds)
     Default: 1209600
 
   PnAddressManagerNormalizerPostelTtl:
     Type: Number
-    Description: TTL of NormalizzatoreBatch table setting after PN request completion
+    Description: TTL of NormalizzatoreBatch table setting after PN request completion (seconds)
     Default: 1209600
 
   ShedLockTableName:
@@ -394,7 +394,7 @@ Parameters:
 
   PnAddressManagerNormalizerPostelClientTimeout:
     Type: String
-    Description: Custom read timeout for postel Client
+    Description: Custom read timeout for postel Client (milliseconds)
     Default: 30000
 
 

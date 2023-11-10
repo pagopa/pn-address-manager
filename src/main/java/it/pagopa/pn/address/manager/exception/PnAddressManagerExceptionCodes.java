@@ -72,4 +72,7 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
 
     public static final String ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST = "PN_ADDRESSMANAGER_GETBATCHREQUEST_ERROR";
     public static final String ERROR_MESSAGE_ADDRESSMANAGER_BATCHREQUEST = "can not get batch request";
+
+    public static final String ERROR_CODE_ADDRESSMANAGER_POSTELBATCH = "PN_ADDRESSMANAGER_POSTELBATCH_ERROR";
+    public static final String ERROR_MESSAGE_ADDRESSMANAGER_POSTELBATCH = "can not get postel batch";
 }

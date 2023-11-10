@@ -49,7 +49,6 @@ class RecoveryServiceTest {
         BatchRequest batchRequest = getBatchRequest();
         when( addressBatchRequestRepository.getBatchRequestToRecovery()).thenReturn(Mono.just(List.of(batchRequest)));
         when(addressBatchRequestRepository.resetBatchRequestForRecovery(any())).thenReturn(Mono.just(batchRequest));
-        doNothing().when(addressBatchRequestService).batchAddressRequest();
 
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchRequest());
     }
