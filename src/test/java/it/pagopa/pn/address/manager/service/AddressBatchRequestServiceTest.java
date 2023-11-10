@@ -14,6 +14,8 @@ import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -74,7 +76,11 @@ class AddressBatchRequestServiceTest {
         when(clock.instant()).thenReturn(now);
         pnAddressManagerConfig = new PnAddressManagerConfig();
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer3();
+        PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
+        postel.setWorkingTtl(12);
+        normalizer.setPostel(postel);
         pnAddressManagerConfig.setNormalizer(normalizer);
+
         addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
                 postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock);
 
@@ -112,7 +118,7 @@ class AddressBatchRequestServiceTest {
         NormalizzazioneResponse responseActivatePostel = new NormalizzazioneResponse();
         when(postelClient.activatePostel(any())).thenReturn(responseActivatePostel);
         when(postelBatchRepository.update(postelBatch)).thenReturn(Mono.just(postelBatch));
-        assertDoesNotThrow(() -> addressBatchRequestService.batchAddressRequest());
+        Assertions.assertDoesNotThrow(() -> addressBatchRequestService.batchAddressRequest());
 
     }
 
