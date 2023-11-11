@@ -32,8 +32,7 @@ public class EventBridgeConfiguration {
 
             String profileName = props.getProfileName();
             if( StringUtils.isNotBlank( profileName ) ) {
-                AwsCredentials awsCredentials = ProfileCredentialsProvider.create(profileName).resolveCredentials();
-                builder.withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsCredentials.accessKeyId(), awsCredentials.accessKeyId())));
+                setCredentials(builder, profileName);
             }
 
             String regionCode = props.getRegionCode();
@@ -45,6 +44,13 @@ public class EventBridgeConfiguration {
         }
 
         return builder.build();
+    }
+
+    private <C> void setCredentials(AwsAsyncClientBuilder<?, C> builder, String profileName) {
+        try(ProfileCredentialsProvider profileCredentialsProvider = ProfileCredentialsProvider.create(profileName)) {
+            AwsCredentials awsCredentials = profileCredentialsProvider.resolveCredentials();
+            builder.withCredentials(new AWSStaticCredentialsProvider(new BasicAWSCredentials(awsCredentials.accessKeyId(), awsCredentials.accessKeyId())));
+        }
     }
 
 }
