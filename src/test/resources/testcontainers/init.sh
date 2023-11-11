@@ -93,7 +93,11 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                     \"KeySchema\": [{\"AttributeName\":\"status\",\"KeyType\":\"HASH\"}],
                     \"Projection\":{
                         \"ProjectionType\":\"ALL\"
-                    }
+                    },
+                     \"ProvisionedThroughput\": {
+                         \"ReadCapacityUnits\": 10,
+                         \"WriteCapacityUnits\": 5
+                     }
                 },
                 {
                     \"IndexName\": \"status-workingTtl-index\",
@@ -101,7 +105,11 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                                     {\"AttributeName\":\"workingTtl\",\"KeyType\":\"RANGE\"}],
                     \"Projection\":{
                         \"ProjectionType\":\"ALL\"
-                    }
+                    },
+                     \"ProvisionedThroughput\": {
+                         \"ReadCapacityUnits\": 10,
+                         \"WriteCapacityUnits\": 5
+                     }
                 }
             ]"
 
@@ -131,14 +139,22 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                                     {\"AttributeName\":\"lastReserved\",\"KeyType\":\"RANGE\"}],
                     \"Projection\":{
                         \"ProjectionType\":\"ALL\"
-                    }
+                    },
+                     \"ProvisionedThroughput\": {
+                         \"ReadCapacityUnits\": 10,
+                         \"WriteCapacityUnits\": 5
+                     }
                 },
                 {
                     \"IndexName\": \"status-index\",
                     \"KeySchema\": [{\"AttributeName\":\"status\",\"KeyType\":\"HASH\"}],
                     \"Projection\":{
                         \"ProjectionType\":\"ALL\"
-                    }
+                    },
+                     \"ProvisionedThroughput\": {
+                         \"ReadCapacityUnits\": 10,
+                         \"WriteCapacityUnits\": 5
+                     }
                 },
                 {
                     \"IndexName\": \"sendStatus-lastReserved-index\",
@@ -146,7 +162,11 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                                     {\"AttributeName\":\"lastReserved\",\"KeyType\":\"RANGE\"}],
                     \"Projection\":{
                         \"ProjectionType\":\"ALL\"
-                    }
+                    },
+                     \"ProvisionedThroughput\": {
+                         \"ReadCapacityUnits\": 10,
+                         \"WriteCapacityUnits\": 5
+                     }
                 }
             ]"
 
