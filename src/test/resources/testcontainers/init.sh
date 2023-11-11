@@ -46,7 +46,8 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
-aws dynamodb update-time-to-live --table-name addressManager-AnagraficaClient --time-to-live-specification "Enabled=true, AttributeName=ttl"
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb update-time-to-live --table-name addressManager-AnagraficaClient --time-to-live-specification "Enabled=true, AttributeName=ttl"
 
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
@@ -58,7 +59,8 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
-aws dynamodb update-time-to-live --table-name addressManager-Cap --time-to-live-specification "Enabled=true, AttributeName=ttl"
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb update-time-to-live --table-name addressManager-Cap --time-to-live-specification "Enabled=true, AttributeName=ttl"
 
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
@@ -70,7 +72,8 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
-aws dynamodb update-time-to-live --table-name addressManager-Country --time-to-live-specification "Enabled=true, AttributeName=ttl"
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb update-time-to-live --table-name addressManager-Country --time-to-live-specification "Enabled=true, AttributeName=ttl"
 
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
@@ -102,7 +105,8 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                 }
             ]"
 
-aws dynamodb update-time-to-live --table-name addressManager-NormalizzatoreBatch --time-to-live-specification "Enabled=true, AttributeName=ttl"
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb update-time-to-live --table-name addressManager-NormalizzatoreBatch --time-to-live-specification "Enabled=true, AttributeName=ttl"
 
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
@@ -146,7 +150,8 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                 }
             ]"
 
-aws dynamodb update-time-to-live --table-name addressManager-PNRequest --time-to-live-specification "Enabled=true, AttributeName=ttl"
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb update-time-to-live --table-name addressManager-PNRequest --time-to-live-specification "Enabled=true, AttributeName=ttl"
 
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
