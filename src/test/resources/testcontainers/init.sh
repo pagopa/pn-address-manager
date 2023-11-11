@@ -34,9 +34,8 @@ aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
   --targets "Id"="1","Arn"="$target_arn" \
   --event-bus-name $event_bus_name
 
-echo "CREATE DYNAMODB TABLES"
+echo "PN-ADDRESS-MANAGER CREATE DYNAMODB TABLES"
 
-echo "addressManager-AnagraficaClient"
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
     --table-name addressManager-AnagraficaClient \
@@ -44,12 +43,11 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         AttributeName=cxId,AttributeType=S \
     --key-schema \
         AttributeName=cxId,KeyType=HASH \
-    --time-to-live-specification \
-        Enabled=true, AttributeName=ttl \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
-echo "addressManager-Cap"
+aws dynamodb update-time-to-live --table-name addressManager-AnagraficaClient --time-to-live-specification "Enabled=true, AttributeName=ttl"
+
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
     --table-name addressManager-Cap \
@@ -57,12 +55,11 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         AttributeName=cap,AttributeType=S \
     --key-schema \
         AttributeName=cap,KeyType=HASH \
-    --time-to-live-specification \
-        Enabled=true, AttributeName=ttl \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
-echo "addressManager-Country"
+aws dynamodb update-time-to-live --table-name addressManager-Cap --time-to-live-specification "Enabled=true, AttributeName=ttl"
+
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
     --table-name addressManager-Country \
@@ -70,12 +67,11 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         AttributeName=country,AttributeType=S \
     --key-schema \
         AttributeName=country,KeyType=HASH \
-    --time-to-live-specification \
-        Enabled=true, AttributeName=ttl \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
-echo "addressManager-NormalizzatoreBatch"
+aws dynamodb update-time-to-live --table-name addressManager-Country --time-to-live-specification "Enabled=true, AttributeName=ttl"
+
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
     --table-name addressManager-NormalizzatoreBatch \
@@ -85,8 +81,6 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         AttributeName=workingTtl,AttributeType=S \
     --key-schema \
         AttributeName=batchId,KeyType=HASH \
-    --time-to-live-specification \
-        Enabled=true, AttributeName=ttl \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5 \
     --global-secondary-indexes \
@@ -108,7 +102,8 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                 }
             ]"
 
-echo "addressManager-PNRequest"
+aws dynamodb update-time-to-live --table-name addressManager-NormalizzatoreBatch --time-to-live-specification "Enabled=true, AttributeName=ttl"
+
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
     --table-name addressManager-PNRequest \
@@ -122,8 +117,6 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --key-schema \
         AttributeName=correlationId,KeyType=HASH \
         AttributeName=createdAt,KeyType=RANGE \
-    --time-to-live-specification \
-        Enabled=true, AttributeName=ttl \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5 \
     --global-secondary-indexes \
@@ -153,7 +146,8 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
                 }
             ]"
 
-echo "addressManager-ShedLock"
+aws dynamodb update-time-to-live --table-name addressManager-PNRequest --time-to-live-specification "Enabled=true, AttributeName=ttl"
+
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
     --table-name addressManager-ShedLock \
@@ -163,3 +157,5 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
         AttributeName=_id,KeyType=HASH \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
+
+echo "Initialization terminated"
