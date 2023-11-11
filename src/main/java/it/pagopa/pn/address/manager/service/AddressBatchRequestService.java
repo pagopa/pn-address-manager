@@ -111,8 +111,8 @@ public class AddressBatchRequestService {
 //    in case of really short tasks and clock difference between the nodes.
 //
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.delay}")
-    @SchedulerLock(name = "batchRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-request.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
+    @SchedulerLock(name = "batchRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-request.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lock-at-least}")
     protected void pollForNormalizeRequestProcessing() {
         try {
             LockAssert.assertLocked();
