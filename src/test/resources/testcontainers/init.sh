@@ -183,4 +183,31 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     --provisioned-throughput \
         ReadCapacityUnits=10,WriteCapacityUnits=5
 
+echo "PN-ADDRESS-MANAGER PUT ANAGRAFICA"
+aws  --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb put-item \
+    --table-name AnagraficaClient  \
+    --item '{"cxId":{"S":"pn-delivery-push"},"apikey":{"S":"pn-delivery-push-apikey"}}'
+
+aws  --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb put-item \
+    --table-name AnagraficaClient  \
+    --item '{"cxId":{"S":"pn-paper-channel"},"apikey":{"S":"pn-paper-channel-apikey"}}'
+
+aws  --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb put-item \
+    --table-name AnagraficaClient  \
+    --item '{"cxId":{"S":"POSTEL"},"apikey":{"S":"test"}}'
+
+aws  --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb put-item \
+    --table-name AnagraficaClient  \
+    --item '{"cxId":{"S":"pn-mock"},"apikey":{"S":"pn-mock-apikey"}}'
+
+aws  --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb put-item \
+    --table-name AnagraficaClient  \
+    --item '{"cxId":{"S":"pn-cons-000"},"apikey":{"S":"tbd"}}'
+
+
 echo "Initialization terminated"
