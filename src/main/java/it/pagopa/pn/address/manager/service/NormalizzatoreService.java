@@ -124,13 +124,16 @@ public class NormalizzatoreService {
                         return verifyCheckSumAndSendToInternalQueue(normalizerCallbackRequest, fileDownloadResponse, postelBatch, pnAddressManagerCxId)
                                 .thenReturn(response);
                     })
+                    .flatMap(operationResultCodeResponse -> sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, postelBatch).thenReturn(response))
                     .onErrorResume(throwable -> {
                         log.error(CALLBACK_ERROR_LOG, throwable.getMessage(), throwable);
                         return Mono.error(throwable);
                     });
         }
-        return sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, postelBatch)
-                .thenReturn(response);
+        else {
+            return sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, postelBatch)
+                    .thenReturn(response);
+        }
     }
 
     private OperationResultCodeResponse getOperationResultCodeOK() {
