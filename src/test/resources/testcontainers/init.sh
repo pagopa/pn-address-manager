@@ -1,7 +1,7 @@
 ## Quando viene aggiornato questo file, aggiornare anche il commitId presente nel file initsh-for-testcontainer-sh
 
 echo "### CREATE QUEUES ###"
-queues="local-address-inputs local-address-inputs-DLQ local-address-callback"
+queues="local-address-inputs local-address-inputs-DLQ local-address-callback local-address-callback-DLQ"
 for qn in $(echo $queues | tr " " "\n"); do
   echo creating queue $qn ...
   aws --profile default --region us-east-1 --endpoint-url http://localstack:4566 \
