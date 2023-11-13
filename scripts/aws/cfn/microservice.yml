@@ -193,7 +193,7 @@ Parameters:
 
   AddressLengthValidation:
     Type: Number
-    Default: true
+    Default: 0
     Description: It determines whether address length validation is enabled or not, if value is 0 validation is not enabled otherwise we have to check if fields length is less than env value
 
   PhysicalAddressValidationCharsValue:
