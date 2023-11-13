@@ -30,7 +30,7 @@ public class PnAddressManagerConfig {
     private String healthCheckPath;
     private String safeStorageBasePath;
     private Boolean enableWhitelisting;
-
+    private Integer addressLengthValidation;
     @Data
     public static class Normalizer{
         private BatchRequest batchRequest;

@@ -32,6 +32,10 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
     public static final String ERROR_MESSAGE_BATCH_REQUEST_RETRY_EXHAUSTED = "Errore durante il recupero dei batch di richiesta - numero massimo di tentativi esaurito!";
 
     public static final String APIKEY_DOES_NOT_EXISTS = "ApiKey does not exist";
+
+    public static final String ERROR_CLIENT_ID_MESSAGE = "ClientId does not exist";
+
+    public static final String ERROR_CLIENT_ID = "CLIENTID_NOT_FOUND";
     public static final String CAP_DOES_NOT_EXISTS = "Cap %s does not exist or is not valid";
     public static final String COUNTRY_DOES_NOT_EXISTS = "Country %s does not exist";
 
@@ -72,4 +76,10 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
 
     public static final String ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST = "PN_ADDRESSMANAGER_GETBATCHREQUEST_ERROR";
     public static final String ERROR_MESSAGE_ADDRESSMANAGER_BATCHREQUEST = "can not get batch request";
+
+    public static final String ERROR_CODE_ADDRESSMANAGER_POSTELBATCH = "PN_ADDRESSMANAGER_POSTELBATCH_ERROR";
+    public static final String ERROR_MESSAGE_ADDRESSMANAGER_POSTELBATCH = "can not get postel batch";
+
+    public static final String INVALID_ADDRESS_FIELD_LENGTH = "At least on Address field has an invalid length";
+    public static final String INVALID_ADDRESS_FIELD_LENGTH_CODE = "INVALID_ADDRESS_FIELD_LENGTH";
 }

@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
+import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
@@ -280,7 +281,7 @@ public class AddressUtils {
         return acceptedResponse;
     }
 
-    public List<NormalizeResult> toResultItem(List<NormalizedAddress> normalizedAddresses) {
+    public List<NormalizeResult> toResultItem(List<NormalizedAddress> normalizedAddresses, BatchRequest batchRequest) {
         return normalizedAddresses.stream().map(normalizedAddress -> {
             NormalizeResult result = new NormalizeResult();
             String[] index = normalizedAddress.getId().split("#");
@@ -289,7 +290,8 @@ public class AddressUtils {
                 log.info("Address with correlationId: [{}], createdAt: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1], index[2],
                         normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
                 if (normalizedAddress.getFPostalizzabile() != null && normalizedAddress.getFPostalizzabile() == 0) {
-                    result.setError(decodeErrorErroreNorm(normalizedAddress, index));
+                    String errorMessage = evaluatedErrorToUpdateBatchRequest(normalizedAddress, index, batchRequest);
+                    result.setError(errorMessage);
                 } else {
                     result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
                 }
@@ -298,12 +300,23 @@ public class AddressUtils {
         }).toList();
     }
 
-    private String decodeErrorErroreNorm(NormalizedAddress normalizedAddress, String[] index) {
-        if (normalizedAddress.getNErroreNorm() != null) {
+    private String evaluatedErrorToUpdateBatchRequest(NormalizedAddress normalizedAddress, String[] index, BatchRequest batchRequest) {
+        if(normalizedAddress.getNErroreNorm() != null){
             PostelNErrorNorm error = PostelNErrorNorm.fromCode(normalizedAddress.getNErroreNorm());
             log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
-        } else
+            switch (error){
+                case ERROR_901, ERROR_997, ERROR_998:
+                    batchRequest.setStatus(TAKEN_CHARGE.getValue());
+                    break;
+                case ERROR_999:
+                    batchRequest.setStatus(ERROR.getValue());
+                    break;
+                default:
+                    batchRequest.setStatus(WORKED.getValue());
+            }
+        }else{
             log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], "Errore non presente");
+        }
         return PNADDR001_MESSAGE;
     }
 
