@@ -1,8 +1,11 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
@@ -10,8 +13,10 @@ import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
+import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
@@ -27,7 +32,9 @@ import java.util.List;
 import java.util.Map;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.SEMANTIC_ERROR_CODE;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
+import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESS_MANAGER_POSTELOUTPUTFILEKEYNOTFOUND;
 import static java.util.stream.Collectors.groupingBy;
 
 @Component
@@ -43,53 +50,74 @@ public class PostelBatchService {
     private final AddressBatchRequestService addressBatchRequestService;
     private final CapAndCountryService capAndCountryService;
     private final Clock clock;
+    private final SafeStorageService safeStorageService;
+    private final PnAddressManagerConfig pnAddressManagerConfig;
 
 
-    public Mono<Void> getResponse(String url, PostelBatch postelBatch) {
-        byte[] bytes = downloadCSV(url, postelBatch);
-        List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0);
-        Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
-        return retrieveAndProcessRelatedRequest(postelBatch.getBatchId(), map)
+    public Mono<Void> getResponse(String outputFileKey, PostelBatch postelBatch) {
+        return getFile(outputFileKey)
+                .flatMap(fileDownloadResponse -> downloadCSV(fileDownloadResponse.getDownload().getUrl(), postelBatch)
+                        .flatMap(bytes -> {
+                            List<NormalizedAddress> normalizedAddressList = csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0);
+                            Map<String, List<NormalizedAddress>> map = normalizedAddressList.stream().collect(groupingBy(normalizedAddress -> addressUtils.getCorrelationIdCreatedAt(normalizedAddress.getId())));
+                            return retrieveAndProcessRelatedRequest(postelBatch.getBatchId(), map);
+                        }))
                 .onErrorResume(throwable -> {
                     log.warn("Error in getResponse with postelBatch: {}. Increment", postelBatch.getBatchId(), throwable);
                     return addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable);
                 });
     }
 
-    public byte[] downloadCSV(String url, PostelBatch postelBatch) {
+    public Mono<FileDownloadResponse> getFile(String fileKey) {
+        return safeStorageService.getFile(fileKey, pnAddressManagerConfig.getPagoPaCxId())
+                .onErrorResume(PnFileNotFoundException.class, error -> {
+                    log.error("Exception in call getFile fileKey={}}", fileKey);
+                    log.error(ADDRESS_NORMALIZER_ASYNC + "getFile error:{}", error.getMessage(), error);
+                    return Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELOUTPUTFILEKEYNOTFOUND, fileKey), HttpStatus.BAD_REQUEST.value(),
+                            SEMANTIC_ERROR_CODE));
+                });
+    }
+
+    public Mono<byte[]> downloadCSV(String url, PostelBatch postelBatch) {
         return uploadDownloadClient.downloadContent(url)
                 .doOnNext(bytes -> log.debug("Downloaded CSV for batchId: {}", postelBatch.getBatchId()))
                 .doOnError(throwable -> {
                     log.warn("Error in getResponse with postelBatch: {}. Increment", postelBatch.getBatchId(), throwable);
                     addressBatchRequestService.incrementAndCheckRetry(postelBatch, throwable).block();
-                })
-                .block();
+                });
     }
 
-    private Mono<Void> retrieveAndProcessRelatedRequest(String batchId, Map<String, List<NormalizedAddress>> map ) {
-        Page<BatchRequest> page;
-        Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
+    private Mono<Void> retrieveAndProcessRelatedRequest(String batchId, Map<String, List<NormalizedAddress>> map) {
+        return Flux.defer(() -> processBatchRequests(batchId, map, getBatchRequestByBatchIdAndStatusReactive(Map.of(), batchId)))
+                .then();
+    }
 
-        do {
-            Instant startPagedQuery = clock.instant();
-
-            page = getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId);
-
-            lastEvaluatedKey = page.lastEvaluatedKey();
-            if (!page.items().isEmpty()) {
-                processCallbackResponse(page.items(), batchId, map)
-                        .block();
-            } else {
-                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request founded for: {}", batchId);
+    private Mono<Page<BatchRequest>> processBatchRequests(String batchId, Map<String, List<NormalizedAddress>> map, Mono<Page<BatchRequest>> pageMono) {
+        return pageMono.flatMap(page -> {
+            if (page.items().isEmpty()) {
+                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request found for: {}", batchId);
+                return Mono.just(page);
             }
 
-            Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+            Instant startPagedQuery = clock.instant();
+            return processCallbackResponse(page.items(), batchId, map)
+                    .thenReturn(page)
+                    .doOnTerminate(() -> {
+                        Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+                        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batchId, timeSpent.toMillis());
+                    })
+                    .flatMap(lastProcessedPage -> {
+                        if (lastProcessedPage.lastEvaluatedKey() != null) {
+                            return processBatchRequests(batchId, map, getBatchRequestByBatchIdAndStatusReactive(lastProcessedPage.lastEvaluatedKey(), batchId));
+                        } else {
+                            return Mono.just(lastProcessedPage);
+                        }
+                    });
+        });
+    }
 
-            log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batchId, timeSpent.toMillis());
-
-        } while (!CollectionUtils.isEmpty(lastEvaluatedKey));
-
-        return Mono.empty();
+    private Mono<Page<BatchRequest>> getBatchRequestByBatchIdAndStatusReactive(Map<String, AttributeValue> lastEvaluatedKey, String batchId) {
+        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId, BatchStatus.WORKING);
     }
 
     private Mono<Void> processCallbackResponse(List<BatchRequest> items, String batchId, Map<String, List<NormalizedAddress>> map ) {

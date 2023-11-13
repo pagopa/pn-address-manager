@@ -66,15 +66,19 @@ public class CsvService {
     }
 
     public <T> List<T> readItemsFromCsv(Class<T> csvClass, byte[] file, int skipLines) {
-        StringReader stringReader = new StringReader(new String(file, StandardCharsets.UTF_8));
-        CsvToBeanBuilder<T> csvToBeanBuilder = new CsvToBeanBuilder<>(stringReader);
-        csvToBeanBuilder.withSeparator(';');
-        csvToBeanBuilder.withQuoteChar(DEFAULT_QUOTE_CHARACTER);
-        csvToBeanBuilder.withSkipLines(skipLines);
-        csvToBeanBuilder.withType(csvClass);
+        try {
+            StringReader stringReader = new StringReader(new String(file, StandardCharsets.UTF_8));
+            CsvToBeanBuilder<T> csvToBeanBuilder = new CsvToBeanBuilder<>(stringReader);
+            csvToBeanBuilder.withSeparator(';');
+            csvToBeanBuilder.withQuoteChar(DEFAULT_QUOTE_CHARACTER);
+            csvToBeanBuilder.withSkipLines(skipLines);
+            csvToBeanBuilder.withType(csvClass);
 
-        List<T> parsedItems = csvToBeanBuilder.build().parse();
-        return new ArrayList<>(parsedItems);
+            List<T> parsedItems = csvToBeanBuilder.build().parse();
+            return new ArrayList<>(parsedItems);
+        }catch (Exception e){
+            throw new PnInternalAddressManagerException(ERROR_ADDRESS_MANAGER_READING_CSV, ERROR_ADDRESS_MANAGER_READING_CSV_DESCRIPTION, HttpStatus.BAD_REQUEST.value(), ERROR_ADDRESS_MANAGER_READING_CSV_ERROR_CODE);
+        }
     }
 
     public Map<String, String> countryMap() {

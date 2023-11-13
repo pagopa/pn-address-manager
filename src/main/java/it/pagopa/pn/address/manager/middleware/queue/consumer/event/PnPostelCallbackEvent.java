@@ -26,7 +26,6 @@ public class PnPostelCallbackEvent implements GenericEvent<StandardEventHeader, 
     public static class Payload {
         private String requestId;
         private String outputFileKey;
-        private String outputFileUrl;
         private String error;
     }
 }
