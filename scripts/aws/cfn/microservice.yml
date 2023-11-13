@@ -191,6 +191,11 @@ Parameters:
     Description: It determines whether address pattern validation is enabled or not
     AllowedValues: [true, false]
 
+  AddressLengthValidation:
+    Type: Number
+    Default: 0
+    Description: It determines whether address length validation is enabled or not, if value is 0 validation is not enabled otherwise we have to check if fields length is less than env value
+
   PhysicalAddressValidationCharsValue:
     Type: String
     Description: It defines the allowable characters for validating physical addresses
@@ -469,6 +474,7 @@ Resources:
         ContainerEnvEntry44: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXCSVSIZE=${PnAddressManagerMaxCsvSize}'
         ContainerEnvEntry45: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXFILENUMBER=${PnAddressManagerMaxFileNumber}'
         ContainerEnvEntry46: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
+        ContainerEnvEntry47: !Sub 'PN_ADDRESSMANAGER_ADDRESSLENGTHVALIDATION=${AddressLengthValidation}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets
