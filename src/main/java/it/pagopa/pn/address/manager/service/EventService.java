@@ -6,6 +6,7 @@ import com.amazonaws.services.eventbridge.model.PutEventsRequestEntry;
 import com.amazonaws.services.eventbridge.model.PutEventsResult;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
@@ -14,16 +15,11 @@ import java.util.List;
 
 @CustomLog
 @Component
+@RequiredArgsConstructor
 public class EventService {
 
     private final AmazonEventBridgeAsync amazonEventBridge;
     private final PnAddressManagerConfig pnAddressManagerConfig;
-
-    public EventService(AmazonEventBridgeAsync amazonEventBridge,
-                        PnAddressManagerConfig pnAddressManagerConfig) {
-        this.amazonEventBridge = amazonEventBridge;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-    }
 
     public Mono<PutEventsResult> sendEvent(String message) {
         return Mono.fromCallable(() ->amazonEventBridge.putEventsAsync(putEventsRequestBuilder(message))

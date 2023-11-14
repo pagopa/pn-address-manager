@@ -12,7 +12,7 @@ import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
 @Data
 @ToString
 @DynamoDbBean
-public class BatchRequest {
+public class PnRequest {
 
     @Getter(onMethod = @__({
             @DynamoDbPartitionKey,

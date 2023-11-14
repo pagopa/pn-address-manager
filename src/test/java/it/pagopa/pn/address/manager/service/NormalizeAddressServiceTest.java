@@ -5,8 +5,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.config.SchedulerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCallbackEvent;
@@ -62,7 +62,7 @@ class NormalizeAddressServiceTest {
 
     @Test
     void normalizeAddressAsync() throws JsonProcessingException {
-        normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenReturn("json");
         when(addressUtils.normalizeAddresses(any(), any())).thenReturn(normalize);
@@ -76,7 +76,7 @@ class NormalizeAddressServiceTest {
 
     @Test
     void normalizeAddressAsync1() throws JsonProcessingException {
-        normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenReturn("json");
         when(addressUtils.normalizeAddresses(any(), any())).thenReturn(normalize);
@@ -93,7 +93,7 @@ class NormalizeAddressServiceTest {
 
     @Test
     void normalizeAddressAsyncError() throws JsonProcessingException {
-        normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
         when(addressUtils.normalizeAddresses(any(), any())).thenReturn(normalize);
@@ -109,7 +109,7 @@ class NormalizeAddressServiceTest {
     void handleRequest(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setFlagCsv(true);
-        normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         when(addressUtils.normalizeRequestToResult(any())).thenReturn(new NormalizeItemsResult());
         when(addressUtils.toJson(any())).thenReturn("json");
         NormalizeItemsRequest request = new NormalizeItemsRequest();
@@ -130,11 +130,11 @@ class NormalizeAddressServiceTest {
     void handleRequest1(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setFlagCsv(false);
-        normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
         when(addressUtils.normalizeRequestToResult(any())).thenReturn(new NormalizeItemsResult());
         when(addressUtils.toJson(any())).thenReturn("json");
-        when(addressUtils.createNewStartBatchRequest()).thenReturn(new BatchRequest());
-        when(addressBatchRequestRepository.create(any())).thenReturn(Mono.just(new BatchRequest()));
+        when(addressUtils.createNewStartBatchRequest()).thenReturn(new PnRequest());
+        when(addressBatchRequestRepository.create(any())).thenReturn(Mono.just(new PnRequest()));
         StepVerifier.create(normalizeAddressService.handleRequest(PnNormalizeRequestEvent.Payload.builder().pnAddressManagerCxId("cxId").normalizeItemsRequest(new NormalizeItemsRequest()).build())).expectNextCount(0).verifyComplete();
     }
 
@@ -142,8 +142,8 @@ class NormalizeAddressServiceTest {
     void handlePostelCallback(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setFlagCsv(false);
-        normalizeAddressService = new NormalizeAddressService(addressUtils,eventService,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
-        when(postelBatchService.findPostelBatch(any())).thenReturn(Mono.just(new PostelBatch()));
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig,postelBatchService);
+        when(postelBatchService.findPostelBatch(any())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         when(postelBatchService.getResponse(any(),any())).thenReturn(Mono.empty());
         StepVerifier.create(normalizeAddressService.handlePostelCallback(PnPostelCallbackEvent.Payload.builder().build())).expectNextCount(0).verifyComplete();
     }

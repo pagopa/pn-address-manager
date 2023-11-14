@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.model.InternalCodeSqsDto;
 import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
@@ -43,11 +43,11 @@ class SqsServiceTest {
         pnAddressManagerConfig.setSqs(sqs);
         sqsService = new SqsService(sqsClient, addressUtils, pnAddressManagerConfig);
 
-        BatchRequest batchRequest = getBatchRequest();
+        PnRequest pnRequest = getBatchRequest();
         when(addressUtils.toObject("yourAddresses", NormalizeItemsRequest.class)).thenReturn(new NormalizeItemsRequest());
         when(sqsClient.getQueueUrl((GetQueueUrlRequest) any())).thenReturn(GetQueueUrlResponse.builder().queueUrl("url").build());
         when(sqsClient.sendMessage((SendMessageRequest) any())).thenReturn(SendMessageResponse.builder().build());
-        StepVerifier.create(sqsService.sendListToDlqQueue(List.of(batchRequest))).expectNextCount(0).verifyComplete();
+        StepVerifier.create(sqsService.sendListToDlqQueue(List.of(pnRequest))).expectNextCount(0).verifyComplete();
         InternalCodeSqsDto internalCodeSqsDto = mock(InternalCodeSqsDto.class);
         NormalizeItemsRequest normalizeItemsRequest = mock(NormalizeItemsRequest.class);
 
@@ -60,23 +60,23 @@ class SqsServiceTest {
     }
 
 
-    BatchRequest getBatchRequest(){
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("yourCorrelationId");
-        batchRequest.setAddresses("yourAddresses");
-        batchRequest.setBatchId("NO_BATCH_ID");
-        batchRequest.setRetry(1);
-        batchRequest.setTtl(3600L); // Your TTL value in seconds
-        batchRequest.setClientId("yourClientId");
-        batchRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
-        batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setSendStatus("yourSendStatus");
-        batchRequest.setMessage("yourMessage");
-        batchRequest.setXApiKey("yourXApiKey");
-        batchRequest.setCxId("yourCxId");
-        batchRequest.setAwsMessageId("yourAwsMessageId");
-        return batchRequest;
+    PnRequest getBatchRequest(){
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setCorrelationId("yourCorrelationId");
+        pnRequest.setAddresses("yourAddresses");
+        pnRequest.setBatchId("NO_BATCH_ID");
+        pnRequest.setRetry(1);
+        pnRequest.setTtl(3600L); // Your TTL value in seconds
+        pnRequest.setClientId("yourClientId");
+        pnRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
+        pnRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
+        pnRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
+        pnRequest.setSendStatus("yourSendStatus");
+        pnRequest.setMessage("yourMessage");
+        pnRequest.setXApiKey("yourXApiKey");
+        pnRequest.setCxId("yourCxId");
+        pnRequest.setAwsMessageId("yourAwsMessageId");
+        return pnRequest;
     }
 
 

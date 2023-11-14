@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.type.CollectionType;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.constant.PostelNErrorNorm;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
@@ -195,18 +195,18 @@ public class AddressUtils {
                 }).toList();
     }
 
-    public List<NormalizeRequest> getNormalizeRequestFromBatchRequest(BatchRequest batchRequest) {
-        return toObject(batchRequest.getAddresses(),
+    public List<NormalizeRequest> getNormalizeRequestFromBatchRequest(PnRequest pnRequest) {
+        return toObject(pnRequest.getAddresses(),
                 objectMapper.getTypeFactory().constructCollectionType(List.class, NormalizeRequest.class));
     }
 
-    public List<NormalizeResult> getNormalizeResultFromBatchRequest(BatchRequest batchRequest) {
-        return toObject(batchRequest.getMessage(),
+    public List<NormalizeResult> getNormalizeResultFromBatchRequest(PnRequest pnRequest) {
+        return toObject(pnRequest.getMessage(),
                 objectMapper.getTypeFactory().constructCollectionType(List.class, NormalizeResult.class));
     }
 
-    public List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(BatchRequest batchRequest) {
-        return toNormalizeRequestPostelInput(getNormalizeRequestFromBatchRequest(batchRequest), batchRequest.getCorrelationId(), batchRequest.getCreatedAt());
+    public List<NormalizeRequestPostelInput> normalizeRequestToPostelCsvRequest(PnRequest pnRequest) {
+        return toNormalizeRequestPostelInput(getNormalizeRequestFromBatchRequest(pnRequest), pnRequest.getCorrelationId(), pnRequest.getCreatedAt());
     }
 
     public String computeSha256(byte[] content) {
@@ -256,16 +256,16 @@ public class AddressUtils {
         return fileCreationRequestDto;
     }
 
-    public BatchRequest createNewStartBatchRequest() {
+    public PnRequest createNewStartBatchRequest() {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setBatchId(BatchStatus.NO_BATCH_ID.getValue());
-        batchRequest.setStatus(BatchStatus.NOT_WORKED.getValue());
-        batchRequest.setRetry(0);
-        batchRequest.setLastReserved(now);
-        batchRequest.setCreatedAt(now);
-        log.trace("New Batch Request: {}", batchRequest);
-        return batchRequest;
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setBatchId(BatchStatus.NO_BATCH_ID.getValue());
+        pnRequest.setStatus(BatchStatus.NOT_WORKED.getValue());
+        pnRequest.setRetry(0);
+        pnRequest.setLastReserved(now);
+        pnRequest.setCreatedAt(now);
+        log.trace("New Batch Request: {}", pnRequest);
+        return pnRequest;
     }
 
     public NormalizeItemsResult normalizeRequestToResult(NormalizeItemsRequest normalizeItemsRequest) {
@@ -281,7 +281,7 @@ public class AddressUtils {
         return acceptedResponse;
     }
 
-    public List<NormalizeResult> toResultItem(List<NormalizedAddress> normalizedAddresses, BatchRequest batchRequest) {
+    public List<NormalizeResult> toResultItem(List<NormalizedAddress> normalizedAddresses, PnRequest pnRequest) {
         return normalizedAddresses.stream().map(normalizedAddress -> {
             NormalizeResult result = new NormalizeResult();
             String[] index = normalizedAddress.getId().split("#");
@@ -290,7 +290,7 @@ public class AddressUtils {
                 log.info("Address with correlationId: [{}], createdAt: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1], index[2],
                         normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
                 if (normalizedAddress.getFPostalizzabile() != null && normalizedAddress.getFPostalizzabile() == 0) {
-                    String errorMessage = evaluatedErrorToUpdateBatchRequest(normalizedAddress, index, batchRequest);
+                    String errorMessage = evaluatedErrorToUpdateBatchRequest(normalizedAddress, index, pnRequest);
                     result.setError(errorMessage);
                 } else {
                     result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
@@ -300,19 +300,19 @@ public class AddressUtils {
         }).toList();
     }
 
-    private String evaluatedErrorToUpdateBatchRequest(NormalizedAddress normalizedAddress, String[] index, BatchRequest batchRequest) {
+    private String evaluatedErrorToUpdateBatchRequest(NormalizedAddress normalizedAddress, String[] index, PnRequest pnRequest) {
         if(normalizedAddress.getNErroreNorm() != null){
             PostelNErrorNorm error = PostelNErrorNorm.fromCode(normalizedAddress.getNErroreNorm());
             log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
             switch (error){
                 case ERROR_901, ERROR_997, ERROR_998:
-                    batchRequest.setStatus(TAKEN_CHARGE.getValue());
+                    pnRequest.setStatus(TAKEN_CHARGE.getValue());
                     break;
                 case ERROR_999:
-                    batchRequest.setStatus(ERROR.getValue());
+                    pnRequest.setStatus(ERROR.getValue());
                     break;
                 default:
-                    batchRequest.setStatus(WORKED.getValue());
+                    pnRequest.setStatus(WORKED.getValue());
             }
         }else{
             log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], "Errore non presente");
@@ -343,8 +343,8 @@ public class AddressUtils {
         return "noCorrelationId";
     }
 
-    public String getCorrelationIdCreatedAt(BatchRequest batchRequest) {
-        return batchRequest.getCorrelationId() + "#" + batchRequest.getCreatedAt();
+    public String getCorrelationIdCreatedAt(PnRequest pnRequest) {
+        return pnRequest.getCorrelationId() + "#" + pnRequest.getCreatedAt();
     }
 
     public PostelCallbackSqsDto getPostelCallbackSqsDto(NormalizerCallbackRequest callbackRequest, String batchId) {
