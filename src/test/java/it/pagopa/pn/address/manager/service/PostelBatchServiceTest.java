@@ -6,6 +6,7 @@ import it.pagopa.pn.address.manager.entity.BatchRequest;
 import it.pagopa.pn.address.manager.entity.CapModel;
 import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
@@ -22,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
@@ -85,9 +87,13 @@ class PostelBatchServiceTest {
 
         when(uploadDownloadClient.downloadContent(anyString())).thenReturn(Mono.just("url".getBytes()));
         NormalizedAddress normalizedAddress = new NormalizedAddress();
-        normalizedAddress.setId("id");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String now= localDateTime.toString();
+        normalizedAddress.setId("id#"+now);
         when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),0)).thenReturn(List.of(normalizedAddress));
-        when(addressUtils.getCorrelationIdCreatedAt(anyString())).thenReturn("id");
+        when(addressUtils.getCorrelationIdCreatedAt(anyString())).thenReturn("id#"+now);
+        when(addressUtils.toJson(any())).thenReturn("string");
+        when(addressUtils.getCorrelationIdCreatedAt(any(BatchRequest.class))).thenReturn("id#"+now);
         BatchRequest batchRequest = new BatchRequest();
         batchRequest.setCorrelationId("id");
         batchRequest.setAddresses("yourAddresses");
@@ -97,7 +103,7 @@ class PostelBatchServiceTest {
         batchRequest.setClientId("yourClientId");
         batchRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
         batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
+        batchRequest.setCreatedAt(localDateTime); // Your LocalDateTime value
         batchRequest.setSendStatus("yourSendStatus");
         batchRequest.setMessage("yourMessage");
         batchRequest.setXApiKey("yourXApiKey");
@@ -143,6 +149,8 @@ class PostelBatchServiceTest {
         base.setCountry("ITALIA");
         NormalizeResult normalizeResult = new NormalizeResult();
         normalizeResult.setNormalizedAddress(base);
+        String correlationIdCreatedAt = addressUtils.getCorrelationIdCreatedAt(batchRequest);
+        batchRequest.setStatus(BatchStatus.WORKED.name());
         when(addressUtils.toResultItem(any(), any())).thenReturn(List.of(normalizeResult));
         when(addressUtils.toJson(anyString())).thenReturn("json");
         when(clock.instant()).thenReturn(Instant.now());
@@ -157,7 +165,6 @@ class PostelBatchServiceTest {
         capModel.setStartValidity(LocalDateTime.now());
         StepVerifier.create(postelBatchService.getResponse("url", postelBatch)).verifyComplete();
     }
-
 
     @Test
     void getResponse2(){

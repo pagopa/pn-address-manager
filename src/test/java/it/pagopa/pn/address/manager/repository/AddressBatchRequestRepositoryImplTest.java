@@ -20,6 +20,7 @@ import software.amazon.awssdk.enhanced.dynamodb.model.UpdateItemEnhancedRequest;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -108,6 +109,24 @@ class AddressBatchRequestRepositoryImplTest {
                 .thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(batchRequest)))));
         StepVerifier.create(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus("batchId", BatchStatus.NO_BATCH_ID)).expectNextCount(0);
     }
+    @Test
+    void testGetBatchRequestByBatchId() {
+        Map<String, AttributeValue> lastKey = mock(Map.class);
+
+        when(dynamoDbEnhancedAsyncClient.table(any(), any()))
+                .thenReturn(dynamoDbAsyncTable);
+        DynamoDbAsyncIndex<Object> index = mock(DynamoDbAsyncIndex.class);
+        when(dynamoDbAsyncTable.index(any()))
+                .thenReturn(index);
+        when(index.query((QueryEnhancedRequest) any()))
+                .thenReturn(SdkPublisher.adapt(Mono.empty()));
+
+
+        StepVerifier.create(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastKey,"batchId", BatchStatus.NO_BATCH_ID))
+                .expectNextCount(0)
+                .verifyComplete();
+    }
+
 
     @Test
     void setNewBatchIdToBatchRequest(){

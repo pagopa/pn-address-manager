@@ -17,6 +17,7 @@ import reactor.core.scheduler.Scheduler;
 import reactor.test.StepVerifier;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 
@@ -48,12 +49,12 @@ class NormalizattoreControllerTest {
 
     @Test
     void getFile() {
-        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        FileDownloadResponse fileDownloadResponse = mock(FileDownloadResponse.class);
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setApiKey("ApiKey");
         apiKeyModel.setCxId("cxId");
         when(normalizzatoreService.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
-        when(normalizzatoreService.getFile(any())).thenReturn(Mono.just(new FileDownloadResponse()));
+        when(normalizzatoreService.getFile(any())).thenReturn(Mono.just(fileDownloadResponse));
         StepVerifier.create(normalizeAddressController.getFile("fileKey","cxId","ApiKey",serverWebExchange))
                 .expectNext(ResponseEntity.ok().body(fileDownloadResponse));
     }

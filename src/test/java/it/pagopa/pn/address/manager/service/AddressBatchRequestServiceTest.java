@@ -121,6 +121,70 @@ class AddressBatchRequestServiceTest {
         Assertions.assertDoesNotThrow(() -> addressBatchRequestService.batchAddressRequest());
 
     }
+    @Test
+    void batchAddressRequest2(){
+        Instant now = Instant.now();
+        when(clock.instant()).thenReturn(now);
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setLockAtMost(100);
+        batchRequest.setLockAtLeast(100);
+        batchRequest.setRecoveryAfter(3);
+        batchRequest.setMaxRetry(3);
+        batchRequest.setRecoveryDelay(3);
+        batchRequest.setDelay(3);
+        batchRequest.setEventBridgeRecoveryDelay(3);
+        normalizer.setMaxFileNumber(2);
+        PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
+        postel.setWorkingTtl(12);
+        normalizer.setPostel(postel);
+
+        batchRequest.setQueryMaxSize(5);
+        normalizer.setMaxCsvSize(0);
+        normalizer.setBatchRequest(batchRequest);
+        pnAddressManagerConfig.setNormalizer(normalizer);
+
+        addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock);
+
+
+        BatchRequest batchRequest1 = getBatchRequest();
+        Page<BatchRequest> page1 = Page.create(List.of(batchRequest1), new HashMap<>());
+        when(addressBatchRequestRepository.getBatchRequestByNotBatchId(anyMap(), anyInt()))
+                .thenReturn(Mono.just(page1));
+
+        NormalizeRequestPostelInput request = new NormalizeRequestPostelInput();
+        request.setIdCodiceCliente("12345");
+        request.setProvincia("TO");
+        request.setCap("12345");
+        request.setLocalita("Sample Località");
+        request.setLocalitaAggiuntiva("Sample Località Aggiuntiva");
+        request.setIndirizzo("123 Main St");
+        request.setStato("IT");
+        when(addressUtils.normalizeRequestToPostelCsvRequest(any())).thenReturn(List.of(request));
+        when(csvService.writeItemsOnCsvToString(any())).thenReturn("csvContent");
+        when(addressUtils.computeSha256(any())).thenReturn("sha256");
+
+        when(addressBatchRequestRepository.setNewBatchIdToBatchRequest(same(batchRequest1)))
+                .thenReturn(Mono.just(batchRequest1));
+
+        FileCreationResponseDto fileCreationResponseDto = new FileCreationResponseDto();
+        fileCreationResponseDto.setKey("key");
+        fileCreationResponseDto.setSecret("secret");
+        when(safeStorageService.callSelfStorageCreateFileAndUpload(anyString(),any())).thenReturn(Mono.just(fileCreationResponseDto));
+
+        PostelBatch postelBatch = getPostelBatch();
+        when(postelBatchRepository.create(postelBatch)).thenReturn(Mono.just(postelBatch));
+        when(addressConverter.createPostelBatchByBatchIdAndFileKey(any(),any(), any())).thenReturn(postelBatch);
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
+        when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
+        NormalizzazioneResponse responseActivatePostel = new NormalizzazioneResponse();
+        when(postelClient.activatePostel(any())).thenReturn(responseActivatePostel);
+        when(postelBatchRepository.update(postelBatch)).thenReturn(Mono.just(postelBatch));
+        Assertions.assertDoesNotThrow(() -> addressBatchRequestService.batchAddressRequest());
+
+    }
 
     @NotNull
     private static PnAddressManagerConfig.Normalizer getNormalizer3() {
@@ -162,6 +226,8 @@ class AddressBatchRequestServiceTest {
                 postelClient,safeStorageService,config,eventService, csvService, addressUtils, clock);
 
         BatchRequest batchRequest = getBatchRequest();
+        when(sqsService.sendToDlqQueue(batchRequest)).thenReturn(Mono.empty());
+        when(addressBatchRequestRepository.update(batchRequest)).thenReturn(Mono.just(batchRequest));
 
         assertDoesNotThrow(() -> addressBatchRequestService.incrementAndCheckRetry(List.of(batchRequest),new Throwable(), "batchId"));
     }
