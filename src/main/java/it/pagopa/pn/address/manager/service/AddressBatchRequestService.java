@@ -475,6 +475,7 @@ public class AddressBatchRequestService {
                 .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - retry incremented", postelBatch.getBatchId()))
                 .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to increment retry", postelBatch.getBatchId(), e))
                 .filter(r -> BatchStatus.ERROR.getValue().equals(r.getStatus()))
+                .flatMap(batch -> sqsService.sendToDlqQueue(batch).thenReturn(batch))
                 .flatMap(l -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - call batch to send to SQS");
                     return updateBatchRequest(postelBatch.getBatchId(), WORKING);

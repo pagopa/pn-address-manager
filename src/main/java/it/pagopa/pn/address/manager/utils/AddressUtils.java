@@ -336,7 +336,9 @@ public class AddressUtils {
     public String getCorrelationIdCreatedAt(String id) {
         if (org.springframework.util.StringUtils.hasText(id)) {
             String[] splittedId = id.split("#");
-            return splittedId[0] + "#" + splittedId[1];
+            if(splittedId.length == 3) {
+                return splittedId[0] + "#" + splittedId[1];
+            }
         }
         return "noCorrelationId";
     }
@@ -345,11 +347,10 @@ public class AddressUtils {
         return batchRequest.getCorrelationId() + "#" + batchRequest.getCreatedAt();
     }
 
-    public PostelCallbackSqsDto getPostelCallbackSqsDto(NormalizerCallbackRequest callbackRequest, String url, String batchId) {
+    public PostelCallbackSqsDto getPostelCallbackSqsDto(NormalizerCallbackRequest callbackRequest, String batchId) {
         return PostelCallbackSqsDto.builder()
                 .requestId(batchId)
                 .outputFileKey(callbackRequest.getUri())
-                .outputFileUrl(url)
                 .error(callbackRequest.getError())
                 .build();
     }

@@ -10,7 +10,6 @@ import lombok.Setter;
 public class PostelCallbackSqsDto {
     private String requestId;
     private String outputFileKey;
-    private String outputFileUrl;
     private String error;
 
 }

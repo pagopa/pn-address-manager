@@ -53,10 +53,10 @@ class SqsServiceTest {
 
         when(internalCodeSqsDto.getNormalizeItemsRequest()).thenReturn(normalizeItemsRequest);
         when(normalizeItemsRequest.getCorrelationId()).thenReturn("id");
-        StepVerifier.create(sqsService.pushToInputQueue(internalCodeSqsDto,"cxId","eventType")).expectNext(SendMessageResponse.builder().build()).verifyComplete();
+        StepVerifier.create(sqsService.pushToInputQueue(internalCodeSqsDto,"cxId")).expectNext(SendMessageResponse.builder().build()).verifyComplete();
 
         PostelCallbackSqsDto postelCallbackSqsDto = mock(PostelCallbackSqsDto.class);
-        StepVerifier.create(sqsService.pushToCallbackQueue(postelCallbackSqsDto, "eventType", "cxId")).expectNext(SendMessageResponse.builder().build()).verifyComplete();
+        StepVerifier.create(sqsService.pushToCallbackQueue(postelCallbackSqsDto)).expectNext(SendMessageResponse.builder().build()).verifyComplete();
     }
 
 

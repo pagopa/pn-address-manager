@@ -1,5 +1,4 @@
 {"cxId":{"S":"pn-delivery-push"},"apikey":{"S":"pn-delivery-push-apikey"}}
 {"cxId":{"S":"pn-paper-channel"},"apikey":{"S":"pn-paper-channel-apikey"}}
-{"cxId":{"S":"POSTEL"},"apikey":{"S":"test"}}
 {"cxId":{"S":"pn-mock"},"apikey":{"S":"pn-mock-apikey"}}
-{"cxId":{"S":"pn-cons-000"},"apikey":{"S":"tbd"}}
+{"cxId":{"S":"pn-normmock-000"},"apikey":{"S":"pn-normmock-000-apikey"}}
