@@ -329,6 +329,21 @@ class AddressBatchRequestServiceTest {
     }
 
     @Test
+    void updateBatchRequestERROR(){
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.Normalizer normalizer = getNormalizer3();
+        pnAddressManagerConfig.setNormalizer(normalizer);
+        addressBatchRequestService = new AddressBatchRequestService(addressBatchRequestRepository,postelBatchRepository,addressConverter,sqsService,
+                postelClient,safeStorageService,pnAddressManagerConfig,eventService,csvService,addressUtils, clock);
+        BatchRequest batchRequest1 = getBatchRequest();
+        batchRequest1.setStatus(BatchStatus.ERROR.name());
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
+        when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
+        when(sqsService.sendToDlqQueue(batchRequest1)).thenReturn(Mono.empty());
+        StepVerifier.create(addressBatchRequestService.updateBatchRequest(List.of(batchRequest1),"batchId")).expectNextCount(0).verifyComplete();
+    }
+
+    @Test
     void updateBatchRequest3(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer3();
