@@ -3,8 +3,7 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
-import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileDownloadResponseDto;
@@ -81,14 +80,8 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new PostelBatch()));
-        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
-        fileDownloadResponse.setChecksum("checksum");
-        fileDownloadResponse.setVersionId("versionId");
-        fileDownloadResponse.setDocumentType("documentType");
-        fileDownloadResponse.setKey("key");
-        fileDownloadResponse.setDocumentStatus("documentStatus");
-        fileDownloadResponse.setDownload(new FileDownloadInfo());
+        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
+        FileDownloadResponse fileDownloadResponse = mock(FileDownloadResponse.class);
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         when(postelBatchRepository.update(any()))
                 .thenReturn(Mono.just(new PostelBatch()));
@@ -112,7 +105,7 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new PostelBatch()));
+        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         PostelCallbackSqsDto postelCallbackSqsDto = mock(PostelCallbackSqsDto.class);

@@ -1,7 +1,7 @@
 package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -11,23 +11,23 @@ import java.util.Map;
 
 public interface AddressBatchRequestRepository {
 
-    Mono<BatchRequest> update(BatchRequest batchRequest);
+    Mono<PnRequest> update(PnRequest pnRequest);
 
-    Mono<BatchRequest> create(BatchRequest batchRequest);
+    Mono<PnRequest> create(PnRequest pnRequest);
 
-    Mono<Page<BatchRequest>> getBatchRequestByNotBatchId(Map<String, AttributeValue> lastKey, int limit);
+    Mono<Page<PnRequest>> getBatchRequestByNotBatchId(Map<String, AttributeValue> lastKey, int limit);
 
-    Mono<List<BatchRequest>> getBatchRequestByBatchIdAndStatus(String batchId, BatchStatus status);
+    Mono<List<PnRequest>> getBatchRequestByBatchIdAndStatus(String batchId, BatchStatus status);
 
-    Mono<Page<BatchRequest>> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastKey, String batchId, BatchStatus status);
+    Mono<Page<PnRequest>> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastKey, String batchId, BatchStatus status);
 
-    Mono<BatchRequest> setNewBatchIdToBatchRequest(BatchRequest batchRequest);
+    Mono<PnRequest> setNewBatchIdToBatchRequest(PnRequest pnRequest);
 
-    Mono<BatchRequest> setNewReservationIdToBatchRequest(BatchRequest batchRequest);
+    Mono<PnRequest> setNewReservationIdToBatchRequest(PnRequest pnRequest);
 
-    Mono<BatchRequest> resetBatchRequestForRecovery(BatchRequest batchRequest);
+    Mono<PnRequest> resetBatchRequestForRecovery(PnRequest pnRequest);
 
-    Mono<List<BatchRequest>> getBatchRequestToRecovery();
+    Mono<List<PnRequest>> getBatchRequestToRecovery();
 
-    Mono<Page<BatchRequest>> getBatchRequestToSend(Map<String, AttributeValue> lastKey, int limit);
+    Mono<Page<PnRequest>> getBatchRequestToSend(Map<String, AttributeValue> lastKey, int limit);
 }

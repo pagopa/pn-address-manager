@@ -12,7 +12,7 @@ import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.*;
 @Data
 @ToString
 @DynamoDbBean
-public class PostelBatch {
+public class NormalizzatoreBatch {
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_BATCH_ID),

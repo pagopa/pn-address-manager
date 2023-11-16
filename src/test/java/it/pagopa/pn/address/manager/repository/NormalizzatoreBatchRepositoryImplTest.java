@@ -2,11 +2,10 @@ package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -26,7 +25,6 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,7 +32,7 @@ import static org.mockito.Mockito.*;
 
 
 @ExtendWith (SpringExtension.class)
-class PostelBatchRepositoryImplTest {
+class NormalizzatoreBatchRepositoryImplTest {
 
 	@MockBean
 	private DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
@@ -65,55 +63,55 @@ class PostelBatchRepositoryImplTest {
 
 	@Test
 	void create () {
-		PostelBatch postelBatch = getBatchRequest();
+		NormalizzatoreBatch normalizzatoreBatch = getBatchRequest();
 		CompletableFuture<Void> completableFuture = new CompletableFuture<>();
 		completableFuture.completeAsync(() -> null);
-		when(dynamoDbAsyncTable.putItem((PostelBatch) any())).thenReturn(completableFuture);
-		StepVerifier.create(postelBatchRepository.create(postelBatch)).expectNext(postelBatch).verifyComplete();
+		when(dynamoDbAsyncTable.putItem((NormalizzatoreBatch) any())).thenReturn(completableFuture);
+		StepVerifier.create(postelBatchRepository.create(normalizzatoreBatch)).expectNext(normalizzatoreBatch).verifyComplete();
 	}
 
 
 	@Test
 	void update () {
-		PostelBatch postelBatch = getBatchRequest();
+		NormalizzatoreBatch normalizzatoreBatch = getBatchRequest();
 		CompletableFuture<Object> completableFuture = new CompletableFuture<>();
-		completableFuture.completeAsync(() -> postelBatch);
-		when(dynamoDbAsyncTable.updateItem((BatchRequest) any())).thenReturn(completableFuture);
-		StepVerifier.create(postelBatchRepository.update(postelBatch)).expectNext(postelBatch).verifyComplete();
+		completableFuture.completeAsync(() -> normalizzatoreBatch);
+		when(dynamoDbAsyncTable.updateItem((PnRequest) any())).thenReturn(completableFuture);
+		StepVerifier.create(postelBatchRepository.update(normalizzatoreBatch)).expectNext(normalizzatoreBatch).verifyComplete();
 	}
 	@Test
 	void findByBatchIdTest (){
-		PostelBatch postelBatch = getBatchRequest();
+		NormalizzatoreBatch normalizzatoreBatch = getBatchRequest();
 		CompletableFuture<Object> completableFuture = new CompletableFuture<>();
-		completableFuture.completeAsync(() -> postelBatch);
+		completableFuture.completeAsync(() -> normalizzatoreBatch);
 		when(dynamoDbAsyncTable.getItem((Consumer<GetItemEnhancedRequest.Builder>) any()))
 				.thenReturn(completableFuture);
 		StepVerifier.create(postelBatchRepository.findByBatchId("batchId"))
-                .expectNext(postelBatch)
+                .expectNext(normalizzatoreBatch)
                 .verifyComplete();
 	}
 	@Test
 	void deleteItemTest(){
-		PostelBatch postelBatch = getBatchRequest();
+		NormalizzatoreBatch normalizzatoreBatch = getBatchRequest();
 		CompletableFuture<Object> completableFuture = new CompletableFuture<>();
-		completableFuture.completeAsync(() -> postelBatch);
+		completableFuture.completeAsync(() -> normalizzatoreBatch);
 		when(dynamoDbAsyncTable.deleteItem((Key) any()))
 				.thenReturn(completableFuture);
 		StepVerifier.create(postelBatchRepository.deleteItem("batchId"))
-				.expectNext(postelBatch)
+				.expectNext(normalizzatoreBatch)
 				.verifyComplete();
 	}
 	@Test
 	void resetPostelBatchForRecovery () {
-		PostelBatch postelBatch = getBatchRequest();
+		NormalizzatoreBatch normalizzatoreBatch = getBatchRequest();
 		when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any()))
-				.thenReturn(CompletableFuture.completedFuture(postelBatch));
-		StepVerifier.create(postelBatchRepository.resetPostelBatchForRecovery(postelBatch)).expectNextCount(1);
+				.thenReturn(CompletableFuture.completedFuture(normalizzatoreBatch));
+		StepVerifier.create(postelBatchRepository.resetPostelBatchForRecovery(normalizzatoreBatch)).expectNextCount(1);
 	}
 
 	@Test
 	void getBatchRequestToRecovery () {
-		PostelBatch batchRequest = getBatchRequest();
+		NormalizzatoreBatch batchRequest = getBatchRequest();
 		PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
 		PnAddressManagerConfig.BatchRequest batchRequest1 = new PnAddressManagerConfig.BatchRequest();
 		batchRequest1.setMaxRetry(3);
@@ -135,7 +133,7 @@ class PostelBatchRepositoryImplTest {
 
 	@Test
 	void testGetBatchRequestToRecovery () {
-		PostelBatch batchRequest = getBatchRequest();
+		NormalizzatoreBatch batchRequest = getBatchRequest();
 		PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
 		postel.setMaxRetry(3);
 		postel.setRecoveryAfter(1);
@@ -168,7 +166,7 @@ class PostelBatchRepositoryImplTest {
 
 	@Test
 	void testGetPostelBatchToClean () {
-		PostelBatch batchRequest = getBatchRequest();
+		NormalizzatoreBatch batchRequest = getBatchRequest();
 		PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
 		postel.setMaxRetry(3);
 		postel.setRecoveryAfter(1);
@@ -210,18 +208,18 @@ class PostelBatchRepositoryImplTest {
 				.thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(batchRequest)))));
 
 		// Invoking the method
-		Mono<Page<PostelBatch>> resultMono = postelBatchRepository.getPostelBatchToClean();
+		Mono<Page<NormalizzatoreBatch>> resultMono = postelBatchRepository.getPostelBatchToClean();
 		StepVerifier.create(resultMono)
 				.expectNextCount(1)
 				.verifyComplete();
 	}
 
-	PostelBatch getBatchRequest () {
-		PostelBatch postelBatch = new PostelBatch();
-		postelBatch.setBatchId("batchId");
-		postelBatch.setRetry(0);
-		postelBatch.setFileKey("fileKey");
-		return postelBatch;
+	NormalizzatoreBatch getBatchRequest () {
+		NormalizzatoreBatch normalizzatoreBatch = new NormalizzatoreBatch();
+		normalizzatoreBatch.setBatchId("batchId");
+		normalizzatoreBatch.setRetry(0);
+		normalizzatoreBatch.setFileKey("fileKey");
+		return normalizzatoreBatch;
 	}
 
 	Key keyBuilder (String key) {

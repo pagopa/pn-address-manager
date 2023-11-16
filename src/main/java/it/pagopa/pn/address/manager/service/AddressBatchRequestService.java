@@ -1,12 +1,12 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnPostelException;
 import it.pagopa.pn.address.manager.exception.PostelException;
@@ -22,7 +22,6 @@ import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
@@ -64,12 +62,12 @@ public class AddressBatchRequestService {
     private final AddressUtils addressUtils;
     private final Clock clock;
     private final List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
-    private final List<BatchRequest> requestToProcess = new ArrayList<>();
+    private final List<PnRequest> requestToProcess = new ArrayList<>();
 
     /**
      * Keeps track of all BatchRequest object involved in a single batch (key: batchId, value: batchRequest list).
      */
-    private final Map<String, List<BatchRequest>> requestToProcessMap = new HashMap<>();
+    private final Map<String, List<PnRequest>> requestToProcessMap = new HashMap<>();
 
     /**
      * Keeps track of all files created during a batch.
@@ -92,7 +90,6 @@ public class AddressBatchRequestService {
                                       Clock clock) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
-        this.addressConverter = addressConverter;
         this.safeStorageService = safeStorageService;
         this.sqsService = sqsService;
         this.postelClient = postelClient;
@@ -102,6 +99,7 @@ public class AddressBatchRequestService {
         this.addressUtils = addressUtils;
         this.clock = clock;
         this.batchId = pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
+        this.addressConverter = addressConverter;
     }
 
     //    lockAtMostFor specifies how long the lock should be kept in case the executing node dies. You have to set lockAtMostFor to a value which
@@ -111,8 +109,8 @@ public class AddressBatchRequestService {
 //    in case of really short tasks and clock difference between the nodes.
 //
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.delay}")
-    @SchedulerLock(name = "batchRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-request.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
+    @SchedulerLock(name = "batchRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-request.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lock-at-least}")
     protected void pollForNormalizeRequestProcessing() {
         try {
             LockAssert.assertLocked();
@@ -160,7 +158,7 @@ public class AddressBatchRequestService {
      * or until it has reached maximum number of csv files which can be processed in parallel.
      */
     private void retrieveAndProcessBatchRequest() {
-        Page<BatchRequest> page;
+        Page<PnRequest> page;
         Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
         int csvCount = 0;
 
@@ -206,7 +204,7 @@ public class AddressBatchRequestService {
     private void closeOpenedRequest() {
         if(!CollectionUtils.isEmpty(requestToProcess) && !CollectionUtils.isEmpty(listToConvert)){
             List<NormalizeRequestPostelInput> finalListToConvert = new ArrayList<>(listToConvert);
-            List<BatchRequest> finalRequestToProcess = new ArrayList<>(requestToProcess);
+            List<PnRequest> finalRequestToProcess = new ArrayList<>(requestToProcess);
             fileMap.put(batchId, finalListToConvert);
             requestToProcessMap.put(batchId, finalRequestToProcess);
             clearList();
@@ -221,15 +219,15 @@ public class AddressBatchRequestService {
      * and batchRequest map), openNewRequest() is called (which start to create new Maps object),
      * and csvCount is set equal to either 0 or maxCsv
      */
-    private int processRequest(List<BatchRequest> items, int lastCsvCount) {
-        for (BatchRequest batchRequest : items) {
+    private int processRequest(List<PnRequest> items, int lastCsvCount) {
+        for (PnRequest pnRequest : items) {
 
-            List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(batchRequest);
+            List<NormalizeRequestPostelInput> batchRequestAddresses = addressUtils.normalizeRequestToPostelCsvRequest(pnRequest);
             if (lastCsvCount + batchRequestAddresses.size() <= pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
-                lastCsvCount = processCsvRawAndIncrementCsvCount(lastCsvCount, batchRequestAddresses, batchRequest);
+                lastCsvCount = processCsvRawAndIncrementCsvCount(lastCsvCount, batchRequestAddresses, pnRequest);
             } else {
                 closeMaps();
-                lastCsvCount = openNewRequest(batchRequestAddresses, batchRequest);
+                lastCsvCount = openNewRequest(batchRequestAddresses, pnRequest);
                 if(lastCsvCount == pnAddressManagerConfig.getNormalizer().getMaxCsvSize()) {
                     break;
                 }
@@ -242,11 +240,11 @@ public class AddressBatchRequestService {
      * The openNewRequest function is called when the current batch request has reached its maximum size.
      * It creates a new batch request and starts processing it.
      */
-    private int openNewRequest(List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
+    private int openNewRequest(List<NormalizeRequestPostelInput> batchRequestAddresses, PnRequest pnRequest) {
         String newBatchId =  pnAddressManagerConfig.getNormalizer().getPostel().getRequestPrefix() + UUID.randomUUID();
         if(fileMap.size() < pnAddressManagerConfig.getNormalizer().getMaxFileNumber()) {
             listToConvert.addAll(batchRequestAddresses);
-            startProcessingBatchRequest(batchRequest, newBatchId, requestToProcess)
+            startProcessingBatchRequest(pnRequest, newBatchId, requestToProcess)
                     .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + newBatchId))
                     .block();
             batchId = newBatchId;
@@ -263,7 +261,7 @@ public class AddressBatchRequestService {
      */
     private void closeMaps() {
         List<NormalizeRequestPostelInput> finalListToConvert = new ArrayList<>(listToConvert);
-        List<BatchRequest> finalRequestToProcess = new ArrayList<>(requestToProcess);
+        List<PnRequest> finalRequestToProcess = new ArrayList<>(requestToProcess);
 
         // Store processed batch requests in maps.
         fileMap.put(batchId, finalListToConvert);
@@ -271,9 +269,9 @@ public class AddressBatchRequestService {
         clearList();
     }
 
-    private int processCsvRawAndIncrementCsvCount(int csvCount, List<NormalizeRequestPostelInput> batchRequestAddresses, BatchRequest batchRequest) {
+    private int processCsvRawAndIncrementCsvCount(int csvCount, List<NormalizeRequestPostelInput> batchRequestAddresses, PnRequest pnRequest) {
             listToConvert.addAll(batchRequestAddresses);
-            startProcessingBatchRequest(batchRequest, batchId, requestToProcess)
+            startProcessingBatchRequest(pnRequest, batchId, requestToProcess)
                     .contextWrite(context -> context.put(MDC_TRACE_ID_KEY, CONTEXT_BATCH_ID + batchId))
                     .block();
             return csvCount + batchRequestAddresses.size();
@@ -284,7 +282,7 @@ public class AddressBatchRequestService {
      * batch ID. It then updates the batch request in the repository, and after its completion add to requestToProcess List all
      * updated batchRequest
      */
-    private Mono<Void> startProcessingBatchRequest(BatchRequest request, String batchId, List<BatchRequest> requestToProcess) {
+    private Mono<Void> startProcessingBatchRequest(PnRequest request, String batchId, List<PnRequest> requestToProcess) {
         setNewDataOnBatchRequest(request, batchId);
         return addressBatchRequestRepository.setNewBatchIdToBatchRequest(request)
                 .doOnError(ConditionalCheckFailedException.class,
@@ -300,7 +298,7 @@ public class AddressBatchRequestService {
      * It retrieves all the BATCH_REQUEST records that have not been assigned to any batch yet (i.e., their BATCH_ID field is null) and
      * that have status like NOT_WORKED.
      */
-    private Page<BatchRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
+    private Page<PnRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
         return addressBatchRequestRepository.getBatchRequestByNotBatchId(lastEvaluatedKey, pnAddressManagerConfig.getNormalizer().getBatchRequest().getQueryMaxSize())
                 .blockOptional()
                 .orElseThrow(() -> {
@@ -316,7 +314,7 @@ public class AddressBatchRequestService {
      * If an error occurs during any of these steps, it will check for retry conditions and increment retry counters if necessary.
      * If no errors occur during these steps then it will call activatePostelBatch function with all required parameters.
      */
-    private Mono<Void> execBatchRequest(List<BatchRequest> items, String key, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
+    private Mono<Void> execBatchRequest(List<PnRequest> items, String key, List<NormalizeRequestPostelInput> listToConvert, Instant start) {
 
             String csvContent = csvService.writeItemsOnCsvToString(listToConvert);
             String sha256 = addressUtils.computeSha256(csvContent.getBytes(StandardCharsets.UTF_8));
@@ -337,7 +335,7 @@ public class AddressBatchRequestService {
      * If so, then an exception is thrown to indicate that we have reached our maximum number of retries. Otherwise, we try again to create a PostelBatch.
      * Once created successfully call Postel Normalizer.
      */
-    private Mono<Void> activatePostelBatch(List<BatchRequest> items, FileCreationResponseDto fileCreationResponseDto, String key, String sha256, Instant start) {
+    private Mono<Void> activatePostelBatch(List<PnRequest> items, FileCreationResponseDto fileCreationResponseDto, String key, String sha256, Instant start) {
         return createPostelBatch(fileCreationResponseDto.getKey(), key, sha256)
                 .onErrorResume(v -> incrementAndCheckRetry(items, v, key).then(Mono.error(v)))
                 .doOnNext(postelBatch -> {
@@ -347,48 +345,48 @@ public class AddressBatchRequestService {
                 .flatMap(this::callPostelActivationApi);
     }
 
-    private void setNewDataOnBatchRequest(BatchRequest item, String batchId) {
+    private void setNewDataOnBatchRequest(PnRequest item, String batchId) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         item.setBatchId(batchId);
         item.setStatus(TAKEN_CHARGE.name());
         item.setLastReserved(now);
     }
 
-    public Mono<Void> callPostelActivationApi(PostelBatch postelBatch) {
-        log.logInvokingExternalService(PROCESS_SERVICE_POSTEL_ATTIVAZIONE, postelBatch.getBatchId());
-        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - calling postel activation", postelBatch.getBatchId());
-        return Mono.fromCallable(() -> postelClient.activatePostel(postelBatch))
+    public Mono<Void> callPostelActivationApi(NormalizzatoreBatch normalizzatoreBatch) {
+        log.logInvokingExternalService(PROCESS_SERVICE_POSTEL_ATTIVAZIONE, normalizzatoreBatch.getBatchId());
+        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - calling postel activation", normalizzatoreBatch.getBatchId());
+        return Mono.fromCallable(() -> postelClient.activatePostel(normalizzatoreBatch))
                 .onErrorResume(throwable -> {
                     if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
-                        log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", postelBatch.getBatchId(), ex);
+                        log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", normalizzatoreBatch.getBatchId(), ex);
                         Mono.error(new PnPostelException("Error during call postel activation api", "NOR400", ex));
                     }
                     return Mono.error(throwable);
                 })
                 .flatMap(activatePostelResponse -> {
-                    log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - called postel activation", postelBatch.getBatchId());
+                    log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - called postel activation", normalizzatoreBatch.getBatchId());
                     if (!StringUtils.hasText(activatePostelResponse.getError())) {
-                        return updatePostelBatchToWorking(postelBatch);
+                        return updatePostelBatchToWorking(normalizzatoreBatch);
                     }
                     return Mono.error(new PnPostelException("Error during call postel activation api", activatePostelResponse.getError(), null));
                 })
-                .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute call to Activation Postel Api", postelBatch.getBatchId(), e))
-                .onErrorResume(v -> incrementAndCheckRetry(postelBatch, v).then(Mono.error(v)))
+                .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute call to Activation Postel Api", normalizzatoreBatch.getBatchId(), e))
+                .onErrorResume(v -> incrementAndCheckRetry(normalizzatoreBatch, v).then(Mono.error(v)))
                 .then();
     }
 
-    private Mono<Void> updatePostelBatchToWorking(PostelBatch postelBatch) {
+    private Mono<Void> updatePostelBatchToWorking(NormalizzatoreBatch normalizzatoreBatch) {
         LocalDateTime now = LocalDateTime.now();
-        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - update PostelBatch with status: {}", postelBatch.getBatchId(), BatchStatus.WORKING.getValue());
-        postelBatch.setStatus(BatchStatus.WORKING.getValue());
-        postelBatch.setWorkingTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getWorkingTtl()));
-        return postelBatchRepository.update(postelBatch)
-                .doOnNext(polling -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - updated PostelBatch with status: {}", postelBatch.getBatchId(), BatchStatus.WORKING.getValue()))
+        log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - update PostelBatch with status: {}", normalizzatoreBatch.getBatchId(), BatchStatus.WORKING.getValue());
+        normalizzatoreBatch.setStatus(BatchStatus.WORKING.getValue());
+        normalizzatoreBatch.setWorkingTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getWorkingTtl()));
+        return postelBatchRepository.update(normalizzatoreBatch)
+                .doOnNext(polling -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - updated PostelBatch with status: {}", normalizzatoreBatch.getBatchId(), BatchStatus.WORKING.getValue()))
                 .then();
     }
 
 
-    private Mono<PostelBatch> createPostelBatch(String fileKey, String key, String sha256) {
+    private Mono<NormalizzatoreBatch> createPostelBatch(String fileKey, String key, String sha256) {
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - creating PostelBatch with fileKey: {}", key, fileKey);
         return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(key, fileKey, sha256))
                 .flatMap(polling -> {
@@ -402,7 +400,7 @@ public class AddressBatchRequestService {
                 });
     }
 
-    private Mono<List<BatchRequest>> setBatchRequestStatusToWorking(String batchId) {
+    private Mono<List<PnRequest>> setBatchRequestStatusToWorking(String batchId) {
         return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batchId, BatchStatus.TAKEN_CHARGE)
                 .doOnNext(requests -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - updating {} requests in status {}", batchId, requests.size(), BatchStatus.WORKING))
                 .flatMapIterable(requests -> requests)
@@ -418,7 +416,7 @@ public class AddressBatchRequestService {
      * The incrementAndCheckRetry function is used to increment the retry count of a batch request and check if it has reached its maximum number of retries.
      * If the maximum number of retries has been reached, then the status will be set to ERROR and sent to DLQ.
      */
-    protected Mono<Void> incrementAndCheckRetry(List<BatchRequest> requests, Throwable throwable, String batchId) {
+    protected Mono<Void> incrementAndCheckRetry(List<PnRequest> requests, Throwable throwable, String batchId) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         return Flux.fromStream(requests.stream())
                 .doOnNext(r -> {
@@ -456,9 +454,9 @@ public class AddressBatchRequestService {
      * If the maximum number of retries has been reached, then an error status will be set on the PostelBatch object, restore related batch
      * request's status on TAKEN_CHARGE and call incrementAndCheckRetry for these batchRequests
      */
-    protected Mono<Void> incrementAndCheckRetry(PostelBatch postelBatch, Throwable throwable) {
+    protected Mono<Void> incrementAndCheckRetry(NormalizzatoreBatch normalizzatoreBatch, Throwable throwable) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        return Mono.just(postelBatch)
+        return Mono.just(normalizzatoreBatch)
                 .doOnNext(r -> {
                     int nextRetry = (r.getRetry() != null) ? (r.getRetry() + 1) : 1;
                     r.setRetry(nextRetry);
@@ -468,17 +466,17 @@ public class AddressBatchRequestService {
                             || (throwable instanceof PnInternalAddressManagerException exception && exception.getStatus() == HttpStatus.BAD_REQUEST.value())
                             || throwable instanceof PnPostelException ex && StringUtils.hasText(ex.getError()) && ex.getError().equals("NOR400")) {
                         r.setStatus(BatchStatus.ERROR.getValue());
-                        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - status in {} (retry: {})", postelBatch.getBatchId(), r.getStatus(), r.getRetry());
+                        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - status in {} (retry: {})", normalizzatoreBatch.getBatchId(), r.getStatus(), r.getRetry());
                     }
                 })
                 .flatMap(postelBatchRepository::update)
-                .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - retry incremented", postelBatch.getBatchId()))
-                .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to increment retry", postelBatch.getBatchId(), e))
+                .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - retry incremented", normalizzatoreBatch.getBatchId()))
+                .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to increment retry", normalizzatoreBatch.getBatchId(), e))
                 .filter(r -> BatchStatus.ERROR.getValue().equals(r.getStatus()))
                 .flatMap(batch -> sqsService.sendToDlqQueue(batch).thenReturn(batch))
                 .flatMap(l -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - call batch to send to SQS");
-                    return updateBatchRequest(postelBatch.getBatchId(), WORKING);
+                    return updateBatchRequest(normalizzatoreBatch.getBatchId(), WORKING);
                 });
     }
 
@@ -490,8 +488,8 @@ public class AddressBatchRequestService {
                 });
     }
 
-    public Mono<Void> updateBatchRequest(List<BatchRequest> batchRequests, String batchId) {
-        return Flux.fromIterable(batchRequests)
+    public Mono<Void> updateBatchRequest(List<PnRequest> pnRequests, String batchId) {
+        return Flux.fromIterable(pnRequests)
                 .flatMap(addressBatchRequestRepository::update)
                 .doOnNext(request -> log.debug("Normalize Address - correlationId {} - set status in {}", request.getCorrelationId(), request.getStatus()))
                 .flatMap(this::sendToEventBridgeOrInDlq)
@@ -508,7 +506,7 @@ public class AddressBatchRequestService {
      * sendStatus and ttl fields. If there was an error sending events, then it sets sendStatus to NOT_SENT. Otherwise,
      * if the status is ERROR it sends the request to a Dead Letter Queue (DLQ). Other status is ignored.
      */
-    private Mono<BatchRequest> sendToEventBridgeOrInDlq(BatchRequest request) {
+    private Mono<PnRequest> sendToEventBridgeOrInDlq(PnRequest request) {
         LocalDateTime now = LocalDateTime.now();
 
         return switch (BatchStatus.fromValue(request.getStatus())) {
@@ -531,19 +529,19 @@ public class AddressBatchRequestService {
 
     }
 
-    private Mono<PutEventsResult> sendEvents(BatchRequest batchRequest, String cxId) {
+    private Mono<PutEventsResponse> sendEvents(PnRequest pnRequest, String cxId) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
-        List<NormalizeResult> itemsResult = addressUtils.getNormalizeResultFromBatchRequest(batchRequest);
+        List<NormalizeResult> itemsResult = addressUtils.getNormalizeResultFromBatchRequest(pnRequest);
         normalizeItemsResult.setResultItems(itemsResult);
-        normalizeItemsResult.setCorrelationId(batchRequest.getCorrelationId());
+        normalizeItemsResult.setCorrelationId(pnRequest.getCorrelationId());
         EventDetail eventDetail = new EventDetail(normalizeItemsResult, cxId);
         String finalMessage = addressUtils.toJson(eventDetail);
         return eventService.sendEvent(finalMessage)
                 .doOnNext(putEventsResult -> {
-                    log.info("Event with correlationId {} sent successfully", batchRequest.getCorrelationId());
-                    log.debug("Sent event result: {}", putEventsResult.getEntries());
+                    log.info("Event with correlationId {} sent successfully", pnRequest.getCorrelationId());
+                    log.debug("Sent event result: {}", putEventsResult.entries());
                 })
-                .doOnError(throwable -> log.error("Send event with correlationId {} failed", batchRequest.getCorrelationId(), throwable));
+                .doOnError(throwable -> log.error("Send event with correlationId {} failed", pnRequest.getCorrelationId(), throwable));
     }
 
     private void clearList() {

@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Flux;
@@ -26,7 +26,7 @@ import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.GSI_SWT;
 @CustomLog
 public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
-    private final DynamoDbAsyncTable<PostelBatch> table;
+    private final DynamoDbAsyncTable<NormalizzatoreBatch> table;
     private final PnAddressManagerConfig pnAddressManagerConfig;
 
     private static final String LAST_RESERVED_ALIAS = "#lastReserved";
@@ -36,25 +36,25 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     public PostelBatchRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                      PnAddressManagerConfig pnAddressManagerConfig) {
         this.pnAddressManagerConfig = pnAddressManagerConfig;
-        this.table = dynamoDbEnhancedAsyncClient.table(pnAddressManagerConfig.getDao().getPostelBatchTableName(), TableSchema.fromClass(PostelBatch.class));
+        this.table = dynamoDbEnhancedAsyncClient.table(pnAddressManagerConfig.getDao().getPostelBatchTableName(), TableSchema.fromClass(NormalizzatoreBatch.class));
     }
 
     @Override
-    public Mono<PostelBatch> create(PostelBatch postelBatch) {
-        log.debug("Inserting data {} in DynamoDB table {}", postelBatch, table);
-        return Mono.fromFuture(table.putItem(postelBatch))
+    public Mono<NormalizzatoreBatch> create(NormalizzatoreBatch normalizzatoreBatch) {
+        log.debug("Inserting data {} in DynamoDB table {}", normalizzatoreBatch, table);
+        return Mono.fromFuture(table.putItem(normalizzatoreBatch))
                 .doOnNext(unused -> log.info("Inserted data in DynamoDB table {}", table))
-                .thenReturn(postelBatch);
+                .thenReturn(normalizzatoreBatch);
     }
 
     @Override
-    public Mono<PostelBatch> findByBatchId(String batchId) {
+    public Mono<NormalizzatoreBatch> findByBatchId(String batchId) {
         return Mono.fromFuture(table.getItem(r -> r.key(keyBuilder(batchId))));
     }
 
     @Override
-    public Mono<PostelBatch> update(PostelBatch postelBatch) {
-        return Mono.fromFuture(table.updateItem(postelBatch));
+    public Mono<NormalizzatoreBatch> update(NormalizzatoreBatch normalizzatoreBatch) {
+        return Mono.fromFuture(table.updateItem(normalizzatoreBatch));
     }
 
     private Key keyBuilder(String key) {
@@ -62,19 +62,19 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     }
 
     @Override
-    public Mono<PostelBatch> resetPostelBatchForRecovery(PostelBatch postelBatch) {
+    public Mono<NormalizzatoreBatch> resetPostelBatchForRecovery(NormalizzatoreBatch normalizzatoreBatch) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         AttributeValue lastReserved = AttributeValue.builder()
-                .s(postelBatch.getLastReserved() != null ? postelBatch.getLastReserved().toString() : "")
+                .s(normalizzatoreBatch.getLastReserved() != null ? normalizzatoreBatch.getLastReserved().toString() : "")
                 .build();
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, lastReserved);
 
         String expression = LAST_RESERVED_EQ + " OR attribute_not_exists(" + LAST_RESERVED_ALIAS + ")";
-        UpdateItemEnhancedRequest<PostelBatch> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(PostelBatch.class)
-                .item(postelBatch)
+        UpdateItemEnhancedRequest<NormalizzatoreBatch> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(NormalizzatoreBatch.class)
+                .item(normalizzatoreBatch)
                 .conditionExpression(expressionBuilder(expression, expressionValues, expressionNames))
                 .build();
 
@@ -82,7 +82,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     }
 
     @Override
-    public Mono<List<PostelBatch>> getPostelBatchToRecover() {
+    public Mono<List<NormalizzatoreBatch>> getPostelBatchToRecover() {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#retry", COL_RETRY);
         expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
@@ -107,7 +107,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     }
 
     @Override
-    public Mono<Page<PostelBatch>> getPostelBatchToClean() {
+    public Mono<Page<NormalizzatoreBatch>> getPostelBatchToClean() {
         Key key = Key.builder()
                 .partitionValue(BatchStatus.WORKING.getValue())
                 .sortValue(AttributeValue.builder()
@@ -126,7 +126,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     }
 
     @Override
-    public Mono<PostelBatch> deleteItem(String batchId) {
+    public Mono<NormalizzatoreBatch> deleteItem(String batchId) {
         return Mono.fromFuture(table.deleteItem(Key.builder().partitionValue(batchId).build()));
     }
 

@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.middleware.queue.consumer;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,16 +13,12 @@ import java.util.function.Consumer;
 
 @Configuration
 @CustomLog
+@RequiredArgsConstructor
 public class NormalizeInputsHandler {
 
     private final NormalizeAddressService normalizeAddressService;
 
     private static final String HANDLER_REQUEST = "pnAddressManagerRequestConsumer";
-
-
-    public NormalizeInputsHandler(NormalizeAddressService normalizeAddressService) {
-        this.normalizeAddressService = normalizeAddressService;
-    }
 
     @Bean
     public Consumer<Message<PnNormalizeRequestEvent.Payload>> pnAddressManagerRequestConsumer() {

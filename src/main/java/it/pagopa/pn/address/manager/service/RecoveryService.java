@@ -3,8 +3,8 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
@@ -57,8 +57,8 @@ public class RecoveryService {
      * passed since the last processing (lastReserved column)
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.recovery-delay}")
-    @SchedulerLock(name = "batchRequestRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
+    @SchedulerLock(name = "batchRequestRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void recoveryBatchRequest() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchRequest start");
         addressBatchRequestRepository.getBatchRequestToRecovery()
@@ -87,8 +87,8 @@ public class RecoveryService {
      * If there are no such batches, then nothing happens and the scheduler waits until its next run time before checking again.
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.postel.recovery-delay}")
-    @SchedulerLock(name = "postelBatch", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
+    @SchedulerLock(name = "postelBatch", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void recoveryPostelActivation() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
         postelBatchRepository.getPostelBatchToRecover()
@@ -114,11 +114,11 @@ public class RecoveryService {
      * Otherwise, it creates a reservationId (a UUID) and executes execBatchSendToEventBridge().
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.eventbridge-recovery-delay}")
-    @SchedulerLock(name = "sendToEventBridgeRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
+    @SchedulerLock(name = "sendToEventBridgeRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void recoveryBatchSendToEventbridge() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchSendToEventBridge start");
-        Page<BatchRequest> page;
+        Page<PnRequest> page;
         Map<String, AttributeValue> lastEvaluatedKey = new HashMap<>();
         do {
             page = getBatchRequest(lastEvaluatedKey);
@@ -143,11 +143,11 @@ public class RecoveryService {
      * Finally, delete any expired postelBatch
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-clean-request}")
-    @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
+    @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void cleanStoppedRequest() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
-        Page<PostelBatch> page = postelBatchRepository.getPostelBatchToClean()
+        Page<NormalizzatoreBatch> page = postelBatchRepository.getPostelBatchToClean()
                 .blockOptional()
                 .orElseThrow(() -> {
                     log.warn(ADDRESS_NORMALIZER_ASYNC + "can not get batch request - DynamoDB Mono<Page> is null");
@@ -156,18 +156,18 @@ public class RecoveryService {
 
         if (!page.items().isEmpty()) {
             page.items().forEach(postelBatch -> {
-                List<BatchRequest> batchRequestList = addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(postelBatch.getBatchId(), BatchStatus.WORKING)
+                List<PnRequest> pnRequestList = addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(postelBatch.getBatchId(), BatchStatus.WORKING)
                         .block();
 
-                if(!CollectionUtils.isEmpty(batchRequestList)) {
+                if(!CollectionUtils.isEmpty(pnRequestList)) {
 
-                    batchRequestList.forEach(batchRequest -> {
+                    pnRequestList.forEach(batchRequest -> {
                         batchRequest.setStatus(TAKEN_CHARGE.getValue());
                         addressBatchRequestRepository.update(batchRequest).block();
                     });
 
-                    addressBatchRequestService.incrementAndCheckRetry(batchRequestList, null, postelBatch.getBatchId())
-                            .doOnNext(request -> log.debug(ADDRESS_NORMALIZER_ASYNC + " increment retry for {} request", batchRequestList.size()))
+                    addressBatchRequestService.incrementAndCheckRetry(pnRequestList, null, postelBatch.getBatchId())
+                            .doOnNext(request -> log.debug(ADDRESS_NORMALIZER_ASYNC + " increment retry for {} request", pnRequestList.size()))
                             .block();
 
                     postelBatchRepository.deleteItem(postelBatch.getBatchId());
@@ -179,7 +179,7 @@ public class RecoveryService {
         }
     }
 
-    private Page<BatchRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
+    private Page<PnRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {
         return addressBatchRequestRepository.getBatchRequestToSend(lastEvaluatedKey, pnAddressManagerConfig.getNormalizer().getBatchRequest().getQueryMaxSize())
                 .blockOptional()
                 .orElseThrow(() -> {
@@ -191,9 +191,9 @@ public class RecoveryService {
                 });
     }
 
-    private Mono<Void> execBatchSendToEventBridge(List<BatchRequest> batchRequestList) {
+    private Mono<Void> execBatchSendToEventBridge(List<PnRequest> pnRequestList) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        return Flux.fromStream(batchRequestList.stream())
+        return Flux.fromStream(pnRequestList.stream())
                 .doOnNext(item -> item.setLastReserved(now))
                 .flatMap(item -> addressBatchRequestRepository.setNewReservationIdToBatchRequest(item)
                         .doOnError(ConditionalCheckFailedException.class,
@@ -205,7 +205,7 @@ public class RecoveryService {
                 .then();
     }
 
-    private Mono<BatchRequest> checkSendStatusToSendToDLQ(BatchRequest item) {
+    private Mono<PnRequest> checkSendStatusToSendToDLQ(PnRequest item) {
         if(BatchSendStatus.ERROR.getValue().equalsIgnoreCase(item.getSendStatus())) {
             return sqsService.sendToDlqQueue(item)
                     .thenReturn(item)
@@ -217,7 +217,7 @@ public class RecoveryService {
         return Mono.just(item);
     }
 
-    private Mono<BatchRequest> evaluateStatusAndSendStatus(BatchRequest item) {
+    private Mono<PnRequest> evaluateStatusAndSendStatus(PnRequest item) {
         if (!BatchStatus.ERROR.getValue().equalsIgnoreCase(item.getStatus())) {
 
             NormalizeItemsResult normalizeItemsResult = constructNormalizeItemResult(item);
@@ -227,7 +227,7 @@ public class RecoveryService {
             return eventService.sendEvent(message)
                     .doOnNext(putEventsResult -> {
                         log.info("Event with correlationId {} sent successfully", item.getCorrelationId());
-                        log.debug("Sent event result: {}", putEventsResult.getEntries());
+                        log.debug("Sent event result: {}", putEventsResult.entries());
                         item.setSendStatus(BatchSendStatus.SENT.getValue());
                     })
                     .doOnError(throwable -> {
@@ -245,7 +245,7 @@ public class RecoveryService {
         }
     }
 
-    private NormalizeItemsResult constructNormalizeItemResult(BatchRequest item) {
+    private NormalizeItemsResult constructNormalizeItemResult(PnRequest item) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         List<NormalizeResult> itemsResult = addressUtils.getNormalizeResultFromBatchRequest(item);
         normalizeItemsResult.setResultItems(itemsResult);

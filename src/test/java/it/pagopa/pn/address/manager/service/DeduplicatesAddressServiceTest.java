@@ -32,9 +32,6 @@ class DeduplicatesAddressServiceTest {
     DeduplicaClient postelClient;
 
     @MockBean
-    AddressConverter addressConverter;
-
-    @MockBean
     PnAddressManagerConfig pnAddressManagerConfig;
 
     @MockBean
@@ -43,26 +40,27 @@ class DeduplicatesAddressServiceTest {
     @MockBean
     CapAndCountryService capAndCountryService;
 
+    @MockBean
+    AddressConverter addressConverter;
+
     private DeduplicatesAddressService deduplicatesAddressService;
 
     @Test
     void deduplicates(){
-        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, addressConverter,pnAddressManagerConfig,apiKeyRepository, capAndCountryService);
+        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, pnAddressManagerConfig,apiKeyRepository, capAndCountryService, addressConverter);
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new DeduplicaRequest());
         when(postelClient.deduplica(any())).thenReturn(Mono.just(new DeduplicaResponse()));
         StepVerifier.create(deduplicatesAddressService.deduplicates(new DeduplicatesRequest(), "cxId","apiKey")).expectError().verify();
     }
 
     @Test
     void deduplicates1(){
-        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, addressConverter,pnAddressManagerConfig,apiKeyRepository, capAndCountryService);
+        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, pnAddressManagerConfig,apiKeyRepository, capAndCountryService, addressConverter);
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setApiKey("apiKey");
         apiKeyModel.setCxId("cxId");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new DeduplicaRequest());
         when(postelClient.deduplica(any())).thenReturn(Mono.just(new DeduplicaResponse()));
         StepVerifier.create(deduplicatesAddressService.deduplicates(new DeduplicatesRequest(), "cxId","apiKey")).expectError().verify();
     }
@@ -71,12 +69,11 @@ class DeduplicatesAddressServiceTest {
     void deduplicates2(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setFlagCsv(true);
-        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, addressConverter,pnAddressManagerConfig,apiKeyRepository, capAndCountryService);
+        deduplicatesAddressService = new DeduplicatesAddressService(addressUtils, postelClient, pnAddressManagerConfig,apiKeyRepository, capAndCountryService, addressConverter);
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setApiKey("apiKey");
         apiKeyModel.setCxId("cxId");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(any())).thenReturn(new DeduplicaRequest());
         when(postelClient.deduplica(any())).thenReturn(Mono.just(new DeduplicaResponse()));
         when(addressUtils.normalizeAddress(any(),any(), any())).thenReturn(new NormalizedAddressResponse());
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
