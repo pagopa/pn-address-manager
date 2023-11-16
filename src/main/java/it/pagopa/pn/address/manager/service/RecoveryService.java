@@ -57,8 +57,8 @@ public class RecoveryService {
      * passed since the last processing (lastReserved column)
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.recovery-delay}")
-    @SchedulerLock(name = "batchRequestRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
+    @SchedulerLock(name = "batchRequestRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void recoveryBatchRequest() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchRequest start");
         addressBatchRequestRepository.getBatchRequestToRecovery()
@@ -87,8 +87,8 @@ public class RecoveryService {
      * If there are no such batches, then nothing happens and the scheduler waits until its next run time before checking again.
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.postel.recovery-delay}")
-    @SchedulerLock(name = "postelBatch", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
+    @SchedulerLock(name = "postelBatch", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void recoveryPostelActivation() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
         postelBatchRepository.getPostelBatchToRecover()
@@ -114,8 +114,8 @@ public class RecoveryService {
      * Otherwise, it creates a reservationId (a UUID) and executes execBatchSendToEventBridge().
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.eventbridge-recovery-delay}")
-    @SchedulerLock(name = "sendToEventBridgeRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
+    @SchedulerLock(name = "sendToEventBridgeRecovery", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void recoveryBatchSendToEventbridge() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchSendToEventBridge start");
         Page<PnRequest> page;
@@ -143,8 +143,8 @@ public class RecoveryService {
      * Finally, delete any expired postelBatch
      */
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-clean-request}")
-    @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lockAtLeastFor}")
+    @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void cleanStoppedRequest() {
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
         Page<NormalizzatoreBatch> page = postelBatchRepository.getPostelBatchToClean()
@@ -227,7 +227,7 @@ public class RecoveryService {
             return eventService.sendEvent(message)
                     .doOnNext(putEventsResult -> {
                         log.info("Event with correlationId {} sent successfully", item.getCorrelationId());
-                        log.debug("Sent event result: {}", putEventsResult.getEntries());
+                        log.debug("Sent event result: {}", putEventsResult.entries());
                         item.setSendStatus(BatchSendStatus.SENT.getValue());
                     })
                     .doOnError(throwable -> {

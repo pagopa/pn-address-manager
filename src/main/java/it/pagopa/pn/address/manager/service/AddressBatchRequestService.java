@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
@@ -52,6 +52,7 @@ public class AddressBatchRequestService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
     private final PostelBatchRepository postelBatchRepository;
+    private final AddressConverter addressConverter;
     private final SqsService sqsService;
     private final NormalizzatoreClient postelClient;
     private final SafeStorageService safeStorageService;
@@ -60,7 +61,6 @@ public class AddressBatchRequestService {
     private final CsvService csvService;
     private final AddressUtils addressUtils;
     private final Clock clock;
-    private final AddressConverter addressConverter;
     private final List<NormalizeRequestPostelInput> listToConvert = new ArrayList<>();
     private final List<PnRequest> requestToProcess = new ArrayList<>();
 
@@ -79,6 +79,7 @@ public class AddressBatchRequestService {
 
     public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
                                       PostelBatchRepository postelBatchRepository,
+                                      AddressConverter addressConverter,
                                       SqsService sqsService,
                                       NormalizzatoreClient postelClient,
                                       SafeStorageService safeStorageService,
@@ -108,8 +109,8 @@ public class AddressBatchRequestService {
 //    in case of really short tasks and clock difference between the nodes.
 //
     @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-request.delay}")
-    @SchedulerLock(name = "batchRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-request.lockAtMostFor}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lockAtLeastFor}")
+    @SchedulerLock(name = "batchRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-request.lock-at-most}",
+            lockAtLeastFor = "${pn.address-manager.normalizer.batch-request.lock-at-least}")
     protected void pollForNormalizeRequestProcessing() {
         try {
             LockAssert.assertLocked();
@@ -528,7 +529,7 @@ public class AddressBatchRequestService {
 
     }
 
-    private Mono<PutEventsResult> sendEvents(PnRequest pnRequest, String cxId) {
+    private Mono<PutEventsResponse> sendEvents(PnRequest pnRequest, String cxId) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         List<NormalizeResult> itemsResult = addressUtils.getNormalizeResultFromBatchRequest(pnRequest);
         normalizeItemsResult.setResultItems(itemsResult);
@@ -538,7 +539,7 @@ public class AddressBatchRequestService {
         return eventService.sendEvent(finalMessage)
                 .doOnNext(putEventsResult -> {
                     log.info("Event with correlationId {} sent successfully", pnRequest.getCorrelationId());
-                    log.debug("Sent event result: {}", putEventsResult.getEntries());
+                    log.debug("Sent event result: {}", putEventsResult.entries());
                 })
                 .doOnError(throwable -> log.error("Send event with correlationId {} failed", pnRequest.getCorrelationId(), throwable));
     }

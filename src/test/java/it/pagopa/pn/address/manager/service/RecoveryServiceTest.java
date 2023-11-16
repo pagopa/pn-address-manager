@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PnRequest;
@@ -99,8 +99,7 @@ class RecoveryServiceTest {
 
 
         when(sqsService.sendToDlqQueue((PnRequest) any())).thenReturn(Mono.empty());
-        PutEventsResult putEventsResult = new PutEventsResult();
-        when(eventService.sendEvent(anyString())).thenReturn(Mono.just(putEventsResult));
+        when(eventService.sendEvent(anyString())).thenReturn(Mono.just(PutEventsResponse.builder().build()));
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchSendToEventbridge());
     }
     @Test

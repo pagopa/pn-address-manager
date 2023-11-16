@@ -137,7 +137,7 @@ public class NormalizeAddressService {
         eventService.sendEvent(message)
                 .doOnNext(putEventsResult -> {
                     log.info("Event with correlationId {} sent successfully", normalizeItemsResult.getCorrelationId());
-                    log.debug("Sent event result: {}", putEventsResult.getEntries());
+                    log.debug("Sent event result: {}", putEventsResult.entries());
                 })
                 .doOnError(throwable -> log.error("Send event with correlationId {} failed", normalizeItemsResult.getCorrelationId(), throwable));
     }
