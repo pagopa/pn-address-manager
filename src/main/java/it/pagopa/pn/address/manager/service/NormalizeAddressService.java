@@ -69,7 +69,12 @@ public class NormalizeAddressService {
                 })
                 .flatMap(apiKeyModel -> checkFieldsLength(normalizeItemsRequest.getRequestItems(), normalizeItemsRequest.getCorrelationId()).thenReturn(normalizeItemsRequest))
                 .flatMap(request -> sendToInputQueue(xApiKey, cxId, request))
-                .onErrorResume(throwable -> sendToDlq(xApiKey, cxId, normalizeItemsRequest));
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof PnInternalAddressManagerException exception && HttpStatus.FORBIDDEN.value() == exception.getStatus()){
+                        return Mono.error(throwable);
+                    }
+                    return sendToDlq(xApiKey, cxId, normalizeItemsRequest);
+                });
     }
 
     private Mono<AcceptedResponse> sendToInputQueue(String xApiKey, String cxId, NormalizeItemsRequest request) {
@@ -95,7 +100,7 @@ public class NormalizeAddressService {
                         .normalizeItemsRequest(normalizeItemsRequest)
                         .build(), cxId)
                 .map(sendMessageResponse -> {
-                    log.info(ADDRESS_NORMALIZER_SYNC + "Sent request with correlationId: [{}] to {}", normalizeItemsRequest.getCorrelationId(), pnAddressManagerConfig.getSqs().getInputQueueName());
+                    log.info(ADDRESS_NORMALIZER_SYNC + "Sent request with correlationId: [{}] to {}", normalizeItemsRequest.getCorrelationId(), pnAddressManagerConfig.getSqs().getInputDlqQueueName());
                     return addressUtils.mapToAcceptedResponse(normalizeItemsRequest);
                 })
                 .doOnError(e -> {
