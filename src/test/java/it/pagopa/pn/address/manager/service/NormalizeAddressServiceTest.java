@@ -86,7 +86,7 @@ class NormalizeAddressServiceTest {
         apiKeyModel.setApiKey("id");
         apiKeyModel.setCxId("id");
         when(apiKeyRepository.findById(any())).thenReturn(Mono.just(apiKeyModel));
-        when(sqsService.pushToInputQueue(any(),any(),any())).thenReturn(Mono.just(SendMessageResponse.builder().build()));
+        when(sqsService.pushToInputQueue(any(),any())).thenReturn(Mono.just(SendMessageResponse.builder().build()));
         StepVerifier.create(normalizeAddressService.normalizeAddress("id", "id", normalizeItemsRequest))
                 .expectError().verify();
     }

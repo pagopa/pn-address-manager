@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PostelBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.model.InternalCodeSqsDto;
@@ -21,6 +22,9 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.AM_NORMALIZE_INPUT_EVENTTYPE;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.AM_POSTEL_CALLBACK_EVENTTYPE;
 
 
 @CustomLog
@@ -58,6 +62,24 @@ public class SqsService {
                 .then();
     }
 
+    public Mono<Void> sendToDlqQueue(PostelBatch postelBatch) {
+        PostelCallbackSqsDto postelCallbackSqsDto = toCallbackSqsDto(postelBatch);
+        return pushToCallbackDlqQueue(postelCallbackSqsDto)
+                .onErrorResume(throwable -> {
+                    log.error("error during push message for batchId: [{}] to DLQ: {}", postelBatch.getBatchId(), throwable.getMessage(), throwable);
+                    return Mono.empty();
+                })
+                .then();
+    }
+
+    private PostelCallbackSqsDto toCallbackSqsDto(PostelBatch postelBatch) {
+        return PostelCallbackSqsDto.builder()
+                .requestId(postelBatch.getBatchId())
+                .outputFileKey(postelBatch.getOutputFileKey())
+                .error(postelBatch.getError())
+                .build();
+    }
+
     private InternalCodeSqsDto toInternalCodeSqsDto(BatchRequest batchRequest) {
         List<NormalizeRequest> requestList = addressUtils.getNormalizeRequestFromBatchRequest(batchRequest);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
@@ -71,25 +93,32 @@ public class SqsService {
                 .build();
     }
 
-    public Mono<SendMessageResponse> pushToInputQueue(InternalCodeSqsDto msg, String pnAddressManagerCxId, String eventType) {
+    public Mono<SendMessageResponse> pushToInputQueue(InternalCodeSqsDto msg, String pnAddressManagerCxId) {
         log.info(PUSHING_MESSAGE, pnAddressManagerCxId, msg.getNormalizeItemsRequest().getCorrelationId());
         log.debug(INSERTING_MSG_WITH_DATA, msg, pnAddressManagerConfig.getSqs().getInputQueueName());
         log.info(INSERTING_MSG_WITHOUT_DATA, pnAddressManagerConfig.getSqs().getInputQueueName());
-        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getInputQueueName(),eventType, msg.getNormalizeItemsRequest().getCorrelationId());
+        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getInputQueueName(), AM_NORMALIZE_INPUT_EVENTTYPE, msg.getNormalizeItemsRequest().getCorrelationId());
     }
 
-    public Mono<SendMessageResponse> pushToCallbackQueue(PostelCallbackSqsDto msg, String eventType, String pnAddressManagerCxId) {
+    public Mono<SendMessageResponse> pushToCallbackQueue(PostelCallbackSqsDto msg) {
         log.info("pushing message from Postel with BatchId: [{}] and OutputFileKey: [{}]", msg.getRequestId(), msg.getOutputFileKey());
         log.debug(INSERTING_MSG_WITH_DATA, msg, pnAddressManagerConfig.getSqs().getCallbackQueueName());
         log.info(INSERTING_MSG_WITHOUT_DATA, pnAddressManagerConfig.getSqs().getCallbackQueueName());
-        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getCallbackQueueName(),eventType, msg.getRequestId());
+        return push(addressUtils.toJson(msg), null, pnAddressManagerConfig.getSqs().getCallbackQueueName(),AM_POSTEL_CALLBACK_EVENTTYPE, msg.getRequestId());
     }
 
     public Mono<SendMessageResponse> pushToInputDlqQueue(InternalCodeSqsDto msg, String pnAddressManagerCxId) {
         log.info(PUSHING_MESSAGE, pnAddressManagerCxId, msg.getNormalizeItemsRequest().getCorrelationId());
         log.debug(INSERTING_MSG_WITH_DATA, msg, pnAddressManagerConfig.getSqs().getInputDlqQueueName());
         log.info(INSERTING_MSG_WITHOUT_DATA, pnAddressManagerConfig.getSqs().getInputDlqQueueName());
-        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getInputDlqQueueName(), "AM_NORMALIZE_INPUT", msg.getNormalizeItemsRequest().getCorrelationId());
+        return push(addressUtils.toJson(msg), pnAddressManagerCxId, pnAddressManagerConfig.getSqs().getInputDlqQueueName(), AM_NORMALIZE_INPUT_EVENTTYPE, msg.getNormalizeItemsRequest().getCorrelationId());
+    }
+
+    public Mono<SendMessageResponse> pushToCallbackDlqQueue(PostelCallbackSqsDto msg) {
+        log.info("pushing message from Postel with BatchId: [{}] and OutputFileKey: [{}]", msg.getRequestId(), msg.getOutputFileKey());
+        log.debug(INSERTING_MSG_WITH_DATA, msg, pnAddressManagerConfig.getSqs().getCallbackDlqQueueName());
+        log.info(INSERTING_MSG_WITHOUT_DATA, pnAddressManagerConfig.getSqs().getCallbackDlqQueueName());
+        return push(addressUtils.toJson(msg), null, pnAddressManagerConfig.getSqs().getCallbackDlqQueueName(), AM_POSTEL_CALLBACK_EVENTTYPE, msg.getRequestId());
     }
 
     public Mono<SendMessageResponse> push(String msg, String pnAddressManagerCxId, String queueName, String eventType, String correlationId) {

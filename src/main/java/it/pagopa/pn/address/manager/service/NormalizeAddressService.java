@@ -77,7 +77,7 @@ public class NormalizeAddressService {
                         .xApiKey(xApiKey)
                         .pnAddressManagerCxId(cxId)
                         .normalizeItemsRequest(request)
-                        .build(), cxId, AM_NORMALIZE_INPUT_EVENTTYPE)
+                        .build(), cxId)
                 .map(sendMessageResponse -> {
                     log.info(ADDRESS_NORMALIZER_SYNC + "Sent request with correlationId: [{}] to {}", request.getCorrelationId(), pnAddressManagerConfig.getSqs().getInputQueueName());
                     return addressUtils.mapToAcceptedResponse(request);
@@ -132,7 +132,7 @@ public class NormalizeAddressService {
                     if (StringUtils.hasText(payload.getError())) {
                         return postelBatchService.resetRelatedBatchRequestForRetry(postelBatch);
                     }
-                    return postelBatchService.getResponse(payload.getOutputFileUrl(), postelBatch);
+                    return postelBatchService.getResponse(payload.getOutputFileKey(), postelBatch);
                 });
     }
 
