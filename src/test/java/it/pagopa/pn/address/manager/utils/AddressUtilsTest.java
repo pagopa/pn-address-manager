@@ -104,7 +104,7 @@ class AddressUtilsTest {
     @Test
     void getCorrelationIdCreatedAt(){
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        BatchRequest batchRequest = new BatchRequest();
+        PnRequest batchRequest = new PnRequest();
         LocalDateTime localDateTime = LocalDateTime.now();
         batchRequest.setCorrelationId("correlationId");
         batchRequest.setCreatedAt(localDateTime);
@@ -297,7 +297,7 @@ class AddressUtilsTest {
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new BatchRequest()));
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
     }
     @Test
     void toResultItemNotPostalizzabileERROR_999(){
@@ -308,7 +308,7 @@ class AddressUtilsTest {
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new BatchRequest()));
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
     }
     @NotNull
     private static NormalizedAddress getNormalizedAddressNotPostalizzabile(int nRisultatoNorm) {

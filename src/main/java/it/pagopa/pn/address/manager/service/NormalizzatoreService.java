@@ -36,7 +36,7 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 public class NormalizzatoreService {
     private final PnSafeStorageClient pnSafeStorageClient;
     private final NormalizzatoreConverter normalizzatoreConverter;
-    private final PostelBatchService postelBatchService;
+    private final NormalizzatoreBatchService normalizzatoreBatchService;
     private final SqsService sqsService;
     private final SafeStorageService safeStorageService;
     private final PostelBatchRepository postelBatchRepository;
@@ -110,7 +110,7 @@ public class NormalizzatoreService {
     }
 
     private Mono<NormalizzatoreBatch> findPostelBatch(String idLavorazione) {
-        return postelBatchService.findPostelBatch(idLavorazione)
+        return normalizzatoreBatchService.findPostelBatch(idLavorazione)
                 .switchIfEmpty(Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELBATCHNOTFOUND, idLavorazione), HttpStatus.BAD_REQUEST.value(),
                         SEMANTIC_ERROR_CODE)));
     }
@@ -121,7 +121,7 @@ public class NormalizzatoreService {
             return getFile(normalizerCallbackRequest.getUri())
                     .flatMap(fileDownloadResponse -> {
                         log.info(ADDRESS_NORMALIZER_ASYNC + "callbackNormalizedAddress fileDownloadResponse:{}", fileDownloadResponse);
-                        return verifyCheckSumAndSendToInternalQueue(normalizerCallbackRequest, fileDownloadResponse, normalizzatoreBatch, pnAddressManagerCxId)
+                        return verifyCheckSum(normalizerCallbackRequest, fileDownloadResponse)
                                 .thenReturn(response);
                     })
                     .flatMap(operationResultCodeResponse -> sendToInternalQueueAndUpdatePostelBatchStatus(normalizerCallbackRequest, normalizzatoreBatch).thenReturn(response))
@@ -144,7 +144,7 @@ public class NormalizzatoreService {
         return response;
     }
 
-    private Mono<Void> verifyCheckSumAndSendToInternalQueue(NormalizerCallbackRequest callbackRequestData, FileDownloadResponse fileDownloadResponse, NormalizzatoreBatch normalizzatoreBatch, String pnAddressManagerCxId) {
+    private Mono<Void> verifyCheckSum(NormalizerCallbackRequest callbackRequestData, FileDownloadResponse fileDownloadResponse) {
         if (!fileDownloadResponse.getChecksum().equalsIgnoreCase(callbackRequestData.getSha256())) {
             return Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELINVALIDCHECKSUM, callbackRequestData.getUri()),
                     HttpStatus.BAD_REQUEST.value(), SEMANTIC_ERROR_CODE));

@@ -22,7 +22,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
+import static it.pagopa.pn.address.manager.constant.PnRequestConstant.*;
 
 @Component
 @CustomLog

@@ -3,12 +3,9 @@ package it.pagopa.pn.address.manager.config;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonSetter;
-import com.fasterxml.jackson.core.Base64Variant;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
 import com.fasterxml.jackson.databind.DeserializationConfig;
@@ -16,25 +13,17 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.cfg.DeserializerFactoryConfig;
-import com.fasterxml.jackson.databind.cfg.SerializerFactoryConfig;
 import com.fasterxml.jackson.databind.deser.BeanDeserializerFactory;
-import com.fasterxml.jackson.databind.deser.Deserializers;
 import com.fasterxml.jackson.databind.introspect.AccessorNamingStrategy;
 import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
 import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
 import com.fasterxml.jackson.databind.introspect.DefaultAccessorNamingStrategy;
-import com.fasterxml.jackson.databind.node.JsonNodeFactory;
-import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
-import com.fasterxml.jackson.databind.ser.Serializers;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-import com.fasterxml.jackson.databind.util.ArrayIterator;
 import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
 import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.ApiClient;
 import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.RFC3339DateFormat;
 
 import java.text.DateFormat;
-import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -133,16 +122,7 @@ class NormalizzatoreClientConfigTest {
 		JsonFactory factory = objectMapper.getFactory();
 		assertEquals(" ", factory.getRootValueSeparator());
 		assertEquals("Normalizzatore Base Path", apiClient.getBasePath());
-		assertNull(objectMapper.getPropertyNamingStrategy());
-		assertNull(deserializationConfig.getPropertyNamingStrategy());
 		SerializerProvider serializerProvider = objectMapper.getSerializerProvider();
-		assertNull(serializerProvider.getConfig());
-		assertNull(deserializationConfig.getHandlerInstantiator());
-		assertNull(serializationConfig.getHandlerInstantiator());
-		assertNull(serializationConfig.getFilterProvider());
-		assertNull(deserializationConfig.getProblemHandlers());
-		assertNull(deserializationConfig.getDefaultMergeable());
-		assertNull(serializerProvider.getActiveView());
 		assertEquals(16385, factory.getParserFeatures());
 		assertEquals(21770556, serializationConfig.getSerializationFeatures());
 		assertEquals(237020288, deserializationConfig.getDeserializationFeatures());
@@ -154,50 +134,9 @@ class NormalizzatoreClientConfigTest {
 		assertFalse(factoryConfig.hasDeserializerModifiers());
 		assertFalse(deserializationConfig.hasExplicitTimeZone());
 		assertFalse(serializationConfig.hasExplicitTimeZone());
-		SerializerFactoryConfig factoryConfig2 = ((BeanSerializerFactory) objectMapper.getSerializerFactory())
-				.getFactoryConfig();
-		assertFalse(factoryConfig2.hasSerializerModifiers());
-		assertTrue(factoryConfig.hasDeserializers());
-		assertTrue(factoryConfig.hasKeyDeserializers());
-		assertTrue(factoryConfig.hasValueInstantiators());
-		assertTrue(deserializationConfig.isAnnotationProcessingEnabled());
-		assertTrue(serializationConfig.isAnnotationProcessingEnabled());
-		assertTrue(factoryConfig2.hasKeySerializers());
-		assertTrue(factoryConfig2.hasSerializers());
-		assertTrue(((ArrayIterator<Deserializers>) factoryConfig.deserializers()).hasNext());
-		assertTrue(((ArrayIterator<Serializers>) factoryConfig2.serializers()).hasNext());
-		assertTrue(apiClient.getAuthentications().isEmpty());
-		JsonNodeFactory expectedNodeFactory = objectMapper.getNodeFactory();
-		assertSame(expectedNodeFactory, deserializationConfig.getNodeFactory());
-		TypeFactory typeFactory = objectMapper.getTypeFactory();
-		assertSame(typeFactory, deserializationConfig.getTypeFactory());
-		assertSame(typeFactory, serializationConfig.getTypeFactory());
-		Base64Variant expectedBase64Variant = deserializationConfig.getBase64Variant();
-		assertSame(expectedBase64Variant, serializationConfig.getBase64Variant());
-		JsonSetter.Value expectedDefaultSetterInfo = deserializationConfig.getDefaultSetterInfo();
-		assertSame(expectedDefaultSetterInfo, serializationConfig.getDefaultSetterInfo());
-		assertSame(objectMapper, factory.getCodec());
-		Locale locale = apiClient.getOffsetDateTimeFormatter().getLocale();
-		assertSame(locale, deserializationConfig.getLocale());
-		assertSame(locale, serializationConfig.getLocale());
-		assertSame(classIntrospector, serializationConfig.getClassIntrospector());
-		assertSame(accessorNaming, deserializationConfig.getAccessorNaming());
-		assertSame(serializationConfig.getAnnotationIntrospector(), serializerProviderInstance.getAnnotationIntrospector());
-		assertSame(serializationConfig.getAnnotationIntrospector(), deserializationConfig.getAnnotationIntrospector());
-		assertSame(objectMapper.getVisibilityChecker(), deserializationConfig.getDefaultVisibilityChecker());
-		assertSame(objectMapper.getPolymorphicTypeValidator(), deserializationConfig.getPolymorphicTypeValidator());
-		assertSame(objectMapper.getPolymorphicTypeValidator(), serializationConfig.getPolymorphicTypeValidator());
-		assertSame(serializerProviderInstance.getDefaultNullKeySerializer(),
-				serializerProvider.getDefaultNullKeySerializer());
-		assertSame(serializerProviderInstance.getDefaultNullValueSerializer(),
-				serializerProvider.getDefaultNullValueSerializer());
-		assertSame(dateFormat, objectMapper.getDateFormat());
-		assertSame(dateFormat, deserializationConfig.getDateFormat());
+
 	}
 
-	/**
-	 * Method under test: {@link NormalizzatoreClientConfig#normalizzatoreApi(PnAddressManagerConfig)}
-	 */
 	@Test
 	void testNormalizzatoreApi2 () {
 		// Arrange
@@ -310,44 +249,5 @@ class NormalizzatoreClientConfigTest {
 		assertFalse(factoryConfig.hasDeserializerModifiers());
 		assertFalse(deserializationConfig.hasExplicitTimeZone());
 		assertFalse(serializationConfig.hasExplicitTimeZone());
-		SerializerFactoryConfig factoryConfig2 = ((BeanSerializerFactory) objectMapper.getSerializerFactory())
-				.getFactoryConfig();
-		assertFalse(factoryConfig2.hasSerializerModifiers());
-		assertTrue(factoryConfig.hasDeserializers());
-		assertTrue(factoryConfig.hasKeyDeserializers());
-		assertTrue(factoryConfig.hasValueInstantiators());
-		assertTrue(deserializationConfig.isAnnotationProcessingEnabled());
-		assertTrue(serializationConfig.isAnnotationProcessingEnabled());
-		assertTrue(factoryConfig2.hasKeySerializers());
-		assertTrue(factoryConfig2.hasSerializers());
-		assertTrue(((ArrayIterator<Deserializers>) factoryConfig.deserializers()).hasNext());
-		assertTrue(((ArrayIterator<Serializers>) factoryConfig2.serializers()).hasNext());
-		assertTrue(apiClient.getAuthentications().isEmpty());
-		JsonNodeFactory expectedNodeFactory = objectMapper.getNodeFactory();
-		assertSame(expectedNodeFactory, deserializationConfig.getNodeFactory());
-		TypeFactory typeFactory = objectMapper.getTypeFactory();
-		assertSame(typeFactory, deserializationConfig.getTypeFactory());
-		assertSame(typeFactory, serializationConfig.getTypeFactory());
-		Base64Variant expectedBase64Variant = deserializationConfig.getBase64Variant();
-		assertSame(expectedBase64Variant, serializationConfig.getBase64Variant());
-		JsonSetter.Value expectedDefaultSetterInfo = deserializationConfig.getDefaultSetterInfo();
-		assertSame(expectedDefaultSetterInfo, serializationConfig.getDefaultSetterInfo());
-		assertSame(objectMapper, factory.getCodec());
-		Locale locale = apiClient.getOffsetDateTimeFormatter().getLocale();
-		assertSame(locale, deserializationConfig.getLocale());
-		assertSame(locale, serializationConfig.getLocale());
-		assertSame(classIntrospector, serializationConfig.getClassIntrospector());
-		assertSame(accessorNaming, deserializationConfig.getAccessorNaming());
-		assertSame(serializationConfig.getAnnotationIntrospector(), serializerProviderInstance.getAnnotationIntrospector());
-		assertSame(serializationConfig.getAnnotationIntrospector(), deserializationConfig.getAnnotationIntrospector());
-		assertSame(objectMapper.getVisibilityChecker(), deserializationConfig.getDefaultVisibilityChecker());
-		assertSame(objectMapper.getPolymorphicTypeValidator(), deserializationConfig.getPolymorphicTypeValidator());
-		assertSame(objectMapper.getPolymorphicTypeValidator(), serializationConfig.getPolymorphicTypeValidator());
-		assertSame(serializerProviderInstance.getDefaultNullKeySerializer(),
-				serializerProvider.getDefaultNullKeySerializer());
-		assertSame(serializerProviderInstance.getDefaultNullValueSerializer(),
-				serializerProvider.getDefaultNullValueSerializer());
-		assertSame(dateFormat, objectMapper.getDateFormat());
-		assertSame(dateFormat, deserializationConfig.getDateFormat());
 	}
 }

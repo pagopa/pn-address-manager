@@ -1,9 +1,9 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
@@ -30,7 +30,8 @@ class RecoveryServiceTest {
     RecoveryService recoveryService;
 
     @MockBean AddressBatchRequestRepository addressBatchRequestRepository;
-    @MockBean AddressBatchRequestService addressBatchRequestService;
+    @MockBean
+    PnRequestService pnRequestService;
     @MockBean SqsService sqsService;
     @MockBean EventService eventService;
     @MockBean PnAddressManagerConfig pnAddressManagerConfig;
@@ -43,7 +44,7 @@ class RecoveryServiceTest {
 
     @Test
     void recoveryBatchRequest(){
-        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
+        recoveryService = new RecoveryService(addressBatchRequestRepository, pnRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
         PnRequest pnRequest = getBatchRequest();
         when( addressBatchRequestRepository.getBatchRequestToRecovery()).thenReturn(Mono.just(List.of(pnRequest)));
@@ -54,13 +55,13 @@ class RecoveryServiceTest {
 
     @Test
     void recoveryPostelActivation(){
-        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
+        recoveryService = new RecoveryService(addressBatchRequestRepository, pnRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
         NormalizzatoreBatch normalizzatoreBatch = new NormalizzatoreBatch();
         normalizzatoreBatch.setBatchId("id");
         when(postelBatchRepository.getPostelBatchToRecover()).thenReturn(Mono.just(List.of(normalizzatoreBatch)));
         when(postelBatchRepository.resetPostelBatchForRecovery(any())).thenReturn(Mono.just(normalizzatoreBatch));
-        when(addressBatchRequestService.callPostelActivationApi(any())).thenReturn(Mono.empty());
+        when(pnRequestService.callPostelActivationApi(any())).thenReturn(Mono.empty());
 
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryPostelActivation());
     }
@@ -81,7 +82,7 @@ class RecoveryServiceTest {
         normalizer.setMaxCsvSize(100);
         normalizer.setBatchRequest(batchRequest);
         pnAddressManagerConfig.setNormalizer(normalizer);
-        recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
+        recoveryService = new RecoveryService(addressBatchRequestRepository, pnRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
         PnRequest pnRequest1 = getBatchRequest();
         PnRequest pnRequest2 = getBatchRequest();
@@ -119,7 +120,7 @@ class RecoveryServiceTest {
         normalizer.setBatchRequest(batchRequest);
         pnAddressManagerConfig.setNormalizer(normalizer);
         recoveryService = new RecoveryService(addressBatchRequestRepository,
-                addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
+                pnRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
         PnRequest pnRequest1 = getBatchRequest();
         NormalizzatoreBatch normalizzatoreBatch1 = new NormalizzatoreBatch();
         normalizzatoreBatch1.setBatchId("id1");
@@ -133,7 +134,7 @@ class RecoveryServiceTest {
                 .thenThrow(RuntimeException.class);
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyString(), any()))
                 .thenReturn(Mono.just(List.of(pnRequest1)));
-        when(addressBatchRequestService.incrementAndCheckRetry(any(),any(),anyString()))
+        when(pnRequestService.incrementAndCheckRetry(any(),any(),anyString()))
                 .thenReturn(Mono.empty());
         when(addressBatchRequestRepository.update(any()))
                 .thenReturn(Mono.just(pnRequest1));

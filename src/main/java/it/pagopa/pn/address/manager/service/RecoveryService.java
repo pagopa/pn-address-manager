@@ -43,7 +43,7 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 public class RecoveryService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
-    private final AddressBatchRequestService addressBatchRequestService;
+    private final PnRequestService pnRequestService;
     private final SqsService sqsService;
     private final EventService eventService;
     private final PnAddressManagerConfig pnAddressManagerConfig;
@@ -97,7 +97,7 @@ public class RecoveryService {
                         .doOnError(ConditionalCheckFailedException.class,
                                 e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip recovery  batchId {}", postelBatch.getBatchId(), e))
                         .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty()))
-                .doOnNext(addressBatchRequestService::callPostelActivationApi)
+                .doOnNext(pnRequestService::callPostelActivationApi)
                 .count()
                 .subscribe(c -> log.info(ADDRESS_NORMALIZER_ASYNC + "executed batch recovery on {} polling", c),
                         e -> log.error(ADDRESS_NORMALIZER_ASYNC + "failed execution of postel activation recovery", e));
@@ -166,7 +166,7 @@ public class RecoveryService {
                         addressBatchRequestRepository.update(batchRequest).block();
                     });
 
-                    addressBatchRequestService.incrementAndCheckRetry(pnRequestList, null, postelBatch.getBatchId())
+                    pnRequestService.incrementAndCheckRetry(pnRequestList, null, postelBatch.getBatchId())
                             .doOnNext(request -> log.debug(ADDRESS_NORMALIZER_ASYNC + " increment retry for {} request", pnRequestList.size()))
                             .block();
 

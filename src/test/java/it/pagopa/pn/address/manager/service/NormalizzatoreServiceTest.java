@@ -4,9 +4,9 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
+import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
-import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileDownloadResponseDto;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
@@ -33,7 +33,8 @@ import static org.mockito.Mockito.when;
 class NormalizzatoreServiceTest {
     @MockBean PnSafeStorageClient pnSafeStorageClient;
     @MockBean NormalizzatoreConverter normalizzatoreConverter;
-    @MockBean PostelBatchService postelBatchService;
+    @MockBean
+    NormalizzatoreBatchService normalizzatoreBatchService;
     @MockBean SqsService sqsService;
     @MockBean SafeStorageService safeStorageService;
     @MockBean PostelBatchRepository postelBatchRepository;
@@ -45,7 +46,7 @@ class NormalizzatoreServiceTest {
 
     @BeforeEach
     void setUp(){
-        normalizzatoreService = new NormalizzatoreService(pnSafeStorageClient, normalizzatoreConverter, postelBatchService,sqsService, safeStorageService, postelBatchRepository, apiKeyRepository, addressUtils, pnAddressManagerConfig);
+        normalizzatoreService = new NormalizzatoreService(pnSafeStorageClient, normalizzatoreConverter, normalizzatoreBatchService,sqsService, safeStorageService, postelBatchRepository, apiKeyRepository, addressUtils, pnAddressManagerConfig);
     }
 
     @Test
@@ -80,17 +81,17 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
+        when(normalizzatoreBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = mock(FileDownloadResponse.class);
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         when(postelBatchRepository.update(any()))
-                .thenReturn(Mono.just(new PostelBatch()));
+                .thenReturn(Mono.just(new NormalizzatoreBatch()));
         when(safeStorageService.getFile("fileKey",pnAddressManagerConfig.getPagoPaCxId()))
                 .thenReturn(Mono.just(fileDownloadResponse));
         when(sqsService.pushToCallbackQueue(any()))
                 .thenReturn(Mono.just(SendMessageResponse.builder().build()));
         when(postelBatchRepository.update(any()))
-                .thenReturn(Mono.just(new PostelBatch()));
+                .thenReturn(Mono.just(new NormalizzatoreBatch()));
         StepVerifier.create(normalizzatoreService.callbackNormalizedAddress(normalizerCallbackRequest,"id","id")).expectError().verify();
     }
 
@@ -105,7 +106,7 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
+        when(normalizzatoreBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         PostelCallbackSqsDto postelCallbackSqsDto = mock(PostelCallbackSqsDto.class);

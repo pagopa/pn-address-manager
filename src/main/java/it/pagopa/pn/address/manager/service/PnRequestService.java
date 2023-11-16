@@ -48,7 +48,7 @@ import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
 @Service
 @CustomLog
-public class AddressBatchRequestService {
+public class PnRequestService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
     private final PostelBatchRepository postelBatchRepository;
@@ -77,17 +77,17 @@ public class AddressBatchRequestService {
     private String batchId;
 
 
-    public AddressBatchRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
-                                      PostelBatchRepository postelBatchRepository,
-                                      AddressConverter addressConverter,
-                                      SqsService sqsService,
-                                      NormalizzatoreClient postelClient,
-                                      SafeStorageService safeStorageService,
-                                      PnAddressManagerConfig pnAddressManagerConfig,
-                                      EventService eventService,
-                                      CsvService csvService,
-                                      AddressUtils addressUtils,
-                                      Clock clock) {
+    public PnRequestService(AddressBatchRequestRepository addressBatchRequestRepository,
+                            PostelBatchRepository postelBatchRepository,
+                            AddressConverter addressConverter,
+                            SqsService sqsService,
+                            NormalizzatoreClient postelClient,
+                            SafeStorageService safeStorageService,
+                            PnAddressManagerConfig pnAddressManagerConfig,
+                            EventService eventService,
+                            CsvService csvService,
+                            AddressUtils addressUtils,
+                            Clock clock) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.safeStorageService = safeStorageService;

@@ -20,8 +20,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
-import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.GSI_SWT;
+import static it.pagopa.pn.address.manager.constant.PnRequestConstant.*;
+import static it.pagopa.pn.address.manager.constant.NormalizzatoreBatchConstant.GSI_SWT;
 @Component
 @CustomLog
 public class PostelBatchRepositoryImpl implements PostelBatchRepository {

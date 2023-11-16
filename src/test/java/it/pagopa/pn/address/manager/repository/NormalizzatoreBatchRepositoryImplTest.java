@@ -2,8 +2,8 @@ package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

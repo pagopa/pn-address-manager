@@ -7,7 +7,7 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.LocalDateTime;
 
-import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.*;
+import static it.pagopa.pn.address.manager.constant.NormalizzatoreBatchConstant.*;
 
 @Data
 @ToString
