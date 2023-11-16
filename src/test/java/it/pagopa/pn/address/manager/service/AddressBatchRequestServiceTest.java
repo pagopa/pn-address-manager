@@ -1,7 +1,7 @@
 package it.pagopa.pn.address.manager.service;
 
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.normalizzatore.v1.dto.NormalizzazioneResponse;
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
@@ -15,7 +15,6 @@ import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -274,7 +273,7 @@ class AddressBatchRequestServiceTest {
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
         when(addressBatchRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
         when(sqsService.sendToDlqQueue(batchRequest1)).thenReturn(Mono.empty());
-        when(eventService.sendEvent(any())).thenReturn(Mono.just(new PutEventsResult()));
+        when(eventService.sendEvent(any())).thenReturn(Mono.just(PutEventsResponse.builder().build()));
         StepVerifier.create(addressBatchRequestService.updateBatchRequest(List.of(batchRequest1),"batchId")).expectNextCount(0).verifyComplete();
     }
 

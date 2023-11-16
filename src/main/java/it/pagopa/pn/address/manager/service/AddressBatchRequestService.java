@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
@@ -22,7 +22,6 @@ import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
 import net.javacrumbs.shedlock.core.LockAssert;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,6 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 import software.amazon.awssdk.services.dynamodb.model.ConditionalCheckFailedException;
@@ -531,7 +529,7 @@ public class AddressBatchRequestService {
 
     }
 
-    private Mono<PutEventsResult> sendEvents(BatchRequest batchRequest, String cxId) {
+    private Mono<PutEventsResponse> sendEvents(BatchRequest batchRequest, String cxId) {
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         List<NormalizeResult> itemsResult = addressUtils.getNormalizeResultFromBatchRequest(batchRequest);
         normalizeItemsResult.setResultItems(itemsResult);
@@ -541,7 +539,7 @@ public class AddressBatchRequestService {
         return eventService.sendEvent(finalMessage)
                 .doOnNext(putEventsResult -> {
                     log.info("Event with correlationId {} sent successfully", batchRequest.getCorrelationId());
-                    log.debug("Sent event result: {}", putEventsResult.getEntries());
+                    log.debug("Sent event result: {}", putEventsResult.entries());
                 })
                 .doOnError(throwable -> log.error("Send event with correlationId {} failed", batchRequest.getCorrelationId(), throwable));
     }

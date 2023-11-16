@@ -1,45 +1,44 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.amazonaws.services.eventbridge.AmazonEventBridgeAsync;
-import com.amazonaws.services.eventbridge.model.PutEventsRequest;
-import com.amazonaws.services.eventbridge.model.PutEventsRequestEntry;
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
+import software.amazon.awssdk.services.eventbridge.EventBridgeAsyncClient;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsRequest;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsRequestEntry;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
 @CustomLog
 @Component
+@RequiredArgsConstructor
 public class EventService {
 
-    private final AmazonEventBridgeAsync amazonEventBridge;
+    private final EventBridgeAsyncClient eventBridgeAsyncClient;
     private final PnAddressManagerConfig pnAddressManagerConfig;
 
-    public EventService(AmazonEventBridgeAsync amazonEventBridge,
-                        PnAddressManagerConfig pnAddressManagerConfig) {
-        this.amazonEventBridge = amazonEventBridge;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-    }
 
-    public Mono<PutEventsResult> sendEvent(String message) {
-        return Mono.fromCallable(() ->amazonEventBridge.putEventsAsync(putEventsRequestBuilder(message))
-                        .get());
+    public Mono<PutEventsResponse> sendEvent(String message) {
+        return Mono.fromFuture(eventBridgeAsyncClient.putEvents(putEventsRequestBuilder(message)));
     }
 
     private PutEventsRequest putEventsRequestBuilder(String message) {
-        PutEventsRequest putEventsRequest = new PutEventsRequest();
         List<PutEventsRequestEntry> entries = new ArrayList<>();
-        PutEventsRequestEntry entryObj = new PutEventsRequestEntry();
-        entryObj.setDetail(message);
-        entryObj.setEventBusName(pnAddressManagerConfig.getEventBus().getName());
-        entryObj.setDetailType(pnAddressManagerConfig.getEventBus().getDetailType());
-        entryObj.setSource(pnAddressManagerConfig.getEventBus().getSource());
+        PutEventsRequestEntry entryObj = PutEventsRequestEntry.builder()
+                .detail(message)
+                .eventBusName(pnAddressManagerConfig.getEventBus().getName())
+                .detailType(pnAddressManagerConfig.getEventBus().getDetailType())
+                .source(pnAddressManagerConfig.getEventBus().getSource())
+                .build();
         entries.add(entryObj);
-        putEventsRequest.setEntries(entries);
+        PutEventsRequest putEventsRequest = PutEventsRequest.builder()
+                .entries(entryObj)
+                .build();
         log.debug("PutEventsRequest: {}", putEventsRequest);
         return putEventsRequest;
     }

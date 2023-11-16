@@ -227,7 +227,7 @@ public class RecoveryService {
             return eventService.sendEvent(message)
                     .doOnNext(putEventsResult -> {
                         log.info("Event with correlationId {} sent successfully", item.getCorrelationId());
-                        log.debug("Sent event result: {}", putEventsResult.getEntries());
+                        log.debug("Sent event result: {}", putEventsResult.entries());
                         item.setSendStatus(BatchSendStatus.SENT.getValue());
                     })
                     .doOnError(throwable -> {
