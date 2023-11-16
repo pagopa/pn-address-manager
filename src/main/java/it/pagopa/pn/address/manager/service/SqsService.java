@@ -1,14 +1,15 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.model.InternalCodeSqsDto;
 import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Flux;
@@ -29,6 +30,7 @@ import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.AM_PO
 
 @CustomLog
 @Component
+@RequiredArgsConstructor
 public class SqsService {
 
     private static final String PUSHING_MESSAGE = "pushing message for clientId: [{}] with correlationId: {}";
@@ -39,57 +41,50 @@ public class SqsService {
     private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
 
-    public SqsService(SqsClient sqsClient,
-                      AddressUtils addressUtils, PnAddressManagerConfig pnAddressManagerConfig) {
-        this.sqsClient = sqsClient;
-        this.addressUtils = addressUtils;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-    }
-
-    public Mono<Void> sendListToDlqQueue(List<BatchRequest> batchRequests) {
-        return Flux.fromIterable(batchRequests)
+    public Mono<Void> sendListToDlqQueue(List<PnRequest> pnRequests) {
+        return Flux.fromIterable(pnRequests)
                 .map(this::sendToDlqQueue)
                 .then();
     }
 
-    public Mono<Void> sendToDlqQueue(BatchRequest batchRequest) {
-        InternalCodeSqsDto internalCodeSqsDto = toInternalCodeSqsDto(batchRequest);
-        return pushToInputDlqQueue(internalCodeSqsDto, batchRequest.getClientId())
+    public Mono<Void> sendToDlqQueue(PnRequest pnRequest) {
+        InternalCodeSqsDto internalCodeSqsDto = toInternalCodeSqsDto(pnRequest);
+        return pushToInputDlqQueue(internalCodeSqsDto, pnRequest.getClientId())
                 .onErrorResume(throwable -> {
-                    log.error("error during push message for correlationId: [{}] to DLQ: {}", batchRequest.getCorrelationId(), throwable.getMessage(), throwable);
+                    log.error("error during push message for correlationId: [{}] to DLQ: {}", pnRequest.getCorrelationId(), throwable.getMessage(), throwable);
                     return Mono.empty();
                 })
                 .then();
     }
 
-    public Mono<Void> sendToDlqQueue(PostelBatch postelBatch) {
-        PostelCallbackSqsDto postelCallbackSqsDto = toCallbackSqsDto(postelBatch);
+    public Mono<Void> sendToDlqQueue(NormalizzatoreBatch normalizzatoreBatch) {
+        PostelCallbackSqsDto postelCallbackSqsDto = toCallbackSqsDto(normalizzatoreBatch);
         return pushToCallbackDlqQueue(postelCallbackSqsDto)
                 .onErrorResume(throwable -> {
-                    log.error("error during push message for batchId: [{}] to DLQ: {}", postelBatch.getBatchId(), throwable.getMessage(), throwable);
+                    log.error("error during push message for batchId: [{}] to DLQ: {}", normalizzatoreBatch.getBatchId(), throwable.getMessage(), throwable);
                     return Mono.empty();
                 })
                 .then();
     }
 
-    private PostelCallbackSqsDto toCallbackSqsDto(PostelBatch postelBatch) {
+    private PostelCallbackSqsDto toCallbackSqsDto(NormalizzatoreBatch normalizzatoreBatch) {
         return PostelCallbackSqsDto.builder()
-                .requestId(postelBatch.getBatchId())
-                .outputFileKey(postelBatch.getOutputFileKey())
-                .error(postelBatch.getError())
+                .requestId(normalizzatoreBatch.getBatchId())
+                .outputFileKey(normalizzatoreBatch.getOutputFileKey())
+                .error(normalizzatoreBatch.getError())
                 .build();
     }
 
-    private InternalCodeSqsDto toInternalCodeSqsDto(BatchRequest batchRequest) {
-        List<NormalizeRequest> requestList = addressUtils.getNormalizeRequestFromBatchRequest(batchRequest);
+    private InternalCodeSqsDto toInternalCodeSqsDto(PnRequest pnRequest) {
+        List<NormalizeRequest> requestList = addressUtils.getNormalizeRequestFromBatchRequest(pnRequest);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setRequestItems(requestList);
-        normalizeItemsRequest.setCorrelationId(batchRequest.getCorrelationId());
+        normalizeItemsRequest.setCorrelationId(pnRequest.getCorrelationId());
 
         return InternalCodeSqsDto.builder()
-                .xApiKey(batchRequest.getXApiKey())
+                .xApiKey(pnRequest.getXApiKey())
                 .normalizeItemsRequest(normalizeItemsRequest)
-                .pnAddressManagerCxId(batchRequest.getCxId())
+                .pnAddressManagerCxId(pnRequest.getCxId())
                 .build();
     }
 

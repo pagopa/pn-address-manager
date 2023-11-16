@@ -3,7 +3,7 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
@@ -82,7 +82,7 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new PostelBatch()));
+        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = mock(FileDownloadResponse.class);
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         StepVerifier.create(normalizzatoreService.callbackNormalizedAddress(normalizerCallbackRequest,"id","id")).expectError().verify();
@@ -99,7 +99,7 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new PostelBatch()));
+        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         PostelCallbackSqsDto postelCallbackSqsDto = mock(PostelCallbackSqsDto.class);

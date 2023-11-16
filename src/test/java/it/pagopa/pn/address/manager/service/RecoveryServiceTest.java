@@ -3,8 +3,8 @@ package it.pagopa.pn.address.manager.service;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
@@ -45,9 +45,9 @@ class RecoveryServiceTest {
     void recoveryBatchRequest(){
         recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
-        BatchRequest batchRequest = getBatchRequest();
-        when( addressBatchRequestRepository.getBatchRequestToRecovery()).thenReturn(Mono.just(List.of(batchRequest)));
-        when(addressBatchRequestRepository.resetBatchRequestForRecovery(any())).thenReturn(Mono.just(batchRequest));
+        PnRequest pnRequest = getBatchRequest();
+        when( addressBatchRequestRepository.getBatchRequestToRecovery()).thenReturn(Mono.just(List.of(pnRequest)));
+        when(addressBatchRequestRepository.resetBatchRequestForRecovery(any())).thenReturn(Mono.just(pnRequest));
 
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchRequest());
     }
@@ -56,10 +56,10 @@ class RecoveryServiceTest {
     void recoveryPostelActivation(){
         recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
-        PostelBatch postelBatch = new PostelBatch();
-        postelBatch.setBatchId("id");
-        when(postelBatchRepository.getPostelBatchToRecover()).thenReturn(Mono.just(List.of(postelBatch)));
-        when(postelBatchRepository.resetPostelBatchForRecovery(any())).thenReturn(Mono.just(postelBatch));
+        NormalizzatoreBatch normalizzatoreBatch = new NormalizzatoreBatch();
+        normalizzatoreBatch.setBatchId("id");
+        when(postelBatchRepository.getPostelBatchToRecover()).thenReturn(Mono.just(List.of(normalizzatoreBatch)));
+        when(postelBatchRepository.resetPostelBatchForRecovery(any())).thenReturn(Mono.just(normalizzatoreBatch));
         when(addressBatchRequestService.callPostelActivationApi(any())).thenReturn(Mono.empty());
 
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryPostelActivation());
@@ -83,22 +83,22 @@ class RecoveryServiceTest {
         pnAddressManagerConfig.setNormalizer(normalizer);
         recoveryService = new RecoveryService(addressBatchRequestRepository, addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
 
-        BatchRequest batchRequest1 = getBatchRequest();
-        BatchRequest batchRequest2 = getBatchRequest();
-        Page<BatchRequest> page1 = Page.create(List.of(batchRequest1), Map.of("key", AttributeValue.builder().s("value").build()));
-        Page<BatchRequest> page2 = Page.create(List.of(batchRequest2));
+        PnRequest pnRequest1 = getBatchRequest();
+        PnRequest pnRequest2 = getBatchRequest();
+        Page<PnRequest> page1 = Page.create(List.of(pnRequest1), Map.of("key", AttributeValue.builder().s("value").build()));
+        Page<PnRequest> page2 = Page.create(List.of(pnRequest2));
         when(addressBatchRequestRepository.getBatchRequestToSend(anyMap(), anyInt()))
                 .thenReturn(Mono.just(page1))
                 .thenReturn(Mono.just(page2))
                 .thenThrow(RuntimeException.class);
-        when(addressBatchRequestRepository.resetBatchRequestForRecovery(any())).thenReturn(Mono.just(batchRequest1));
-        when(addressBatchRequestRepository.resetBatchRequestForRecovery(any())).thenReturn(Mono.just(batchRequest2));
+        when(addressBatchRequestRepository.resetBatchRequestForRecovery(any())).thenReturn(Mono.just(pnRequest1));
+        when(addressBatchRequestRepository.resetBatchRequestForRecovery(any())).thenReturn(Mono.just(pnRequest2));
 
-        when(addressBatchRequestRepository.setNewReservationIdToBatchRequest(any())).thenReturn(Mono.just(batchRequest1));
-        when(addressBatchRequestRepository.setNewReservationIdToBatchRequest(any())).thenReturn(Mono.just(batchRequest2));
+        when(addressBatchRequestRepository.setNewReservationIdToBatchRequest(any())).thenReturn(Mono.just(pnRequest1));
+        when(addressBatchRequestRepository.setNewReservationIdToBatchRequest(any())).thenReturn(Mono.just(pnRequest2));
 
 
-        when(sqsService.sendToDlqQueue((BatchRequest) any())).thenReturn(Mono.empty());
+        when(sqsService.sendToDlqQueue((PnRequest) any())).thenReturn(Mono.empty());
         when(eventService.sendEvent(anyString())).thenReturn(Mono.just(PutEventsResponse.builder().build()));
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchSendToEventbridge());
     }
@@ -120,27 +120,27 @@ class RecoveryServiceTest {
         pnAddressManagerConfig.setNormalizer(normalizer);
         recoveryService = new RecoveryService(addressBatchRequestRepository,
                 addressBatchRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
-        BatchRequest batchRequest1= getBatchRequest();
-        PostelBatch postelBatch1 = new PostelBatch();
-        postelBatch1.setBatchId("id1");
-        PostelBatch postelBatch2 = new PostelBatch();
-        postelBatch2.setBatchId("id2");
-        Page<PostelBatch> page1 = Page.create(List.of(postelBatch1), Map.of("key", AttributeValue.builder().s("value").build()));
-        Page<PostelBatch> page2 = Page.create(List.of(postelBatch2));
+        PnRequest pnRequest1 = getBatchRequest();
+        NormalizzatoreBatch normalizzatoreBatch1 = new NormalizzatoreBatch();
+        normalizzatoreBatch1.setBatchId("id1");
+        NormalizzatoreBatch normalizzatoreBatch2 = new NormalizzatoreBatch();
+        normalizzatoreBatch2.setBatchId("id2");
+        Page<NormalizzatoreBatch> page1 = Page.create(List.of(normalizzatoreBatch1), Map.of("key", AttributeValue.builder().s("value").build()));
+        Page<NormalizzatoreBatch> page2 = Page.create(List.of(normalizzatoreBatch2));
         when(postelBatchRepository.getPostelBatchToClean())
                 .thenReturn(Mono.just(page1))
                 .thenReturn(Mono.just(page2))
                 .thenThrow(RuntimeException.class);
         when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyString(), any()))
-                .thenReturn(Mono.just(List.of(batchRequest1)));
+                .thenReturn(Mono.just(List.of(pnRequest1)));
         when(addressBatchRequestService.incrementAndCheckRetry(any(),any(),anyString()))
                 .thenReturn(Mono.empty());
         when(addressBatchRequestRepository.update(any()))
-                .thenReturn(Mono.just(batchRequest1));
+                .thenReturn(Mono.just(pnRequest1));
         when(postelBatchRepository.deleteItem(anyString()))
                 .thenReturn(Mono.empty());
         when(addressBatchRequestRepository.update(any()))
-                .thenReturn(Mono.just(batchRequest1));
+                .thenReturn(Mono.just(pnRequest1));
         when(postelBatchRepository.deleteItem(anyString()))
                 .thenReturn(Mono.empty());
         Assertions.assertDoesNotThrow(() -> recoveryService.cleanStoppedRequest());
@@ -161,23 +161,23 @@ class RecoveryServiceTest {
         return normalizer;
     }
 
-    BatchRequest getBatchRequest(){
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("yourCorrelationId");
-        batchRequest.setAddresses("yourAddresses");
-        batchRequest.setBatchId("NO_BATCH_ID");
-        batchRequest.setRetry(1);
-        batchRequest.setTtl(3600L); // Your TTL value in seconds
-        batchRequest.setClientId("yourClientId");
-        batchRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
-        batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setSendStatus("yourSendStatus");
-        batchRequest.setMessage("yourMessage");
-        batchRequest.setXApiKey("yourXApiKey");
-        batchRequest.setCxId("yourCxId");
-        batchRequest.setAwsMessageId("yourAwsMessageId");
-        return batchRequest;
+    PnRequest getBatchRequest(){
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setCorrelationId("yourCorrelationId");
+        pnRequest.setAddresses("yourAddresses");
+        pnRequest.setBatchId("NO_BATCH_ID");
+        pnRequest.setRetry(1);
+        pnRequest.setTtl(3600L); // Your TTL value in seconds
+        pnRequest.setClientId("yourClientId");
+        pnRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
+        pnRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
+        pnRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
+        pnRequest.setSendStatus("yourSendStatus");
+        pnRequest.setMessage("yourMessage");
+        pnRequest.setXApiKey("yourXApiKey");
+        pnRequest.setCxId("yourCxId");
+        pnRequest.setAwsMessageId("yourAwsMessageId");
+        return pnRequest;
     }
 
 }

@@ -9,7 +9,7 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRes
 import it.pagopa.pn.address.manager.repository.CapRepository;
 import it.pagopa.pn.address.manager.repository.CountryRepository;
 import lombok.CustomLog;
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
@@ -20,18 +20,12 @@ import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.PNADD
 
 @Component
 @CustomLog
+@RequiredArgsConstructor
 public class CapAndCountryService {
 
     private final CapRepository capRepository;
     private final CountryRepository countryRepository;
     private final PnAddressManagerConfig pnAddressManagerConfig;
-
-
-    public CapAndCountryService(CapRepository capRepository, CountryRepository countryRepository, PnAddressManagerConfig pnAddressManagerConfig) {
-        this.capRepository = capRepository;
-        this.countryRepository = countryRepository;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-    }
 
     public Mono<DeduplicatesResponse> verifyCapAndCountry(DeduplicatesResponse item) {
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {

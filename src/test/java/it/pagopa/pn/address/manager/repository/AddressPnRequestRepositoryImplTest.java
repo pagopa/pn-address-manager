@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +31,7 @@ import static org.mockito.Mockito.when;
 
 
 @ExtendWith(SpringExtension.class)
-class AddressBatchRequestRepositoryImplTest {
+class AddressPnRequestRepositoryImplTest {
 
     @MockBean
     private DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
@@ -60,20 +60,20 @@ class AddressBatchRequestRepositoryImplTest {
 
     @Test
     void update(){
-        BatchRequest batchRequest = getBatchRequest();
+        PnRequest pnRequest = getBatchRequest();
         CompletableFuture<Object> completableFuture = new CompletableFuture<>();
-        completableFuture.completeAsync(() -> batchRequest);
-        when(dynamoDbAsyncTable.updateItem((BatchRequest) any())).thenReturn(completableFuture);
-        StepVerifier.create(addressBatchRequestRepository.update(batchRequest)).expectNext(batchRequest).verifyComplete();
+        completableFuture.completeAsync(() -> pnRequest);
+        when(dynamoDbAsyncTable.updateItem((PnRequest) any())).thenReturn(completableFuture);
+        StepVerifier.create(addressBatchRequestRepository.update(pnRequest)).expectNext(pnRequest).verifyComplete();
     }
 
     @Test
     void create(){
-        BatchRequest batchRequest = getBatchRequest();
+        PnRequest pnRequest = getBatchRequest();
         CompletableFuture<Void> completableFuture = new CompletableFuture<>();
         completableFuture.completeAsync(() -> null);
-        when(dynamoDbAsyncTable.putItem((BatchRequest) any())).thenReturn(completableFuture);
-        StepVerifier.create(addressBatchRequestRepository.create(batchRequest)).expectNext(batchRequest).verifyComplete();
+        when(dynamoDbAsyncTable.putItem((PnRequest) any())).thenReturn(completableFuture);
+        StepVerifier.create(addressBatchRequestRepository.create(pnRequest)).expectNext(pnRequest).verifyComplete();
     }
 
     @Test
@@ -100,66 +100,66 @@ class AddressBatchRequestRepositoryImplTest {
 
     @Test
     void getBatchRequestByBatchIdAndStatus(){
-        BatchRequest batchRequest = getBatchRequest();
+        PnRequest pnRequest = getBatchRequest();
         DynamoDbAsyncIndex<Object> index = mock(DynamoDbAsyncIndex.class);
         when(dynamoDbAsyncTable.index(any()))
                 .thenReturn(index);
         when(index.query((QueryEnhancedRequest) any()))
-                .thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(batchRequest)))));
+                .thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(pnRequest)))));
         StepVerifier.create(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus("batchId", BatchStatus.NO_BATCH_ID)).expectNextCount(0);
     }
 
     @Test
     void setNewBatchIdToBatchRequest(){
-        BatchRequest batchRequest = getBatchRequest();
+        PnRequest pnRequest = getBatchRequest();
         when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any()))
-                .thenReturn(CompletableFuture.completedFuture(batchRequest));
-        StepVerifier.create(addressBatchRequestRepository.setNewBatchIdToBatchRequest(batchRequest)).expectNextCount(1);
+                .thenReturn(CompletableFuture.completedFuture(pnRequest));
+        StepVerifier.create(addressBatchRequestRepository.setNewBatchIdToBatchRequest(pnRequest)).expectNextCount(1);
     }
 
     @Test
     void setNewReservationIdToBatchRequest(){
-        BatchRequest batchRequest = getBatchRequest();
+        PnRequest pnRequest = getBatchRequest();
         when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any()))
-                .thenReturn(CompletableFuture.completedFuture(batchRequest));
-        StepVerifier.create(addressBatchRequestRepository.setNewReservationIdToBatchRequest(batchRequest)).expectNextCount(1);
+                .thenReturn(CompletableFuture.completedFuture(pnRequest));
+        StepVerifier.create(addressBatchRequestRepository.setNewReservationIdToBatchRequest(pnRequest)).expectNextCount(1);
     }
 
     @Test
     void resetBatchRequestForRecovery(){
-        BatchRequest batchRequest = getBatchRequest();
+        PnRequest pnRequest = getBatchRequest();
         when(dynamoDbAsyncTable.updateItem((UpdateItemEnhancedRequest<Object>) any()))
-                .thenReturn(CompletableFuture.completedFuture(batchRequest));
-        StepVerifier.create(addressBatchRequestRepository.resetBatchRequestForRecovery(batchRequest)).expectNextCount(1);
+                .thenReturn(CompletableFuture.completedFuture(pnRequest));
+        StepVerifier.create(addressBatchRequestRepository.resetBatchRequestForRecovery(pnRequest)).expectNextCount(1);
     }
 
     @Test
     void getBatchRequestToRecovery(){
-        BatchRequest batchRequest = getBatchRequest();
+        PnRequest pnRequest = getBatchRequest();
         DynamoDbAsyncIndex<Object> index = mock(DynamoDbAsyncIndex.class);
         when(dynamoDbAsyncTable.index(any()))
                 .thenReturn(index);
         when(index.query((QueryEnhancedRequest) any()))
-                .thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(batchRequest)))));
+                .thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(pnRequest)))));
         StepVerifier.create(addressBatchRequestRepository.getBatchRequestToRecovery()).expectNextCount(0);
     }
 
-    BatchRequest getBatchRequest(){
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("yourCorrelationId");
-        batchRequest.setAddresses("yourAddresses");
-        batchRequest.setBatchId("yourBatchId");
-        batchRequest.setRetry(1);
-        batchRequest.setTtl(3600L); // Your TTL value in seconds
-        batchRequest.setClientId("yourClientId");
-        batchRequest.setStatus("yourStatus");
-        batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setSendStatus("yourSendStatus");
-        batchRequest.setMessage("yourMessage");
-        batchRequest.setXApiKey("yourXApiKey");
-        batchRequest.setCxId("yourCxId");
-        batchRequest.setAwsMessageId("yourAwsMessageId");
-        return batchRequest;
+    PnRequest getBatchRequest(){
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setCorrelationId("yourCorrelationId");
+        pnRequest.setAddresses("yourAddresses");
+        pnRequest.setBatchId("yourBatchId");
+        pnRequest.setRetry(1);
+        pnRequest.setTtl(3600L); // Your TTL value in seconds
+        pnRequest.setClientId("yourClientId");
+        pnRequest.setStatus("yourStatus");
+        pnRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
+        pnRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
+        pnRequest.setSendStatus("yourSendStatus");
+        pnRequest.setMessage("yourMessage");
+        pnRequest.setXApiKey("yourXApiKey");
+        pnRequest.setCxId("yourCxId");
+        pnRequest.setAwsMessageId("yourAwsMessageId");
+        return pnRequest;
     }
 }

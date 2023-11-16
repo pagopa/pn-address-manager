@@ -5,7 +5,7 @@ import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.p
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaRequest;
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
@@ -24,11 +24,12 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {AddressConverter.class, PnAddressManagerConfig.class})
 @ExtendWith(SpringExtension.class)
 class AddressConverterTest {
-    @Autowired
-    private AddressConverter addressConverter;
 
     @Autowired
     private PnAddressManagerConfig pnAddressManagerConfig;
+
+    @Autowired
+    AddressConverter addressConverter;
 
 
     /**
@@ -48,14 +49,11 @@ class AddressConverterTest {
         assertNull(masterIn.getStato());
         assertNull(masterIn.getProvincia());
         assertNull(masterIn.getLocalitaAggiuntiva());
-        assertNull(masterIn.getIndirizzo());
         assertNull(masterIn.getIndirizzoAggiuntivo());
         assertNull(masterIn.getId());
         assertNull(masterIn.getCap());
         assertNull(slaveIn.getProvincia());
         assertNull(slaveIn.getLocalitaAggiuntiva());
-        assertNull(slaveIn.getLocalita());
-        assertNull( slaveIn.getIndirizzo());
         assertNull(slaveIn.getIndirizzoAggiuntivo());
         assertNull(slaveIn.getId());
         assertNull(slaveIn.getCap());
@@ -79,14 +77,11 @@ class AddressConverterTest {
         assertNull(masterIn.getStato());
         assertNull(masterIn.getProvincia());
         assertNull(masterIn.getLocalitaAggiuntiva());
-        assertNull(masterIn.getLocalita());
-        assertNull( masterIn.getIndirizzo());
         assertNull( masterIn.getIndirizzoAggiuntivo());
         assertEquals("42", masterIn.getId());
         assertNull(masterIn.getCap());
         assertNull(slaveIn.getProvincia());
         assertNull(slaveIn.getLocalitaAggiuntiva());
-        assertNull(slaveIn.getLocalita());
         assertEquals("42", slaveIn.getId());
         assertNull(slaveIn.getCap());
         verify(deduplicatesRequest, atLeast(1)).getBaseAddress();
@@ -167,12 +162,9 @@ class AddressConverterTest {
     @Test
     void testCreateDeduplicatesResponseFromDeduplicaResponseGetAnalogAddressError(){
         DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
-        DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
-        deduplicatesResponse.setCorrelationId("42");
         AddressOut addressOut = new AddressOut();
         addressOut.setfPostalizzabile(String.valueOf(0));
         risultatoDeduplica.setSlaveOut(addressOut);
-        deduplicatesResponse.setError("Errore");
         assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
 
@@ -256,12 +248,12 @@ class AddressConverterTest {
 
         PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setNormalizer(normalizer);
-        PostelBatch actualCreatePostelBatchByBatchIdAndFileKeyResult = (new AddressConverter())
+        NormalizzatoreBatch actualCreatePostelBatchByRequestIdAndFileKeyResult = (new AddressConverter())
                 .createPostelBatchByBatchIdAndFileKey("42", "File Key", "sha256");
-        assertEquals("42", actualCreatePostelBatchByBatchIdAndFileKeyResult.getBatchId());
-        assertEquals("NOT_WORKED", actualCreatePostelBatchByBatchIdAndFileKeyResult.getStatus());
-        assertEquals(0, actualCreatePostelBatchByBatchIdAndFileKeyResult.getRetry().intValue());
-        assertEquals("File Key", actualCreatePostelBatchByBatchIdAndFileKeyResult.getFileKey());
+        assertEquals("42", actualCreatePostelBatchByRequestIdAndFileKeyResult.getBatchId());
+        assertEquals("NOT_WORKED", actualCreatePostelBatchByRequestIdAndFileKeyResult.getStatus());
+        assertEquals(0, actualCreatePostelBatchByRequestIdAndFileKeyResult.getRetry().intValue());
+        assertEquals("File Key", actualCreatePostelBatchByRequestIdAndFileKeyResult.getFileKey());
     }
 
     @NotNull
@@ -297,13 +289,13 @@ class AddressConverterTest {
 
         PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setNormalizer(normalizer);
-        PostelBatch actualCreatePostelBatchByBatchIdAndFileKeyResult = (new AddressConverter())
+        NormalizzatoreBatch actualCreatePostelBatchByRequestIdAndFileKeyResult = (new AddressConverter())
                 .createPostelBatchByBatchIdAndFileKey("Request Prefix42", "File Key", "Sha256");
-        assertEquals("Request Prefix42", actualCreatePostelBatchByBatchIdAndFileKeyResult.getBatchId());
-        assertEquals("NOT_WORKED", actualCreatePostelBatchByBatchIdAndFileKeyResult.getStatus());
-        assertEquals("Sha256", actualCreatePostelBatchByBatchIdAndFileKeyResult.getSha256());
-        assertEquals(0, actualCreatePostelBatchByBatchIdAndFileKeyResult.getRetry().intValue());
-        assertEquals("File Key", actualCreatePostelBatchByBatchIdAndFileKeyResult.getFileKey());
+        assertEquals("Request Prefix42", actualCreatePostelBatchByRequestIdAndFileKeyResult.getBatchId());
+        assertEquals("NOT_WORKED", actualCreatePostelBatchByRequestIdAndFileKeyResult.getStatus());
+        assertEquals("Sha256", actualCreatePostelBatchByRequestIdAndFileKeyResult.getSha256());
+        assertEquals(0, actualCreatePostelBatchByRequestIdAndFileKeyResult.getRetry().intValue());
+        assertEquals("File Key", actualCreatePostelBatchByRequestIdAndFileKeyResult.getFileKey());
     }
 
     @NotNull

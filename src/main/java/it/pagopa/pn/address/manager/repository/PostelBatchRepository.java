@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.repository;
 
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 
@@ -8,17 +8,17 @@ import java.util.List;
 
 public interface PostelBatchRepository {
 
-    Mono<PostelBatch> create(PostelBatch postelBatch);
+    Mono<NormalizzatoreBatch> create(NormalizzatoreBatch normalizzatoreBatch);
 
-    Mono<PostelBatch> findByBatchId(String batchId);
+    Mono<NormalizzatoreBatch> findByBatchId(String batchId);
 
-    Mono<PostelBatch> update(PostelBatch postelBatch);
+    Mono<NormalizzatoreBatch> update(NormalizzatoreBatch normalizzatoreBatch);
 
-    Mono<PostelBatch> resetPostelBatchForRecovery(PostelBatch postelBatch);
+    Mono<NormalizzatoreBatch> resetPostelBatchForRecovery(NormalizzatoreBatch normalizzatoreBatch);
 
-    Mono<List<PostelBatch>> getPostelBatchToRecover();
+    Mono<List<NormalizzatoreBatch>> getPostelBatchToRecover();
 
-    Mono<Page<PostelBatch>> getPostelBatchToClean();
+    Mono<Page<NormalizzatoreBatch>> getPostelBatchToClean();
 
-    Mono<PostelBatch> deleteItem(String batchId);
+    Mono<NormalizzatoreBatch> deleteItem(String batchId);
 }
