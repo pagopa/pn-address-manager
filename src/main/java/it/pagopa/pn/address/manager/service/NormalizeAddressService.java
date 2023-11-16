@@ -55,7 +55,12 @@ public class NormalizeAddressService {
                 })
                 .flatMap(apiKeyModel -> checkFieldsLength(normalizeItemsRequest.getRequestItems(), normalizeItemsRequest.getCorrelationId()).thenReturn(normalizeItemsRequest))
                 .flatMap(request -> sendToInputQueue(xApiKey, cxId, request))
-                .onErrorResume(throwable -> sendToDlq(xApiKey, cxId, normalizeItemsRequest));
+                .onErrorResume(throwable -> {
+                    if(throwable instanceof PnInternalAddressManagerException exception && HttpStatus.FORBIDDEN.value() == exception.getStatus()){
+                        return Mono.error(throwable);
+                    }
+                    return sendToDlq(xApiKey, cxId, normalizeItemsRequest);
+                });
     }
 
     private Mono<AcceptedResponse> sendToInputQueue(String xApiKey, String cxId, NormalizeItemsRequest request) {
@@ -81,7 +86,7 @@ public class NormalizeAddressService {
                         .normalizeItemsRequest(normalizeItemsRequest)
                         .build(), cxId)
                 .map(sendMessageResponse -> {
-                    log.info(ADDRESS_NORMALIZER_SYNC + "Sent request with correlationId: [{}] to {}", normalizeItemsRequest.getCorrelationId(), pnAddressManagerConfig.getSqs().getInputQueueName());
+                    log.info(ADDRESS_NORMALIZER_SYNC + "Sent request with correlationId: [{}] to {}", normalizeItemsRequest.getCorrelationId(), pnAddressManagerConfig.getSqs().getInputDlqQueueName());
                     return addressUtils.mapToAcceptedResponse(normalizeItemsRequest);
                 })
                 .doOnError(e -> {
@@ -95,9 +100,9 @@ public class NormalizeAddressService {
         log.info("Received normalizeAddressAsync request for correlationId: {}", payload.getNormalizeItemsRequest().getCorrelationId());
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())) {
             return Mono.fromCallable(() -> addressUtils.normalizeRequestToResult(payload.getNormalizeItemsRequest()))
-                    .doOnNext(normalizeItemsResult -> {
+                    .flatMap(normalizeItemsResult -> {
                         log.info("normalizeAddressAsync response: {}", normalizeItemsResult);
-                        sendEvents(normalizeItemsResult, payload.getPnAddressManagerCxId());
+                        return sendEvents(normalizeItemsResult, payload.getPnAddressManagerCxId());
                     })
                     .doOnError(throwable -> log.error("normalizeAddressAsync error: {}", throwable.getMessage(), throwable))
                     .then();
@@ -131,15 +136,16 @@ public class NormalizeAddressService {
         return addressBatchRequestRepository.create(pnRequest);
     }
 
-    private void sendEvents(NormalizeItemsResult normalizeItemsResult, String cxId) {
+    private Mono<Void> sendEvents(NormalizeItemsResult normalizeItemsResult, String cxId) {
         EventDetail eventDetail = new EventDetail(normalizeItemsResult, cxId);
         String message = addressUtils.toJson(eventDetail);
-        eventService.sendEvent(message)
+        return eventService.sendEvent(message)
                 .doOnNext(putEventsResult -> {
                     log.info("Event with correlationId {} sent successfully", normalizeItemsResult.getCorrelationId());
                     log.debug("Sent event result: {}", putEventsResult.entries());
                 })
-                .doOnError(throwable -> log.error("Send event with correlationId {} failed", normalizeItemsResult.getCorrelationId(), throwable));
+                .doOnError(throwable -> log.error("Send event with correlationId {} failed", normalizeItemsResult.getCorrelationId(), throwable))
+                .then();
     }
 
     public Mono<Void> checkFieldsLength(List<NormalizeRequest> normalizeRequestList, String correlationId) {
