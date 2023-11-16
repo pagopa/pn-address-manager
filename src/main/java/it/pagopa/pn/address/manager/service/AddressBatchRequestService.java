@@ -87,7 +87,7 @@ public class AddressBatchRequestService {
                                       EventService eventService,
                                       CsvService csvService,
                                       AddressUtils addressUtils,
-                                      Clock clock, AddressConverter addressConverter) {
+                                      Clock clock) {
         this.addressBatchRequestRepository = addressBatchRequestRepository;
         this.postelBatchRepository = postelBatchRepository;
         this.safeStorageService = safeStorageService;
