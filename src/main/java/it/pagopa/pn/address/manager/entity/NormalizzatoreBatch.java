@@ -7,12 +7,12 @@ import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.LocalDateTime;
 
-import static it.pagopa.pn.address.manager.constant.PostelBatchConstant.*;
+import static it.pagopa.pn.address.manager.constant.NormalizzatoreBatchConstant.*;
 
 @Data
 @ToString
 @DynamoDbBean
-public class PostelBatch {
+public class NormalizzatoreBatch {
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_BATCH_ID),

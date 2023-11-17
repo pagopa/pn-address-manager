@@ -2,7 +2,7 @@ package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
@@ -14,6 +14,7 @@ import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -28,6 +29,7 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 
 @CustomLog
 @Service
+@RequiredArgsConstructor
 public class NormalizeAddressService {
 
     private final EventService eventService;
@@ -36,23 +38,7 @@ public class NormalizeAddressService {
     private final AddressBatchRequestRepository addressBatchRequestRepository;
     private final ApiKeyRepository apiKeyRepository;
     private final PnAddressManagerConfig pnAddressManagerConfig;
-    private final PostelBatchService postelBatchService;
-
-    public NormalizeAddressService(AddressUtils addressUtils,
-                                   EventService eventService,
-                                   SqsService sqsService,
-                                   AddressBatchRequestRepository addressBatchRequestRepository,
-                                   ApiKeyRepository apiKeyRepository,
-                                   PnAddressManagerConfig pnAddressManagerConfig,
-                                   PostelBatchService batchService) {
-        this.eventService = eventService;
-        this.addressUtils = addressUtils;
-        this.sqsService = sqsService;
-        this.addressBatchRequestRepository = addressBatchRequestRepository;
-        this.apiKeyRepository = apiKeyRepository;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-        this.postelBatchService = batchService;
-    }
+    private final NormalizzatoreBatchService normalizzatoreBatchService;
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
         log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
@@ -132,22 +118,22 @@ public class NormalizeAddressService {
     public Mono<Void> handlePostelCallback(PnPostelCallbackEvent.Payload payload) {
         log.logStartingProcess(PROCESS_SERVICE_POSTEL_CALLBACK);
         log.info("Received postel callback for requestId: {}", payload.getRequestId());
-        return postelBatchService.findPostelBatch(payload.getRequestId())
+        return normalizzatoreBatchService.findPostelBatch(payload.getRequestId())
                 .flatMap(postelBatch -> {
                     if (StringUtils.hasText(payload.getError())) {
-                        return postelBatchService.resetRelatedBatchRequestForRetry(postelBatch);
+                        return normalizzatoreBatchService.resetRelatedBatchRequestForRetry(postelBatch);
                     }
-                    return postelBatchService.getResponse(payload.getOutputFileKey(), postelBatch);
+                    return normalizzatoreBatchService.getResponse(payload.getOutputFileKey(), postelBatch);
                 });
     }
 
-    public Mono<BatchRequest> createBatchRequest(String pnAddressManagerCxId, NormalizeItemsRequest normalizeItemsRequest, String correlationId) {
-        BatchRequest batchRequest = addressUtils.createNewStartBatchRequest();
+    public Mono<PnRequest> createBatchRequest(String pnAddressManagerCxId, NormalizeItemsRequest normalizeItemsRequest, String correlationId) {
+        PnRequest pnRequest = addressUtils.createNewStartBatchRequest();
         String requestAsString = addressUtils.toJson(normalizeItemsRequest.getRequestItems());
-        batchRequest.setAddresses(requestAsString);
-        batchRequest.setClientId(pnAddressManagerCxId);
-        batchRequest.setCorrelationId(correlationId);
-        return addressBatchRequestRepository.create(batchRequest);
+        pnRequest.setAddresses(requestAsString);
+        pnRequest.setClientId(pnAddressManagerCxId);
+        pnRequest.setCorrelationId(correlationId);
+        return addressBatchRequestRepository.create(pnRequest);
     }
 
     private Mono<Void> sendEvents(NormalizeItemsResult normalizeItemsResult, String cxId) {
@@ -156,7 +142,7 @@ public class NormalizeAddressService {
         return eventService.sendEvent(message)
                 .doOnNext(putEventsResult -> {
                     log.info("Event with correlationId {} sent successfully", normalizeItemsResult.getCorrelationId());
-                    log.debug("Sent event result: {}", putEventsResult.getEntries());
+                    log.debug("Sent event result: {}", putEventsResult.entries());
                 })
                 .doOnError(throwable -> log.error("Send event with correlationId {} failed", normalizeItemsResult.getCorrelationId(), throwable))
                 .then();

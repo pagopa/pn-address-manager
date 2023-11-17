@@ -11,6 +11,7 @@ import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -21,28 +22,15 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 
 @Service
 @CustomLog
+@RequiredArgsConstructor
 public class DeduplicatesAddressService {
 
     private final AddressUtils addressUtils;
     private final DeduplicaClient postelClient;
-    private final AddressConverter addressConverter;
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private final ApiKeyRepository apiKeyRepository;
     private final CapAndCountryService capAndCountryService;
-
-    public DeduplicatesAddressService(AddressUtils addressUtils,
-                                      DeduplicaClient postelClient,
-                                      AddressConverter addressConverter,
-                                      PnAddressManagerConfig pnAddressManagerConfig,
-                                      ApiKeyRepository apiKeyRepository,
-                                      CapAndCountryService capAndCountryService) {
-        this.addressUtils = addressUtils;
-        this.postelClient = postelClient;
-        this.addressConverter = addressConverter;
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-        this.apiKeyRepository = apiKeyRepository;
-        this.capAndCountryService = capAndCountryService;
-    }
+    private final AddressConverter addressConverter;
 
     public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request, String pnAddressManagerCxId, String xApiKey) {
 

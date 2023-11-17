@@ -2,12 +2,14 @@ package it.pagopa.pn.address.manager.converter;
 
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.*;
 import it.pagopa.pn.address.manager.constant.*;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
+import lombok.AccessLevel;
 import lombok.CustomLog;
+import lombok.RequiredArgsConstructor;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -20,6 +22,7 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 
 @Component
 @CustomLog
+@RequiredArgsConstructor(access = AccessLevel.NONE)
 public class AddressConverter {
 
     public DeduplicaRequest createDeduplicaRequestFromDeduplicatesRequest(DeduplicatesRequest deduplicatesRequest) {
@@ -38,7 +41,7 @@ public class AddressConverter {
     }
 
     @NotNull
-    private static AddressIn getAddressIn(AnalogAddress analogAddress, String correlationId) {
+    private AddressIn getAddressIn(AnalogAddress analogAddress, String correlationId) {
         AddressIn addressIn = new AddressIn();
         addressIn.setId(correlationId);
         addressIn.setProvincia(analogAddress.getPr());
@@ -78,7 +81,7 @@ public class AddressConverter {
         return deduplicatesResponse;
     }
 
-    private static void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse, String correlationId) {
+    private void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse, String correlationId) {
         if (risultatoDeduplica.getSlaveOut() != null) {
             if (StringUtils.hasText(risultatoDeduplica.getSlaveOut().getfPostalizzabile())
                     && risultatoDeduplica.getSlaveOut().getfPostalizzabile().equalsIgnoreCase("0")) {
@@ -98,7 +101,7 @@ public class AddressConverter {
     }
 
     @NotNull
-    private static AnalogAddress getAddress(AddressOut slaveOut) {
+    private AnalogAddress getAddress(AddressOut slaveOut) {
         AnalogAddress target = new AnalogAddress();
         target.setAddressRow(slaveOut.getsViaCompletaSpedizione());
         target.setAddressRow2(slaveOut.getsCivicoAltro());
@@ -110,9 +113,9 @@ public class AddressConverter {
         return target;
     }
 
-    public PostelBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey, String sha256) {
+    public NormalizzatoreBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey, String sha256) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        PostelBatch batchPolling = new PostelBatch();
+        NormalizzatoreBatch batchPolling = new NormalizzatoreBatch();
         batchPolling.setBatchId(batchId);
         batchPolling.setFileKey(fileKey);
         batchPolling.setStatus(BatchStatus.NOT_WORKED.getValue());

@@ -1,10 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import com.amazonaws.handlers.AsyncHandler;
-import com.amazonaws.services.eventbridge.AmazonEventBridgeAsync;
-import com.amazonaws.services.eventbridge.model.PutEventsRequest;
-import com.amazonaws.services.eventbridge.model.PutEventsResult;
-import com.amazonaws.services.eventbridge.model.PutEventsResultEntry;
+
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,9 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.test.StepVerifier;
+import software.amazon.awssdk.services.eventbridge.EventBridgeAsyncClient;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsRequest;
+import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -23,7 +21,7 @@ import static org.mockito.Mockito.when;
 class EventServiceTest {
 
     @MockBean
-    AmazonEventBridgeAsync amazonEventBridge;
+    EventBridgeAsyncClient eventBridgeAsyncClient;
     @MockBean
     PnAddressManagerConfig pnAddressManagerConfig;
 
@@ -38,21 +36,17 @@ class EventServiceTest {
         eventBus.setSource("source");
         eventBus.setDetailType("detail");
         pnAddressManagerConfig.setEventBus(eventBus);
-        eventService = new EventService(amazonEventBridge, pnAddressManagerConfig);
+        eventService = new EventService(eventBridgeAsyncClient, pnAddressManagerConfig);
     }
 
     @Test
     void testSendEvent() {
-        when(amazonEventBridge.putEventsAsync(any(), any())).thenAnswer(invocation -> {
-            AsyncHandler<PutEventsRequest, PutEventsResult> handler = invocation.getArgument(1);
-            PutEventsResult putEventsResult = new PutEventsResult();
-            List<PutEventsResultEntry> list = new ArrayList<>();
-            putEventsResult.setEntries(list);
-            handler.onSuccess(null, putEventsResult);
-            return null;
-        });
+        PutEventsResponse response = PutEventsResponse.builder().build();
+        when(eventBridgeAsyncClient.putEvents(any(PutEventsRequest.class)))
+        .thenReturn(CompletableFuture.completedFuture(response));
         StepVerifier.create(eventService.sendEvent("Test message"))
-                .expectNextCount(0);
+                .expectNext(response)
+                .verifyComplete();
     }
 
 }

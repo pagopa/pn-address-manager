@@ -3,7 +3,7 @@ package it.pagopa.pn.address.manager.repository;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import lombok.CustomLog;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -22,14 +22,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static it.pagopa.pn.address.manager.constant.BatchRequestConstant.*;
+import static it.pagopa.pn.address.manager.constant.PnRequestConstant.*;
 
 @Component
 @CustomLog
 public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRepository {
 
     private final PnAddressManagerConfig pnAddressManagerConfig;
-    private final DynamoDbAsyncTable<BatchRequest> table;
+    private final DynamoDbAsyncTable<PnRequest> table;
 
     private static final String STATUS_ALIAS = "#status";
     private static final String STATUS_PLACEHOLDER = ":status";
@@ -41,25 +41,25 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
 
     public AddressBatchRequestRepositoryImpl(DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient,
                                              PnAddressManagerConfig pnAddressManagerConfig) {
-        this.table = dynamoDbEnhancedAsyncClient.table(pnAddressManagerConfig.getDao().getBatchRequestTableName(), TableSchema.fromClass(BatchRequest.class));
+        this.table = dynamoDbEnhancedAsyncClient.table(pnAddressManagerConfig.getDao().getBatchRequestTableName(), TableSchema.fromClass(PnRequest.class));
         this.pnAddressManagerConfig = pnAddressManagerConfig;
     }
 
     @Override
-    public Mono<BatchRequest> update(BatchRequest batchRequest) {
-        return Mono.fromFuture(table.updateItem(batchRequest));
+    public Mono<PnRequest> update(PnRequest pnRequest) {
+        return Mono.fromFuture(table.updateItem(pnRequest));
     }
 
     @Override
-    public Mono<BatchRequest> create(BatchRequest batchRequest) {
-        log.debug("Inserting data {} in DynamoDB table {}", batchRequest, table);
-        return Mono.fromFuture(table.putItem(batchRequest))
+    public Mono<PnRequest> create(PnRequest pnRequest) {
+        log.debug("Inserting data {} in DynamoDB table {}", pnRequest, table);
+        return Mono.fromFuture(table.putItem(pnRequest))
                 .doOnNext(unused -> log.info("Inserted data in DynamoDB table {}", table))
-                .thenReturn(batchRequest);
+                .thenReturn(pnRequest);
     }
 
     @Override
-    public Mono<Page<BatchRequest>> getBatchRequestByNotBatchId(Map<String, AttributeValue> lastKey, int limit) {
+    public Mono<Page<PnRequest>> getBatchRequestByNotBatchId(Map<String, AttributeValue> lastKey, int limit) {
         QueryEnhancedRequest.Builder queryEnhancedRequestBuilder = QueryEnhancedRequest.builder()
                 .queryConditional(QueryConditional.keyEqualTo(keyBuilder(BatchStatus.NO_BATCH_ID.getValue())))
                 .limit(limit);
@@ -73,7 +73,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
-    public Mono<List<BatchRequest>> getBatchRequestByBatchIdAndStatus(String batchId, BatchStatus status) {
+    public Mono<List<PnRequest>> getBatchRequestByBatchIdAndStatus(String batchId, BatchStatus status) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put(STATUS_ALIAS, COL_STATUS);
 
@@ -90,7 +90,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
-    public Mono<Page<BatchRequest>> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastKey, String batchId, BatchStatus status) {
+    public Mono<Page<PnRequest>> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastKey, String batchId, BatchStatus status) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put(STATUS_ALIAS, COL_STATUS);
 
@@ -111,7 +111,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
-    public Mono<BatchRequest> setNewBatchIdToBatchRequest(BatchRequest batchRequest) {
+    public Mono<PnRequest> setNewBatchIdToBatchRequest(PnRequest pnRequest) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#batchId", COL_BATCH_ID);
 
@@ -119,8 +119,8 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         expressionValues.put(":batchId", AttributeValue.builder().s(BatchStatus.NO_BATCH_ID.getValue()).build());
 
         String expression = "#batchId = :batchId";
-        UpdateItemEnhancedRequest<BatchRequest> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(BatchRequest.class)
-                .item(batchRequest)
+        UpdateItemEnhancedRequest<PnRequest> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(PnRequest.class)
+                .item(pnRequest)
                 .conditionExpression(expressionBuilder(expression, expressionValues, expressionNames))
                 .build();
 
@@ -128,7 +128,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
-    public Mono<BatchRequest> setNewReservationIdToBatchRequest(BatchRequest batchRequest) {
+    public Mono<PnRequest> setNewReservationIdToBatchRequest(PnRequest pnRequest) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#reservationId", COL_RESERVATION_ID);
         expressionNames.put("#sendStatus", COL_SEND_STATUS);
@@ -138,8 +138,8 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
         expressionValues.put(":zero", AttributeValue.builder().n("0").build());
 
         String expression = "(attribute_not_exists(#reservationId) OR size(#reservationId) = :zero) AND #sendStatus = :sendStatus";
-        UpdateItemEnhancedRequest<BatchRequest> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(BatchRequest.class)
-                .item(batchRequest)
+        UpdateItemEnhancedRequest<PnRequest> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(PnRequest.class)
+                .item(pnRequest)
                 .conditionExpression(expressionBuilder(expression, expressionValues, expressionNames))
                 .build();
 
@@ -147,19 +147,19 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
-    public Mono<BatchRequest> resetBatchRequestForRecovery(BatchRequest batchRequest) {
+    public Mono<PnRequest> resetBatchRequestForRecovery(PnRequest pnRequest) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         AttributeValue lastReserved = AttributeValue.builder()
-                .s(batchRequest.getLastReserved() != null ? batchRequest.getLastReserved().toString() : "")
+                .s(pnRequest.getLastReserved() != null ? pnRequest.getLastReserved().toString() : "")
                 .build();
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, lastReserved);
 
         String expression = LAST_RESERVED_EQ + " OR attribute_not_exists(" + LAST_RESERVED_ALIAS + ")";
-        UpdateItemEnhancedRequest<BatchRequest> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(BatchRequest.class)
-                .item(batchRequest)
+        UpdateItemEnhancedRequest<PnRequest> updateItemEnhancedRequest = UpdateItemEnhancedRequest.builder(PnRequest.class)
+                .item(pnRequest)
                 .conditionExpression(expressionBuilder(expression, expressionValues, expressionNames))
                 .build();
 
@@ -167,7 +167,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
-    public Mono<List<BatchRequest>> getBatchRequestToRecovery() {
+    public Mono<List<PnRequest>> getBatchRequestToRecovery() {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put("#retry", COL_RETRY);
         expressionNames.put(LAST_RESERVED_ALIAS, COL_LAST_RESERVED);
@@ -192,7 +192,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
-    public Mono<Page<BatchRequest>> getBatchRequestToSend(Map<String, AttributeValue> lastKey, int limit) {
+    public Mono<Page<PnRequest>> getBatchRequestToSend(Map<String, AttributeValue> lastKey, int limit) {
         Key key = Key.builder()
                 .partitionValue(BatchSendStatus.NOT_SENT.getValue())
                 .sortValue(AttributeValue.builder()

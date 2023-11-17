@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
@@ -76,14 +76,14 @@ class AddressUtilsTest {
         objectMapper = new ObjectMapper();
         String json = objectMapper.writeValueAsString(List.of(normalizeRequest));
 
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setAddresses(json);
-        batchRequest.setMessage("message");
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setAddresses(json);
+        pnRequest.setMessage("message");
 
         objectMapper.setTypeFactory(TypeFactory.defaultInstance());
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.getNormalizeRequestFromBatchRequest(batchRequest));
-        assertThrows(PnInternalException.class, () -> addressUtils.getNormalizeResultFromBatchRequest(batchRequest));
+        assertNotNull(addressUtils.getNormalizeRequestFromBatchRequest(pnRequest));
+        assertThrows(PnInternalException.class, () -> addressUtils.getNormalizeResultFromBatchRequest(pnRequest));
     }
 
     @NotNull
@@ -100,6 +100,15 @@ class AddressUtilsTest {
         normalizeRequest.setId("id");
         normalizeRequest.setAddress(analogAddress);
         return normalizeRequest;
+    }
+    @Test
+    void getCorrelationIdCreatedAt(){
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        PnRequest batchRequest = new PnRequest();
+        LocalDateTime localDateTime = LocalDateTime.now();
+        batchRequest.setCorrelationId("correlationId");
+        batchRequest.setCreatedAt(localDateTime);
+        assertEquals(addressUtils.getCorrelationIdCreatedAt(batchRequest), "correlationId#"+localDateTime);
     }
 
     @Test
@@ -139,8 +148,8 @@ class AddressUtilsTest {
 
     @Test
     void toObject() throws JsonProcessingException {
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("correlationId");
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setCorrelationId("correlationId");
         NormalizeRequest normalizeRequest = new NormalizeRequest();
         AnalogAddress base = new AnalogAddress();
         base.setCity("42");
@@ -167,8 +176,8 @@ class AddressUtilsTest {
 
     @Test
     void normalizeRequestToPostelCsvRequest() throws JsonProcessingException {
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("correlationId");
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setCorrelationId("correlationId");
         NormalizeRequest normalizeRequest = new NormalizeRequest();
         AnalogAddress base = new AnalogAddress();
         base.setCity("42");
@@ -181,9 +190,9 @@ class AddressUtilsTest {
         normalizeRequest.setAddress(base);
         normalizeRequest.setId("id");
         objectMapper = new ObjectMapper();
-        batchRequest.setAddresses(objectMapper.writeValueAsString(List.of(normalizeRequest)));
+        pnRequest.setAddresses(objectMapper.writeValueAsString(List.of(normalizeRequest)));
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertNotNull(addressUtils.normalizeRequestToPostelCsvRequest(batchRequest));
+        assertNotNull(addressUtils.normalizeRequestToPostelCsvRequest(pnRequest));
     }
 
     @Test
@@ -266,7 +275,7 @@ class AddressUtilsTest {
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new BatchRequest()));
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
     }
     @Test
     void toResultItemNotPostalizzabile(){
@@ -276,12 +285,35 @@ class AddressUtilsTest {
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new BatchRequest()));
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
+    }
+
+    @Test
+    void toResultItemNotPostalizzabileERROR_901(){
+        NormalizedAddress normalizedAddress = getNormalizedAddressNotPostalizzabile(42);
+        NormalizedAddress normalizedAddress1 = getNormalizedAddressNotPostalizzabile(0);
+        normalizedAddress.setNErroreNorm(901);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
+        normalizedAddresses.add(normalizedAddress);
+        normalizedAddresses.add(normalizedAddress1);
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
+    }
+    @Test
+    void toResultItemNotPostalizzabileERROR_999(){
+        NormalizedAddress normalizedAddress = getNormalizedAddressNotPostalizzabile(42);
+        NormalizedAddress normalizedAddress1 = getNormalizedAddressNotPostalizzabile(0);
+        normalizedAddress.setNErroreNorm(999);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
+        normalizedAddresses.add(normalizedAddress);
+        normalizedAddresses.add(normalizedAddress1);
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
     }
     @NotNull
     private static NormalizedAddress getNormalizedAddressNotPostalizzabile(int nRisultatoNorm) {
         NormalizedAddress normalizedAddress = new NormalizedAddress();
-        normalizedAddress.setId("1#1");
+        normalizedAddress.setId("1#1#1");
         normalizedAddress.setNRisultatoNorm(nRisultatoNorm);
         normalizedAddress.setNErroreNorm(0);
         normalizedAddress.setSSiglaProv("MI");
@@ -307,7 +339,7 @@ class AddressUtilsTest {
     @NotNull
     private static NormalizedAddress getNormalizedAddress(int nRisultatoNorm) {
         NormalizedAddress normalizedAddress = new NormalizedAddress();
-        normalizedAddress.setId("1#1");
+        normalizedAddress.setId("1#1#1");
         normalizedAddress.setNRisultatoNorm(nRisultatoNorm);
         normalizedAddress.setNErroreNorm(0);
         normalizedAddress.setSSiglaProv("MI");

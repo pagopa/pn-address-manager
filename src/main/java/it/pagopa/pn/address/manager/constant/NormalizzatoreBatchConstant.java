@@ -4,7 +4,7 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public final class PostelBatchConstant {
+public final class NormalizzatoreBatchConstant {
 
     public static final String COL_FILE_KEY = "fileKey";
     public static final String COL_OUTPUT_FILE_KEY = "outputFileKey";

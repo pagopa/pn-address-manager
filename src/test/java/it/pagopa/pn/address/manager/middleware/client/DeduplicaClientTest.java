@@ -1,25 +1,32 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
 import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaRequest;
+import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
 import it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.api.DeduplicaApi;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.ExchangeFunction;
+import reactor.core.publisher.Mono;
 
 import static org.mockito.Mockito.*;
 
+@SpringBootTest
+@ExtendWith(SpringExtension.class)
 class DeduplicaClientTest {
 
-    DeduplicaApi defaultApi = mock(DeduplicaApi.class);
-    ResponseExchangeFilter responseExchangeFilter = mock(ResponseExchangeFilter.class);
+    @MockBean
+    DeduplicaApi defaultApi;
 
     @Test
-    @Disabled
     void testDeduplica() {
+        when(defaultApi.deduplica(anyString(),anyString(),any())).thenReturn(Mono.just(new DeduplicaResponse()));
         PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
         PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
         pnAddressManagerConfig.setPostelCxId("postelCxId");
@@ -36,9 +43,7 @@ class DeduplicaClientTest {
         when(responseExchangeFilter.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction2);
         DeduplicaClient postelClient = new DeduplicaClient(defaultApi, pnAddressManagerConfig);
         postelClient.deduplica(new DeduplicaRequest());
-        verify(responseExchangeFilter).andThen(Mockito.<ExchangeFilterFunction>any());
-        verify(exchangeFilterFunction2).andThen(Mockito.<ExchangeFilterFunction>any());
-        verify(exchangeFilterFunction).apply(Mockito.<ExchangeFunction>any());
+        verify(defaultApi, times(1)).deduplica(anyString(),anyString(),any());
     }
 }
 

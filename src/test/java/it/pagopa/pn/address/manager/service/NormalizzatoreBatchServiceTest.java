@@ -2,9 +2,9 @@ package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.entity.BatchRequest;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.entity.CapModel;
-import it.pagopa.pn.address.manager.entity.PostelBatch;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
@@ -15,7 +15,6 @@ import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadInfo;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,11 +35,11 @@ import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = {PostelBatchService.class})
-class PostelBatchServiceTest {
+@ContextConfiguration(classes = {NormalizzatoreBatchService.class})
+class NormalizzatoreBatchServiceTest {
 
     @Autowired
-    PostelBatchService postelBatchService;
+    NormalizzatoreBatchService normalizzatoreBatchService;
 
     @MockBean
     AddressBatchRequestRepository addressBatchRequestRepository;
@@ -54,7 +53,7 @@ class PostelBatchServiceTest {
     UploadDownloadClient uploadDownloadClient;
 
     @MockBean
-    AddressBatchRequestService addressBatchRequestService;
+    PnRequestService pnRequestService;
     @MockBean
     CapAndCountryService capAndCountryService;
 
@@ -69,52 +68,54 @@ class PostelBatchServiceTest {
 
     @Test
     void resetRelatedBatchRequestForRetry(){
-        PostelBatch postelBatch = new PostelBatch();
-        postelBatch.setBatchId("id");
-        when(postelBatchRepository.update(any())).thenReturn(Mono.just(postelBatch));
-        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), any(), any())).thenReturn(Mono.just(Page.create(List.of(new BatchRequest()))));
-        StepVerifier.create(postelBatchService.resetRelatedBatchRequestForRetry(postelBatch)).expectError().verify();
+        NormalizzatoreBatch normalizzatoreBatch = new NormalizzatoreBatch();
+        normalizzatoreBatch.setBatchId("id");
+        when(postelBatchRepository.update(any())).thenReturn(Mono.just(normalizzatoreBatch));
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), any(), any())).thenReturn(Mono.just(Page.create(List.of(new PnRequest()))));
+        StepVerifier.create(normalizzatoreBatchService.resetRelatedBatchRequestForRetry(normalizzatoreBatch)).expectError().verify();
     }
     @Test
     void findPostelBatch(){
-        when(postelBatchRepository.findByBatchId(anyString())).thenReturn(Mono.just(new PostelBatch()));
-        StepVerifier.create(postelBatchService.findPostelBatch("fileKey")).expectNext(new PostelBatch()).verifyComplete();
+        when(postelBatchRepository.findByBatchId(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
+        StepVerifier.create(normalizzatoreBatchService.findPostelBatch("fileKey")).expectNext(new NormalizzatoreBatch()).verifyComplete();
     }
     @Test
     void getResponse(){
 
         when(uploadDownloadClient.downloadContent(anyString())).thenReturn(Mono.just("url".getBytes()));
         NormalizedAddress normalizedAddress = new NormalizedAddress();
-        normalizedAddress.setId("id");
+        LocalDateTime localDateTime = LocalDateTime.now();
+        String now= localDateTime.toString();
+        normalizedAddress.setId("id#"+now);
         when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),0)).thenReturn(List.of(normalizedAddress));
         when(addressUtils.getCorrelationIdCreatedAt(anyString())).thenReturn("id");
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setCorrelationId("id");
-        batchRequest.setAddresses("yourAddresses");
-        batchRequest.setBatchId("NO_BATCH_ID");
-        batchRequest.setRetry(1);
-        batchRequest.setTtl(3600L); // Your TTL value in seconds
-        batchRequest.setClientId("yourClientId");
-        batchRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
-        batchRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
-        batchRequest.setSendStatus("yourSendStatus");
-        batchRequest.setMessage("yourMessage");
-        batchRequest.setXApiKey("yourXApiKey");
-        batchRequest.setCxId("yourCxId");
-        batchRequest.setAwsMessageId("yourAwsMessageId");
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setCorrelationId("id");
+        pnRequest.setAddresses("yourAddresses");
+        pnRequest.setBatchId("NO_BATCH_ID");
+        pnRequest.setRetry(1);
+        pnRequest.setTtl(3600L); // Your TTL value in seconds
+        pnRequest.setClientId("yourClientId");
+        pnRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
+        pnRequest.setLastReserved(LocalDateTime.now()); // Your LocalDateTime value
+        pnRequest.setCreatedAt(LocalDateTime.now()); // Your LocalDateTime value
+        pnRequest.setSendStatus("yourSendStatus");
+        pnRequest.setMessage("yourMessage");
+        pnRequest.setXApiKey("yourXApiKey");
+        pnRequest.setCxId("yourCxId");
+        pnRequest.setAwsMessageId("yourAwsMessageId");
         when(clock.instant()).thenReturn(Instant.now());
         when(addressUtils.getNormalizeRequestFromBatchRequest(any())).thenReturn(List.of(new NormalizeRequest()));
-        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(Map.of(), "id", BatchStatus.WORKING)).thenReturn(Mono.just(Page.create(List.of(batchRequest))));
-        when(addressBatchRequestService.updateBatchRequest(anyList(),anyString())).thenReturn(Mono.empty());
-        PostelBatch postelBatch = new PostelBatch();
-        postelBatch.setBatchId("id");
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(Map.of(), "id", BatchStatus.WORKING)).thenReturn(Mono.just(Page.create(List.of(pnRequest))));
+        when(pnRequestService.updateBatchRequest(anyList(),anyString())).thenReturn(Mono.empty());
+        NormalizzatoreBatch normalizzatoreBatch = new NormalizzatoreBatch();
+        normalizzatoreBatch.setBatchId("id");
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
         FileDownloadInfo info = new FileDownloadInfo();
         info.setUrl("http://url.it");
         fileDownloadResponse.setDownload(info);
         when(safeStorageService.getFile(any(), any())).thenReturn(Mono.just(fileDownloadResponse));
-        StepVerifier.create(postelBatchService.getResponse("url", postelBatch)).verifyComplete();
+        StepVerifier.create(normalizzatoreBatchService.getResponse("url", normalizzatoreBatch)).verifyComplete();
     }
 
     @Test
@@ -125,14 +126,14 @@ class PostelBatchServiceTest {
         normalizedAddress.setId("id");
         when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),1)).thenReturn(List.of(normalizedAddress));
         when(addressUtils.getCorrelationIdCreatedAt(anyString())).thenReturn("id");
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setBatchId("id");
-        batchRequest.setCorrelationId("id");
-        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(Map.of(), "id", BatchStatus.WORKING)).thenReturn(Mono.just(Page.create(List.of(batchRequest))));
-        when(addressBatchRequestService.updateBatchRequest(anyList(),anyString())).thenReturn(Mono.empty());
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setBatchId("id");
+        pnRequest.setCorrelationId("id");
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(Map.of(), "id", BatchStatus.WORKING)).thenReturn(Mono.just(Page.create(List.of(pnRequest))));
+        when(pnRequestService.updateBatchRequest(anyList(),anyString())).thenReturn(Mono.empty());
         when(addressUtils.getNormalizeRequestFromBatchRequest(any())).thenReturn(List.of(new NormalizeRequest()));
-        PostelBatch postelBatch = new PostelBatch();
-        postelBatch.setBatchId("id");
+        NormalizzatoreBatch normalizzatoreBatch = new NormalizzatoreBatch();
+        normalizzatoreBatch.setBatchId("id");
         AnalogAddress base = new AnalogAddress();
         base.setCity("Roma");
         base.setCity2("42");
@@ -143,6 +144,8 @@ class PostelBatchServiceTest {
         base.setCountry("ITALIA");
         NormalizeResult normalizeResult = new NormalizeResult();
         normalizeResult.setNormalizedAddress(base);
+        String correlationIdCreatedAt = addressUtils.getCorrelationIdCreatedAt(pnRequest);
+        pnRequest.setStatus(BatchStatus.WORKED.name());
         when(addressUtils.toResultItem(any(), any())).thenReturn(List.of(normalizeResult));
         when(addressUtils.toJson(anyString())).thenReturn("json");
         when(clock.instant()).thenReturn(Instant.now());
@@ -155,9 +158,8 @@ class PostelBatchServiceTest {
         capModel.setCap("00010");
         capModel.setEndValidity(LocalDateTime.now());
         capModel.setStartValidity(LocalDateTime.now());
-        StepVerifier.create(postelBatchService.getResponse("url", postelBatch)).verifyComplete();
+        StepVerifier.create(normalizzatoreBatchService.getResponse("url", normalizzatoreBatch)).verifyComplete();
     }
-
 
     @Test
     void getResponse2(){
@@ -167,14 +169,14 @@ class PostelBatchServiceTest {
         normalizedAddress.setId("id");
         when(csvService.readItemsFromCsv(NormalizedAddress.class,"url".getBytes(),1)).thenReturn(List.of(normalizedAddress));
         when(addressUtils.getCorrelationIdCreatedAt(anyString())).thenReturn("id");
-        BatchRequest batchRequest = new BatchRequest();
-        batchRequest.setBatchId("id");
-        batchRequest.setCorrelationId("id");
-        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(Map.of(), "id", BatchStatus.WORKING)).thenReturn(Mono.just(Page.create(List.of(batchRequest))));
-        when(addressBatchRequestService.updateBatchRequest(anyList(),anyString())).thenReturn(Mono.empty());
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setBatchId("id");
+        pnRequest.setCorrelationId("id");
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(Map.of(), "id", BatchStatus.WORKING)).thenReturn(Mono.just(Page.create(List.of(pnRequest))));
+        when(pnRequestService.updateBatchRequest(anyList(),anyString())).thenReturn(Mono.empty());
         when(addressUtils.getNormalizeRequestFromBatchRequest(any())).thenReturn(List.of(new NormalizeRequest()));
-        PostelBatch postelBatch = new PostelBatch();
-        postelBatch.setBatchId("id");
+        NormalizzatoreBatch normalizzatoreBatch = new NormalizzatoreBatch();
+        normalizzatoreBatch.setBatchId("id");
         AnalogAddress base = new AnalogAddress();
         base.setCity("Roma");
         base.setCity2("42");
@@ -193,6 +195,6 @@ class PostelBatchServiceTest {
         info.setUrl("http://url.it");
         fileDownloadResponse.setDownload(info);
         when(safeStorageService.getFile(any(), any())).thenReturn(Mono.just(fileDownloadResponse));
-        StepVerifier.create(postelBatchService.getResponse("url", postelBatch)).verifyComplete();
+        StepVerifier.create(normalizzatoreBatchService.getResponse("url", normalizzatoreBatch)).verifyComplete();
     }
 }

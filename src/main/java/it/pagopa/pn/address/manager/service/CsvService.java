@@ -10,6 +10,7 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.CountryModel;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -30,14 +31,11 @@ import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCo
 
 @Component
 @lombok.CustomLog
+@RequiredArgsConstructor
 public class CsvService {
 
     private static final String VERIFY_CSV_ERROR = "Error during verify CSV";
     private final PnAddressManagerConfig pnAddressManagerConfig;
-
-    public CsvService(PnAddressManagerConfig pnAddressManagerConfig) {
-        this.pnAddressManagerConfig = pnAddressManagerConfig;
-    }
 
     public <T> void writeItemsOnCsv(List<T> items, String nameFile, String directoryPath) {
         try (FileWriter writer = new FileWriter(new File(directoryPath, nameFile))) {
