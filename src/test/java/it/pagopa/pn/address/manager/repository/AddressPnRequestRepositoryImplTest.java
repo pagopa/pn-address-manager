@@ -108,6 +108,24 @@ class AddressPnRequestRepositoryImplTest {
                 .thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(pnRequest)))));
         StepVerifier.create(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus("batchId", BatchStatus.NO_BATCH_ID)).expectNextCount(0);
     }
+    @Test
+    void testGetBatchRequestByBatchId() {
+        Map<String, AttributeValue> lastKey = mock(Map.class);
+
+        when(dynamoDbEnhancedAsyncClient.table(any(), any()))
+                .thenReturn(dynamoDbAsyncTable);
+        DynamoDbAsyncIndex<Object> index = mock(DynamoDbAsyncIndex.class);
+        when(dynamoDbAsyncTable.index(any()))
+                .thenReturn(index);
+        when(index.query((QueryEnhancedRequest) any()))
+                .thenReturn(SdkPublisher.adapt(Mono.empty()));
+
+
+        StepVerifier.create(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastKey,"batchId", BatchStatus.NO_BATCH_ID))
+                .expectNextCount(0)
+                .verifyComplete();
+    }
+
 
     @Test
     void setNewBatchIdToBatchRequest(){

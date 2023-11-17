@@ -40,14 +40,14 @@ import static java.util.stream.Collectors.groupingBy;
 @Component
 @CustomLog
 @RequiredArgsConstructor
-public class PostelBatchService {
+public class NormalizzatoreBatchService {
 
     private final AddressBatchRequestRepository addressBatchRequestRepository;
     private final PostelBatchRepository postelBatchRepository;
     private final CsvService csvService;
     private final AddressUtils addressUtils;
     private final UploadDownloadClient uploadDownloadClient;
-    private final AddressBatchRequestService addressBatchRequestService;
+    private final PnRequestService pnRequestService;
     private final CapAndCountryService capAndCountryService;
     private final Clock clock;
     private final SafeStorageService safeStorageService;
@@ -64,7 +64,7 @@ public class PostelBatchService {
                         }))
                 .onErrorResume(throwable -> {
                     log.warn("Error in getResponse with postelBatch: {}. Increment", normalizzatoreBatch.getBatchId(), throwable);
-                    return addressBatchRequestService.incrementAndCheckRetry(normalizzatoreBatch, throwable);
+                    return pnRequestService.incrementAndCheckRetry(normalizzatoreBatch, throwable);
                 });
     }
 
@@ -83,7 +83,7 @@ public class PostelBatchService {
                 .doOnNext(bytes -> log.debug("Downloaded CSV for batchId: {}", normalizzatoreBatch.getBatchId()))
                 .doOnError(throwable -> {
                     log.warn("Error in getResponse with postelBatch: {}. Increment", normalizzatoreBatch.getBatchId(), throwable);
-                    addressBatchRequestService.incrementAndCheckRetry(normalizzatoreBatch, throwable).block();
+                    pnRequestService.incrementAndCheckRetry(normalizzatoreBatch, throwable).block();
                 });
     }
 
@@ -124,7 +124,7 @@ public class PostelBatchService {
         return Flux.fromIterable(items)
                 .map(batchRequest -> retrieveNormalizedAddressAndSetToBatchRequestMessage(batchRequest, map))
                 .collectList()
-                .flatMap(batchRequestList -> addressBatchRequestService.updateBatchRequest(batchRequestList, batchId));
+                .flatMap(batchRequestList -> pnRequestService.updateBatchRequest(batchRequestList, batchId));
     }
 
     private PnRequest retrieveNormalizedAddressAndSetToBatchRequestMessage(PnRequest pnRequest, Map<String, List<NormalizedAddress>> map) {
@@ -198,7 +198,7 @@ public class PostelBatchService {
                     return item;
                 })
                 .collectList()
-                .flatMap(batchRequests -> addressBatchRequestService.incrementAndCheckRetry(batchRequests, null, batchId));
+                .flatMap(batchRequests -> pnRequestService.incrementAndCheckRetry(batchRequests, null, batchId));
     }
 
     private Page<PnRequest> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastEvaluatedKey, String batchId) {

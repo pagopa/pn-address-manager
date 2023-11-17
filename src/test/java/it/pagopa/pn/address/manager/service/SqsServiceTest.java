@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
@@ -57,6 +58,7 @@ class SqsServiceTest {
 
         PostelCallbackSqsDto postelCallbackSqsDto = mock(PostelCallbackSqsDto.class);
         StepVerifier.create(sqsService.pushToCallbackQueue(postelCallbackSqsDto)).expectNext(SendMessageResponse.builder().build()).verifyComplete();
+        StepVerifier.create(sqsService.pushToCallbackDlqQueue(postelCallbackSqsDto)).expectNext(SendMessageResponse.builder().build()).verifyComplete();
     }
 
 

@@ -38,7 +38,7 @@ public class NormalizeAddressService {
     private final AddressBatchRequestRepository addressBatchRequestRepository;
     private final ApiKeyRepository apiKeyRepository;
     private final PnAddressManagerConfig pnAddressManagerConfig;
-    private final PostelBatchService postelBatchService;
+    private final NormalizzatoreBatchService normalizzatoreBatchService;
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
         log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
@@ -118,12 +118,12 @@ public class NormalizeAddressService {
     public Mono<Void> handlePostelCallback(PnPostelCallbackEvent.Payload payload) {
         log.logStartingProcess(PROCESS_SERVICE_POSTEL_CALLBACK);
         log.info("Received postel callback for requestId: {}", payload.getRequestId());
-        return postelBatchService.findPostelBatch(payload.getRequestId())
+        return normalizzatoreBatchService.findPostelBatch(payload.getRequestId())
                 .flatMap(postelBatch -> {
                     if (StringUtils.hasText(payload.getError())) {
-                        return postelBatchService.resetRelatedBatchRequestForRetry(postelBatch);
+                        return normalizzatoreBatchService.resetRelatedBatchRequestForRetry(postelBatch);
                     }
-                    return postelBatchService.getResponse(payload.getOutputFileKey(), postelBatch);
+                    return normalizzatoreBatchService.getResponse(payload.getOutputFileKey(), postelBatch);
                 });
     }
 

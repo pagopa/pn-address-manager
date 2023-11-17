@@ -4,6 +4,7 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
+import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
@@ -11,10 +12,7 @@ import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
 import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
-import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;
-import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.NormalizerCallbackRequest;
-import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.PreLoadRequest;
-import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.PreLoadRequestData;
+import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +33,8 @@ import static org.mockito.Mockito.when;
 class NormalizzatoreServiceTest {
     @MockBean PnSafeStorageClient pnSafeStorageClient;
     @MockBean NormalizzatoreConverter normalizzatoreConverter;
-    @MockBean PostelBatchService postelBatchService;
+    @MockBean
+    NormalizzatoreBatchService normalizzatoreBatchService;
     @MockBean SqsService sqsService;
     @MockBean SafeStorageService safeStorageService;
     @MockBean PostelBatchRepository postelBatchRepository;
@@ -47,7 +46,7 @@ class NormalizzatoreServiceTest {
 
     @BeforeEach
     void setUp(){
-        normalizzatoreService = new NormalizzatoreService(pnSafeStorageClient, normalizzatoreConverter, postelBatchService,sqsService, safeStorageService, postelBatchRepository, apiKeyRepository, addressUtils, pnAddressManagerConfig);
+        normalizzatoreService = new NormalizzatoreService(pnSafeStorageClient, normalizzatoreConverter, normalizzatoreBatchService,sqsService, safeStorageService, postelBatchRepository, apiKeyRepository, addressUtils, pnAddressManagerConfig);
     }
 
     @Test
@@ -82,9 +81,17 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
+        when(normalizzatoreBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = mock(FileDownloadResponse.class);
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
+        when(postelBatchRepository.update(any()))
+                .thenReturn(Mono.just(new NormalizzatoreBatch()));
+        when(safeStorageService.getFile("fileKey",pnAddressManagerConfig.getPagoPaCxId()))
+                .thenReturn(Mono.just(fileDownloadResponse));
+        when(sqsService.pushToCallbackQueue(any()))
+                .thenReturn(Mono.just(SendMessageResponse.builder().build()));
+        when(postelBatchRepository.update(any()))
+                .thenReturn(Mono.just(new NormalizzatoreBatch()));
         StepVerifier.create(normalizzatoreService.callbackNormalizedAddress(normalizerCallbackRequest,"id","id")).expectError().verify();
     }
 
@@ -99,7 +106,7 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
         when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
-        when(postelBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
+        when(normalizzatoreBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
         PostelCallbackSqsDto postelCallbackSqsDto = mock(PostelCallbackSqsDto.class);
@@ -107,4 +114,33 @@ class NormalizzatoreServiceTest {
         when(sqsService.pushToCallbackQueue(any())).thenReturn(Mono.just(SendMessageResponse.builder().build()));
         StepVerifier.create(normalizzatoreService.callbackNormalizedAddress(normalizerCallbackRequest,"id","id")).expectError().verify();
     }
+    @Test
+    void getFileTest(){
+        FileDownloadResponse fileDownloadResponse=mock(FileDownloadResponse.class);
+        when(safeStorageService.getFile("fileKey",pnAddressManagerConfig.getPagoPaCxId()))
+                .thenReturn(Mono.just(fileDownloadResponse));
+        StepVerifier.create(normalizzatoreService.getFile("fileKey"))
+                .expectNext(fileDownloadResponse)
+                .verifyComplete();
+    }
+    @Test
+    void getFileErrorTest(){
+        when(safeStorageService.getFile("fileKey",pnAddressManagerConfig.getPagoPaCxId()))
+        .thenReturn(Mono.error(new PnFileNotFoundException("",new RuntimeException())));
+        StepVerifier.create(normalizzatoreService.getFile("fileKey"))
+                .expectError()
+                .verify();
+    }
+    @Test
+    void checkApiKeyTest(){
+        ApiKeyModel apiKeyModel = new ApiKeyModel();
+        apiKeyModel.setCxId("id");
+        apiKeyModel.setApiKey("id");
+        when(apiKeyRepository.findById(anyString()))
+                .thenReturn(Mono.just(apiKeyModel));
+        StepVerifier.create(normalizzatoreService.checkApiKey("id","id"))
+                .expectNext(apiKeyModel)
+                .verifyComplete();
+    }
+
 }
