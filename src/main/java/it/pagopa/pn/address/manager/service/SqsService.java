@@ -57,14 +57,21 @@ public class SqsService {
                 .then();
     }
 
-    public Mono<Void> sendToDlqQueue(NormalizzatoreBatch normalizzatoreBatch) {
-        PostelCallbackSqsDto postelCallbackSqsDto = toCallbackSqsDto(normalizzatoreBatch);
-        return pushToCallbackDlqQueue(postelCallbackSqsDto)
-                .onErrorResume(throwable -> {
-                    log.error("error during push message for batchId: [{}] to DLQ: {}", normalizzatoreBatch.getBatchId(), throwable.getMessage(), throwable);
-                    return Mono.empty();
-                })
-                .then();
+    public Mono<Void> sendIfCallbackToDlqQueue(NormalizzatoreBatch normalizzatoreBatch) {
+        //mando in DLQ solo se la chiamata che è andata in errore è quella della callback
+        if(normalizzatoreBatch.getCallbackTimeStamp() != null) {
+            PostelCallbackSqsDto postelCallbackSqsDto = toCallbackSqsDto(normalizzatoreBatch);
+            return pushToCallbackDlqQueue(postelCallbackSqsDto)
+                    .onErrorResume(throwable -> {
+                        log.error("error during push message for batchId: [{}] to DLQ: {}", normalizzatoreBatch.getBatchId(), throwable.getMessage(), throwable);
+                        return Mono.empty();
+                    })
+                    .then();
+        }
+        else {
+            return Mono.empty();
+        }
+
     }
 
     private PostelCallbackSqsDto toCallbackSqsDto(NormalizzatoreBatch normalizzatoreBatch) {

@@ -2,14 +2,11 @@ package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
-import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
-import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
-import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
@@ -103,7 +100,7 @@ public class NormalizzatoreService {
         if(StringUtils.hasText(callbackRequestData.getUri())) {
             normalizzatoreBatch.setOutputFileKey(callbackRequestData.getUri().replace(SAFE_STORAGE_URL_PREFIX, ""));
         }
-        normalizzatoreBatch.setCallbackTimeStamp(LocalDateTime.now());
+        normalizzatoreBatch.setCallbackTimeStamp(LocalDateTime.now(ZoneOffset.UTC));
         normalizzatoreBatch.setError(callbackRequestData.getError());
 
         return postelBatchRepository.update(normalizzatoreBatch);
