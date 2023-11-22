@@ -60,9 +60,11 @@ public class DeduplicatesAddressService {
     }
 
     public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
-        log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
-        return apiKeyRepository.findById(cxId)
-                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
-
+        if(Boolean.FALSE.equals(pnAddressManagerConfig.getFlagCsv())) {
+            log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
+            return apiKeyRepository.findById(cxId)
+                    .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
+        }
+        return Mono.just(addressUtils.buildApiKeyMock());
     }
 }

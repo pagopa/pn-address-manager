@@ -40,13 +40,6 @@ public class NormalizeAddressService {
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private final NormalizzatoreBatchService normalizzatoreBatchService;
 
-    public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
-        log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
-        return apiKeyRepository.findById(cxId)
-                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(ERROR_CLIENT_ID_MESSAGE, ERROR_CLIENT_ID_MESSAGE, HttpStatus.FORBIDDEN.value(), ERROR_CLIENT_ID)));
-
-    }
-
     public Mono<AcceptedResponse> normalizeAddress(String xApiKey, String cxId, NormalizeItemsRequest normalizeItemsRequest) {
         return checkApiKey(cxId, xApiKey)
                 .doOnNext(apiKeyModel -> {
@@ -179,5 +172,14 @@ public class NormalizeAddressService {
             log.warn("Address Validation for CorrelationId: [{}] - Field length violation for value: {}", correlationId, fieldValue);
             return false;
         }
+    }
+
+    public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
+        if(Boolean.FALSE.equals(pnAddressManagerConfig.getFlagCsv())){
+            log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
+            return apiKeyRepository.findById(cxId)
+                    .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(ERROR_CLIENT_ID_MESSAGE, ERROR_CLIENT_ID_MESSAGE, HttpStatus.FORBIDDEN.value(), ERROR_CLIENT_ID)));
+        }
+        return Mono.just(addressUtils.buildApiKeyMock());
     }
 }

@@ -78,6 +78,7 @@ class NormalizeAddressServiceTest {
     void checkFieldsLengthError(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setAddressLengthValidation(1);
+        pnAddressManagerConfig.setFlagCsv(Boolean.FALSE);
         normalizeAddressService = new NormalizeAddressService(eventService,addressUtils,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
@@ -100,6 +101,7 @@ class NormalizeAddressServiceTest {
     void checkFieldsLength(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setAddressLengthValidation(1);
+        pnAddressManagerConfig.setFlagCsv(Boolean.FALSE);
         normalizeAddressService = new NormalizeAddressService(eventService,addressUtils,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
