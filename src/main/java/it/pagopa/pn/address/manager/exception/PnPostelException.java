@@ -6,14 +6,14 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 public class PnPostelException extends PnRuntimeException {
-    private String error;
+    private final String error;
 
     public PnPostelException(String message, String error){
         this(message, error, null);
-        this.error = error;
     }
 
     public PnPostelException(String message, String error, Throwable cause) {
         super(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase(), message, HttpStatus.INTERNAL_SERVER_ERROR.value(), error, null, null, cause);
+        this.error = error;
     }
 }

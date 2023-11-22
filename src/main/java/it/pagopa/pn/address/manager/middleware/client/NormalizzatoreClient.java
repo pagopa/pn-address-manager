@@ -8,6 +8,7 @@ import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Mono;
 
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.POSTEL;
@@ -22,7 +23,7 @@ public class NormalizzatoreClient {
 
 	private final PnAddressManagerConfig pnAddressManagerConfig;
 
-	public NormalizzazioneResponse activatePostel(NormalizzatoreBatch normalizzatoreBatch) {
+	public Mono<NormalizzazioneResponse> activatePostel(NormalizzatoreBatch normalizzatoreBatch) {
 		log.logInvokingExternalDownstreamService(POSTEL, "Calling Activate Postel");
 
 		NormalizzazioneRequest activatePostelRequest = new NormalizzazioneRequest();
@@ -30,8 +31,7 @@ public class NormalizzatoreClient {
 		activatePostelRequest.setUri(normalizzatoreBatch.getFileKey());
 		activatePostelRequest.setSha256(normalizzatoreBatch.getSha256());
 		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest).
-				doOnError(throwable -> log.logInvokationResultDownstreamFailed(POSTEL, throwable.getMessage()))
-				.block();
+				doOnError(throwable -> log.logInvokationResultDownstreamFailed(POSTEL, throwable.getMessage()));
 
 	}
 }

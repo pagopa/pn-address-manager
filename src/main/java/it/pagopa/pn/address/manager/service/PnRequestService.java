@@ -355,14 +355,7 @@ public class PnRequestService {
     public Mono<Void> callPostelActivationApi(NormalizzatoreBatch normalizzatoreBatch) {
         log.logInvokingExternalService(PROCESS_SERVICE_POSTEL_ATTIVAZIONE, normalizzatoreBatch.getBatchId());
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - calling postel activation", normalizzatoreBatch.getBatchId());
-        return Mono.fromCallable(() -> postelClient.activatePostel(normalizzatoreBatch))
-                .onErrorResume(throwable -> {
-                    if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
-                        log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", normalizzatoreBatch.getBatchId(), ex);
-                        Mono.error(new PnPostelException("Error during call postel activation api", "NOR400", ex));
-                    }
-                    return Mono.error(throwable);
-                })
+        return postelClient.activatePostel(normalizzatoreBatch)
                 .flatMap(activatePostelResponse -> {
                     log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - called postel activation", normalizzatoreBatch.getBatchId());
                     if (!StringUtils.hasText(activatePostelResponse.getError())) {
@@ -371,7 +364,14 @@ public class PnRequestService {
                     return Mono.error(new PnPostelException("Error during call postel activation api", activatePostelResponse.getError(), null));
                 })
                 .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute call to Activation Postel Api", normalizzatoreBatch.getBatchId(), e))
-                .onErrorResume(v -> incrementAndCheckRetry(normalizzatoreBatch, v).then(Mono.error(v)))
+                .onErrorResume(throwable -> {
+                    Throwable expToLaunch = throwable;
+                    if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+                        log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", normalizzatoreBatch.getBatchId(), ex);
+                        expToLaunch = new PnPostelException("Error during call postel activation api", "NOR400", ex);
+                    }
+                    return incrementAndCheckRetry(normalizzatoreBatch, expToLaunch);
+                })
                 .then();
     }
 
@@ -473,9 +473,9 @@ public class PnRequestService {
                 .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - retry incremented", normalizzatoreBatch.getBatchId()))
                 .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to increment retry", normalizzatoreBatch.getBatchId(), e))
                 .filter(r -> BatchStatus.ERROR.getValue().equals(r.getStatus()))
-                .flatMap(batch -> sqsService.sendToDlqQueue(batch).thenReturn(batch))
+                .flatMap(batch -> sqsService.sendIfCallbackToDlqQueue(batch).thenReturn(batch))
                 .flatMap(l -> {
-                    log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - call batch to send to SQS");
+                    log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - update related PnRequest");
                     return updateBatchRequest(normalizzatoreBatch.getBatchId(), WORKING);
                 });
     }

@@ -114,7 +114,7 @@ class AddressBatchRequestTest {
         when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(pnRequest1)));
         when(addressPnRequestRepository.update(pnRequest1)).thenReturn(Mono.just(pnRequest1));
         NormalizzazioneResponse responseActivatePostel = new NormalizzazioneResponse();
-        when(postelClient.activatePostel(any())).thenReturn(responseActivatePostel);
+        when(postelClient.activatePostel(any())).thenReturn(Mono.just(responseActivatePostel));
         when(postelBatchRepository.update(normalizzatoreBatch)).thenReturn(Mono.just(normalizzatoreBatch));
         Assertions.assertDoesNotThrow(() -> addressPnRequestService.batchAddressRequest());
 
@@ -178,7 +178,7 @@ class AddressBatchRequestTest {
         when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
         when(addressPnRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
         NormalizzazioneResponse responseActivatePostel = new NormalizzazioneResponse();
-        when(postelClient.activatePostel(any())).thenReturn(responseActivatePostel);
+        when(postelClient.activatePostel(any())).thenReturn(Mono.just(responseActivatePostel));
         when(postelBatchRepository.update(postelBatch)).thenReturn(Mono.just(postelBatch));
         Assertions.assertDoesNotThrow(() -> addressPnRequestService.batchAddressRequest());
 

@@ -97,7 +97,7 @@ public class RecoveryService {
                         .doOnError(ConditionalCheckFailedException.class,
                                 e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip recovery  batchId {}", postelBatch.getBatchId(), e))
                         .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty()))
-                .doOnNext(pnRequestService::callPostelActivationApi)
+                .flatMap(pnRequestService::callPostelActivationApi)
                 .count()
                 .subscribe(c -> log.info(ADDRESS_NORMALIZER_ASYNC + "executed batch recovery on {} polling", c),
                         e -> log.error(ADDRESS_NORMALIZER_ASYNC + "failed execution of postel activation recovery", e));
