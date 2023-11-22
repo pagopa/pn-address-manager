@@ -476,8 +476,48 @@ public class PnRequestService {
                 .flatMap(batch -> sqsService.sendIfCallbackToDlqQueue(batch).thenReturn(batch))
                 .flatMap(l -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - update related PnRequest");
-                    return updateBatchRequest(normalizzatoreBatch.getBatchId(), WORKING);
+                    return retrieveAndUpdateBatchRequest(normalizzatoreBatch.getBatchId(), WORKING, TAKEN_CHARGE);
                 });
+    }
+
+    public Mono<Void> retrieveAndUpdateBatchRequest(String batchId, BatchStatus fromStatus, BatchStatus toStatus) {
+        return Flux.defer(() -> updateBatchRequest(getBatchRequestByBatchIdAndStatusReactive(Map.of(), batchId, fromStatus), toStatus))
+                .then();
+    }
+
+    private Mono<Page<PnRequest>> updateBatchRequest(Mono<Page<PnRequest>> pageMono, BatchStatus status) {
+        return pageMono.flatMap(page -> {
+            if (page.items().isEmpty()) {
+                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request found for: {}", batchId);
+                return Mono.just(page);
+            }
+
+            Instant startPagedQuery = clock.instant();
+            return updateRequestStatus(page.items(), status)
+                    .thenReturn(page)
+                    .doOnTerminate(() -> {
+                        Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+                        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batchId, timeSpent.toMillis());
+                    })
+                    .flatMap(lastProcessedPage -> {
+                        if (lastProcessedPage.lastEvaluatedKey() != null) {
+                            return updateBatchRequest(getBatchRequestByBatchIdAndStatusReactive(lastProcessedPage.lastEvaluatedKey(), batchId, status), status);
+                        } else {
+                            return Mono.just(lastProcessedPage);
+                        }
+                    });
+        });
+    }
+
+    private Mono<Void> updateRequestStatus(List<PnRequest> items, BatchStatus status) {
+        return Flux.fromIterable(items)
+                .doOnNext(pnRequest -> pnRequest.setStatus(status.getValue()))
+                .collectList()
+                .flatMap(pnRequests -> incrementAndCheckRetry(pnRequests, null, batchId));
+    }
+
+    private Mono<Page<PnRequest>> getBatchRequestByBatchIdAndStatusReactive(Map<String, AttributeValue> lastEvaluatedKey, String batchId, BatchStatus status) {
+        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId, status);
     }
 
     public Mono<Void> updateBatchRequest(String batchId, BatchStatus status) {
