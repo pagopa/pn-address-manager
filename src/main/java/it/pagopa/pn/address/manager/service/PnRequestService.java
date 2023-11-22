@@ -376,7 +376,7 @@ public class PnRequestService {
     }
 
     private Mono<Void> updatePostelBatchToWorking(NormalizzatoreBatch normalizzatoreBatch) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - update PostelBatch with status: {}", normalizzatoreBatch.getBatchId(), BatchStatus.WORKING.getValue());
         normalizzatoreBatch.setStatus(BatchStatus.WORKING.getValue());
         normalizzatoreBatch.setWorkingTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getWorkingTtl()));
