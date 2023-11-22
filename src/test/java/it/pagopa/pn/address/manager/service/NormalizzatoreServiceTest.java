@@ -38,7 +38,7 @@ class NormalizzatoreServiceTest {
     @MockBean SqsService sqsService;
     @MockBean SafeStorageService safeStorageService;
     @MockBean PostelBatchRepository postelBatchRepository;
-    @MockBean ApiKeyRepository apiKeyRepository;
+    @MockBean ApiKeyUtils apiKeyUtils;
     @MockBean AddressUtils addressUtils;
     @MockBean PnAddressManagerConfig pnAddressManagerConfig;
 
@@ -46,7 +46,7 @@ class NormalizzatoreServiceTest {
 
     @BeforeEach
     void setUp(){
-        normalizzatoreService = new NormalizzatoreService(pnSafeStorageClient, normalizzatoreConverter, normalizzatoreBatchService,sqsService, safeStorageService, postelBatchRepository, apiKeyRepository, addressUtils, pnAddressManagerConfig);
+        normalizzatoreService = new NormalizzatoreService(pnSafeStorageClient, normalizzatoreConverter, normalizzatoreBatchService,sqsService, safeStorageService, postelBatchRepository,  apiKeyUtils, addressUtils, pnAddressManagerConfig);
     }
 
     @Test
@@ -60,7 +60,7 @@ class NormalizzatoreServiceTest {
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
-        when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkPostelApiKey(anyString(), anyString())).thenReturn(Mono.just(apiKeyModel));
         when(normalizzatoreConverter.preLoadRequestToFileCreationRequestDto(any())).thenReturn(new FileCreationRequestDto());
         FileCreationResponseDto fileCreationResponseDto = new FileCreationResponseDto();
         fileCreationResponseDto.setSecret("secret");
@@ -80,7 +80,7 @@ class NormalizzatoreServiceTest {
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
-        when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkPostelApiKey(anyString(), anyString())).thenReturn(Mono.just(apiKeyModel));
         when(normalizzatoreBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = mock(FileDownloadResponse.class);
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
@@ -105,7 +105,7 @@ class NormalizzatoreServiceTest {
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setCxId("id");
         apiKeyModel.setApiKey("id");
-        when(apiKeyRepository.findById(anyString())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkPostelApiKey(anyString(), anyString())).thenReturn(Mono.just(apiKeyModel));
         when(normalizzatoreBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
         when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
@@ -124,23 +124,12 @@ class NormalizzatoreServiceTest {
                 .verifyComplete();
     }
     @Test
-    void getFileErrorTest(){
-        when(safeStorageService.getFile("fileKey",pnAddressManagerConfig.getPagoPaCxId()))
-        .thenReturn(Mono.error(new PnFileNotFoundException("",new RuntimeException())));
+    void getFileErrorTest() {
+        when(safeStorageService.getFile("fileKey", pnAddressManagerConfig.getPagoPaCxId()))
+                .thenReturn(Mono.error(new PnFileNotFoundException("", new RuntimeException())));
         StepVerifier.create(normalizzatoreService.getFile("fileKey"))
                 .expectError()
                 .verify();
-    }
-    @Test
-    void checkApiKeyTest(){
-        ApiKeyModel apiKeyModel = new ApiKeyModel();
-        apiKeyModel.setCxId("id");
-        apiKeyModel.setApiKey("id");
-        when(apiKeyRepository.findById(anyString()))
-                .thenReturn(Mono.just(apiKeyModel));
-        StepVerifier.create(normalizzatoreService.checkApiKey("id","id"))
-                .expectNext(apiKeyModel)
-                .verifyComplete();
     }
 
 }

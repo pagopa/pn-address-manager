@@ -40,14 +40,14 @@ public class NormalizzatoreService {
     private final SqsService sqsService;
     private final SafeStorageService safeStorageService;
     private final PostelBatchRepository postelBatchRepository;
-    private final ApiKeyRepository apiKeyRepository;
+    private final ApiKeyUtils apiKeyUtils;
     private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private static final String CALLBACK_ERROR_LOG = "callbackNormalizedAddress error:{}";
 
 
     public Mono<PreLoadResponseData> presignedUploadRequest(PreLoadRequestData request, String pnAddressManagerCxId, String xApiKey) {
-        return checkApiKey(pnAddressManagerCxId, xApiKey)
+        return apiKeyUtils.checkPostelApiKey(pnAddressManagerCxId, xApiKey)
                 .doOnNext(apiKeyModel -> {
                     log.logCheckingOutcome(PROCESS_CHECKING_APIKEY, true);
                     log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for safeStorage presignedUploadRequest.");
@@ -89,7 +89,7 @@ public class NormalizzatoreService {
      * Finally send synchronous response to the caller with successfully or error response.
      */
     public Mono<OperationResultCodeResponse> callbackNormalizedAddress(NormalizerCallbackRequest callbackRequestData, String pnAddressManagerCxId, String xApiKey) {
-        return checkApiKey(pnAddressManagerCxId, xApiKey)
+        return apiKeyUtils.checkPostelApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> findPostelBatch(callbackRequestData.getRequestId().split(RETRY_SUFFIX)[0]))
                 .flatMap(postelBatch -> updateWithFileKeyTimestampAndError(postelBatch, callbackRequestData))
                 .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, postelBatch, pnAddressManagerCxId))
@@ -160,14 +160,6 @@ public class NormalizzatoreService {
                     return Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELOUTPUTFILEKEYNOTFOUND, fileKey), HttpStatus.BAD_REQUEST.value(),
                                 SEMANTIC_ERROR_CODE));
                 });
-    }
-
-    public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
-        log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
-        return apiKeyRepository.findById(cxId)
-                .filter(apiKeyModel -> apiKeyModel.getApiKey().equalsIgnoreCase(xApiKey))
-                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Api Key not found")));
-
     }
 
     private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, NormalizzatoreBatch normalizzatoreBatch) {
