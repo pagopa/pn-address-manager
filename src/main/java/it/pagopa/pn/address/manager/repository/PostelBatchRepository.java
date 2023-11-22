@@ -3,8 +3,10 @@ package it.pagopa.pn.address.manager.repository;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
+import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.util.List;
+import java.util.Map;
 
 public interface PostelBatchRepository {
 
@@ -18,7 +20,7 @@ public interface PostelBatchRepository {
 
     Mono<List<NormalizzatoreBatch>> getPostelBatchToRecover();
 
-    Mono<Page<NormalizzatoreBatch>> getPostelBatchToClean();
+    Mono<Page<NormalizzatoreBatch>> getPostelBatchToClean(Map<String, AttributeValue> lastKey);
 
     Mono<NormalizzatoreBatch> deleteItem(String batchId);
 }

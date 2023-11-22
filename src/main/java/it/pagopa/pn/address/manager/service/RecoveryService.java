@@ -97,7 +97,7 @@ public class RecoveryService {
                         .doOnError(ConditionalCheckFailedException.class,
                                 e -> log.info(ADDRESS_NORMALIZER_ASYNC + "conditional check failed - skip recovery  batchId {}", postelBatch.getBatchId(), e))
                         .onErrorResume(ConditionalCheckFailedException.class, e -> Mono.empty()))
-                .doOnNext(pnRequestService::callPostelActivationApi)
+                .flatMap(pnRequestService::callPostelActivationApi)
                 .count()
                 .subscribe(c -> log.info(ADDRESS_NORMALIZER_ASYNC + "executed batch recovery on {} polling", c),
                         e -> log.error(ADDRESS_NORMALIZER_ASYNC + "failed execution of postel activation recovery", e));
@@ -134,49 +134,6 @@ public class RecoveryService {
             }
         } while (!CollectionUtils.isEmpty(lastEvaluatedKey));
         log.trace(ADDRESS_NORMALIZER_ASYNC + "recoveryBatchSendToEventBridge end");
-    }
-
-    /**
-     * The cleanStoppedRequest function is a scheduled function that checks for any PostelBatch objects in the DynamoDB table
-     * with a status of WORKING and workingTtl expires.
-     * If it finds any, it will then retrieve any related batchRequest, reset them and call incrementAndCheckRetry for these batch requests.
-     * Finally, delete any expired postelBatch
-     */
-    @Scheduled(fixedDelayString = "${pn.address-manager.normalizer.batch-clean-request}")
-    @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
-            lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
-    public void cleanStoppedRequest() {
-        log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
-        Page<NormalizzatoreBatch> page = postelBatchRepository.getPostelBatchToClean()
-                .blockOptional()
-                .orElseThrow(() -> {
-                    log.warn(ADDRESS_NORMALIZER_ASYNC + "can not get batch request - DynamoDB Mono<Page> is null");
-                    return new PostelException(ADDRESS_NORMALIZER_ASYNC + "can not get batch request");
-                });
-
-        if (!page.items().isEmpty()) {
-            page.items().forEach(postelBatch -> {
-                List<PnRequest> pnRequestList = addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(postelBatch.getBatchId(), BatchStatus.WORKING)
-                        .block();
-
-                if(!CollectionUtils.isEmpty(pnRequestList)) {
-
-                    pnRequestList.forEach(batchRequest -> {
-                        batchRequest.setStatus(TAKEN_CHARGE.getValue());
-                        addressBatchRequestRepository.update(batchRequest).block();
-                    });
-
-                    pnRequestService.incrementAndCheckRetry(pnRequestList, null, postelBatch.getBatchId())
-                            .doOnNext(request -> log.debug(ADDRESS_NORMALIZER_ASYNC + " increment retry for {} request", pnRequestList.size()))
-                            .block();
-
-                    postelBatchRepository.deleteItem(postelBatch.getBatchId());
-                }
-
-            });
-        } else {
-            log.info(ADDRESS_NORMALIZER_ASYNC + "no Postel batch to clean");
-        }
     }
 
     private Page<PnRequest> getBatchRequest(Map<String, AttributeValue> lastEvaluatedKey) {

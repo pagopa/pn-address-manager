@@ -5,6 +5,7 @@ import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import lombok.CustomLog;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.*;
@@ -107,7 +108,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
     }
 
     @Override
-    public Mono<Page<NormalizzatoreBatch>> getPostelBatchToClean() {
+    public Mono<Page<NormalizzatoreBatch>> getPostelBatchToClean(Map<String, AttributeValue> lastKey) {
         Key key = Key.builder()
                 .partitionValue(BatchStatus.WORKING.getValue())
                 .sortValue(AttributeValue.builder()
@@ -118,7 +119,12 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
         QueryConditional queryConditional = QueryConditional.sortLessThan(key);
 
         QueryEnhancedRequest.Builder queryEnhancedRequestBuilder = QueryEnhancedRequest.builder()
-                .queryConditional(queryConditional);
+                .queryConditional(queryConditional)
+                .limit(pnAddressManagerConfig.getNormalizer().getBatchRequest().getQueryMaxSize());
+
+        if(!CollectionUtils.isEmpty(lastKey)){
+            queryEnhancedRequestBuilder.exclusiveStartKey(lastKey);
+        }
 
         QueryEnhancedRequest queryEnhancedRequest = queryEnhancedRequestBuilder.build();
 

@@ -18,6 +18,7 @@ import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 class RecoveryServiceTest {
     RecoveryService recoveryService;
+    PendingRequestService pendingRequestService;
 
     @MockBean AddressBatchRequestRepository addressBatchRequestRepository;
     @MockBean
@@ -37,6 +39,7 @@ class RecoveryServiceTest {
     @MockBean PnAddressManagerConfig pnAddressManagerConfig;
 
     @MockBean PostelBatchRepository postelBatchRepository;
+    @MockBean Clock clock;
 
 
     @MockBean
@@ -119,8 +122,8 @@ class RecoveryServiceTest {
         normalizer.setMaxCsvSize(100);
         normalizer.setBatchRequest(batchRequest);
         pnAddressManagerConfig.setNormalizer(normalizer);
-        recoveryService = new RecoveryService(addressBatchRequestRepository,
-                pnRequestService, sqsService, eventService, pnAddressManagerConfig, addressUtils, postelBatchRepository);
+        pendingRequestService = new PendingRequestService(addressBatchRequestRepository,
+                pnRequestService,postelBatchRepository, clock);
         PnRequest pnRequest1 = getBatchRequest();
         NormalizzatoreBatch normalizzatoreBatch1 = new NormalizzatoreBatch();
         normalizzatoreBatch1.setBatchId("id1");
@@ -128,12 +131,12 @@ class RecoveryServiceTest {
         normalizzatoreBatch2.setBatchId("id2");
         Page<NormalizzatoreBatch> page1 = Page.create(List.of(normalizzatoreBatch1), Map.of("key", AttributeValue.builder().s("value").build()));
         Page<NormalizzatoreBatch> page2 = Page.create(List.of(normalizzatoreBatch2));
-        when(postelBatchRepository.getPostelBatchToClean())
+        when(postelBatchRepository.getPostelBatchToClean(anyMap()))
                 .thenReturn(Mono.just(page1))
                 .thenReturn(Mono.just(page2))
                 .thenThrow(RuntimeException.class);
-        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyString(), any()))
-                .thenReturn(Mono.just(List.of(pnRequest1)));
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), anyString(), any()))
+                .thenReturn(Mono.just(Page.create(List.of(pnRequest1))));
         when(pnRequestService.incrementAndCheckRetry(any(),any(),anyString()))
                 .thenReturn(Mono.empty());
         when(addressBatchRequestRepository.update(any()))
@@ -144,7 +147,7 @@ class RecoveryServiceTest {
                 .thenReturn(Mono.just(pnRequest1));
         when(postelBatchRepository.deleteItem(anyString()))
                 .thenReturn(Mono.empty());
-        Assertions.assertDoesNotThrow(() -> recoveryService.cleanStoppedRequest());
+        Assertions.assertDoesNotThrow(() -> pendingRequestService.cleanPendingPostelBatch());
 
     }
 

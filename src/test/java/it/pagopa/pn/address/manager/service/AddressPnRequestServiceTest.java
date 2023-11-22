@@ -111,10 +111,10 @@ class AddressBatchRequestTest {
 
         NormalizzatoreBatch normalizzatoreBatch = getPostelBatch();
         when(postelBatchRepository.create(any())).thenReturn(Mono.just(normalizzatoreBatch));
-        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(pnRequest1)));
+        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), any(),any())).thenReturn(Mono.just(Page.create(List.of(pnRequest1))));
         when(addressPnRequestRepository.update(pnRequest1)).thenReturn(Mono.just(pnRequest1));
         NormalizzazioneResponse responseActivatePostel = new NormalizzazioneResponse();
-        when(postelClient.activatePostel(any())).thenReturn(responseActivatePostel);
+        when(postelClient.activatePostel(any())).thenReturn(Mono.just(responseActivatePostel));
         when(postelBatchRepository.update(normalizzatoreBatch)).thenReturn(Mono.just(normalizzatoreBatch));
         Assertions.assertDoesNotThrow(() -> addressPnRequestService.batchAddressRequest());
 
@@ -175,10 +175,10 @@ class AddressBatchRequestTest {
         NormalizzatoreBatch postelBatch = getPostelBatch();
         when(postelBatchRepository.create(postelBatch)).thenReturn(Mono.just(postelBatch));
         when(addressConverter.createPostelBatchByBatchIdAndFileKey(any(),any(), any())).thenReturn(postelBatch);
-        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
+        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), any(),any())).thenReturn(Mono.just(Page.create(List.of(batchRequest1))));
         when(addressPnRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
         NormalizzazioneResponse responseActivatePostel = new NormalizzazioneResponse();
-        when(postelClient.activatePostel(any())).thenReturn(responseActivatePostel);
+        when(postelClient.activatePostel(any())).thenReturn(Mono.just(responseActivatePostel));
         when(postelBatchRepository.update(postelBatch)).thenReturn(Mono.just(postelBatch));
         Assertions.assertDoesNotThrow(() -> addressPnRequestService.batchAddressRequest());
 
@@ -276,10 +276,10 @@ class AddressBatchRequestTest {
         addressPnRequestService = new PnRequestService(addressPnRequestRepository,postelBatchRepository,addressConverter,sqsService,
                 postelClient,safeStorageService,config,eventService, csvService, addressUtils, clock);
         PnRequest pnRequest1 = getPnRequest();
-        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(pnRequest1)));
+        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), any(),any())).thenReturn(Mono.just(Page.create(List.of(pnRequest1))));
         when(addressPnRequestRepository.update(pnRequest1)).thenReturn(Mono.just(pnRequest1));
 
-        assertDoesNotThrow(() -> addressPnRequestService.updateBatchRequest("batchId", BatchStatus.NO_BATCH_ID));
+        assertDoesNotThrow(() -> addressPnRequestService.retrieveAndUpdateBatchRequest("batchId", BatchStatus.WORKING, BatchStatus.TAKEN_CHARGE, true));
     }
 
     @Test
@@ -288,10 +288,11 @@ class AddressBatchRequestTest {
         addressPnRequestService = new PnRequestService(addressPnRequestRepository,postelBatchRepository,addressConverter,sqsService,
                 postelClient,safeStorageService,config,eventService, csvService, addressUtils, clock);
         PnRequest pnRequest1 = getPnRequest();
-        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(pnRequest1)));
+        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), any(),any())).thenReturn(Mono.just(Page.create(List.of(pnRequest1))));
         when(addressPnRequestRepository.update(pnRequest1)).thenReturn(Mono.just(pnRequest1));
         when(sqsService.sendToDlqQueue(pnRequest1)).thenReturn(Mono.empty());
-        StepVerifier.create(addressPnRequestService.updateBatchRequest("batchId", BatchStatus.NO_BATCH_ID)).expectNextCount(0).verifyComplete();
+        when(clock.instant()).thenReturn(Instant.now());
+        StepVerifier.create(addressPnRequestService.retrieveAndUpdateBatchRequest("batchId", BatchStatus.TAKEN_CHARGE, BatchStatus.WORKING, false)).expectNextCount(0).verifyComplete();
     }
 
     @NotNull
@@ -317,7 +318,6 @@ class AddressBatchRequestTest {
         addressPnRequestService = new PnRequestService(addressPnRequestRepository,postelBatchRepository,addressConverter,sqsService,
                 postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock);
         PnRequest pnRequest1 = getPnRequest();
-        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(pnRequest1)));
         when(addressPnRequestRepository.update(pnRequest1)).thenReturn(Mono.just(pnRequest1));
         when(sqsService.sendToDlqQueue(pnRequest1)).thenReturn(Mono.empty());
         StepVerifier.create(addressPnRequestService.updateBatchRequest(List.of(pnRequest1),"batchId")).expectNextCount(0).verifyComplete();
@@ -332,7 +332,6 @@ class AddressBatchRequestTest {
                 postelClient,safeStorageService,pnAddressManagerConfig,eventService,csvService,addressUtils, clock);
         PnRequest batchRequest1 = getPnRequest();
         batchRequest1.setStatus(BatchStatus.ERROR.name());
-        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(batchRequest1)));
         when(addressPnRequestRepository.update(batchRequest1)).thenReturn(Mono.just(batchRequest1));
         when(sqsService.sendToDlqQueue(batchRequest1)).thenReturn(Mono.empty());
         StepVerifier.create(addressPnRequestService.updateBatchRequest(List.of(batchRequest1),"batchId")).expectNextCount(0).verifyComplete();
@@ -347,7 +346,6 @@ class AddressBatchRequestTest {
                 postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock);
         PnRequest pnRequest1 = getPnRequest();
         pnRequest1.setStatus(BatchStatus.WORKED.toString());
-        when(addressPnRequestRepository.getBatchRequestByBatchIdAndStatus(any(),any())).thenReturn(Mono.just(List.of(pnRequest1)));
         when(addressPnRequestRepository.update(pnRequest1)).thenReturn(Mono.just(pnRequest1));
         when(sqsService.sendToDlqQueue(pnRequest1)).thenReturn(Mono.empty());
         when(eventService.sendEvent(any())).thenReturn(Mono.just(PutEventsResponse.builder().build()));
