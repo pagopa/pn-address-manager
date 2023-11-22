@@ -360,11 +360,4 @@ public class AddressUtils {
         Instant end = Instant.now();
         return Duration.between(start, end);
     }
-
-    public ApiKeyModel buildApiKeyMock() {
-        ApiKeyModel apiKeyModel = new ApiKeyModel();
-        apiKeyModel.setApiKey("mockedApiKey");
-        apiKeyModel.setCxId("mockedCxId");
-        return apiKeyModel;
-    }
 }

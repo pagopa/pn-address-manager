@@ -28,13 +28,13 @@ public class DeduplicatesAddressService {
     private final AddressUtils addressUtils;
     private final DeduplicaClient postelClient;
     private final PnAddressManagerConfig pnAddressManagerConfig;
-    private final ApiKeyRepository apiKeyRepository;
+    private final ApiKeyUtils apiKeyUtils;
     private final CapAndCountryService capAndCountryService;
     private final AddressConverter addressConverter;
 
     public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request, String pnAddressManagerCxId, String xApiKey) {
 
-        return checkApiKey(pnAddressManagerCxId, xApiKey)
+        return apiKeyUtils.checkApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> {
                     log.logCheckingOutcome(PROCESS_CHECKING_APIKEY, true);
                     log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for request: [{}]", request.getCorrelationId());
@@ -57,14 +57,5 @@ public class DeduplicatesAddressService {
         deduplicatesResponse.setError(normalizeAddressResponse.getError());
         deduplicatesResponse.setNormalizedAddress(normalizeAddressResponse.getNormalizedAddress());
         return deduplicatesResponse;
-    }
-
-    public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
-        if(Boolean.FALSE.equals(pnAddressManagerConfig.getFlagCsv())) {
-            log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
-            return apiKeyRepository.findById(cxId)
-                    .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "ClientId not found")));
-        }
-        return Mono.just(addressUtils.buildApiKeyMock());
     }
 }

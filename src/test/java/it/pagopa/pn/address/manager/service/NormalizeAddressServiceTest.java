@@ -53,7 +53,7 @@ class NormalizeAddressServiceTest {
     private EventService eventService;
 
     @MockBean
-    private ApiKeyRepository apiKeyRepository;
+    private ApiKeyUtils apiKeyUtils;
 
     @MockBean
     private PnAddressManagerConfig pnAddressManagerConfig;
@@ -63,14 +63,14 @@ class NormalizeAddressServiceTest {
 
     @Test
     void normalizeAddressAsync() throws JsonProcessingException {
-        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenReturn("json");
         when(addressUtils.normalizeAddresses(any(), any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         ApiKeyModel apiKeyModel = new ApiKeyModel();
-        when(apiKeyRepository.findById(any())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
         StepVerifier.create(normalizeAddressService.normalizeAddress("xApiKey", "cxId", normalizeItemsRequest))
                 .expectError().verify();
     }
@@ -79,7 +79,7 @@ class NormalizeAddressServiceTest {
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setAddressLengthValidation(1);
         pnAddressManagerConfig.setFlagCsv(Boolean.FALSE);
-        normalizeAddressService = new NormalizeAddressService(eventService,addressUtils,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService,addressUtils,sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         NormalizeRequest item = new NormalizeRequest();
@@ -91,7 +91,7 @@ class NormalizeAddressServiceTest {
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setApiKey("id");
         apiKeyModel.setCxId("id");
-        when(apiKeyRepository.findById(any())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
         item.setAddress(analogAddress);
         normalizeItemsRequest.setRequestItems(List.of(item));
         StepVerifier.create(normalizeAddressService.normalizeAddress("id", "cxId", normalizeItemsRequest))
@@ -102,7 +102,7 @@ class NormalizeAddressServiceTest {
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setAddressLengthValidation(1);
         pnAddressManagerConfig.setFlagCsv(Boolean.FALSE);
-        normalizeAddressService = new NormalizeAddressService(eventService,addressUtils,sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService,addressUtils,sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         NormalizeRequest item = new NormalizeRequest();
@@ -111,7 +111,7 @@ class NormalizeAddressServiceTest {
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setApiKey("id");
         apiKeyModel.setCxId("id");
-        when(apiKeyRepository.findById(any())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
         item.setAddress(analogAddress);
         normalizeItemsRequest.setRequestItems(List.of(item));
         StepVerifier.create(normalizeAddressService.normalizeAddress("id", "cxId", normalizeItemsRequest))
@@ -120,7 +120,7 @@ class NormalizeAddressServiceTest {
 
     @Test
     void normalizeAddressAsync1() throws JsonProcessingException {
-        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         pnAddressManagerConfig.setAddressLengthValidation(1);
         when(objectMapper.writeValueAsString(any())).thenReturn("json");
@@ -132,7 +132,7 @@ class NormalizeAddressServiceTest {
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setApiKey("id");
         apiKeyModel.setCxId("id");
-        when(apiKeyRepository.findById(any())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
         when(sqsService.pushToInputQueue(any(),any())).thenReturn(Mono.just(SendMessageResponse.builder().build()));
         StepVerifier.create(normalizeAddressService.normalizeAddress("id", "id", normalizeItemsRequest))
                 .expectError().verify();
@@ -140,14 +140,14 @@ class NormalizeAddressServiceTest {
 
     @Test
     void normalizeAddressAsyncError() throws JsonProcessingException {
-        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         List<NormalizeResult> normalize = new ArrayList<>();
         when(objectMapper.writeValueAsString(any())).thenThrow(JsonProcessingException.class);
         when(addressUtils.normalizeAddresses(any(), any())).thenReturn(normalize);
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setCorrelationId("correlationId");
         ApiKeyModel apiKeyModel = new ApiKeyModel();
-        when(apiKeyRepository.findById(any())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
         StepVerifier.create(normalizeAddressService.normalizeAddress("xApiKey", "cxId", normalizeItemsRequest))
                 .expectError().verify();
     }
@@ -156,7 +156,7 @@ class NormalizeAddressServiceTest {
     void handleRequest(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setFlagCsv(true);
-        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         when(addressUtils.normalizeRequestToResult(any())).thenReturn(new NormalizeItemsResult());
         when(addressUtils.toJson(any())).thenReturn("json");
         NormalizeItemsRequest request = new NormalizeItemsRequest();
@@ -177,7 +177,7 @@ class NormalizeAddressServiceTest {
     void handleRequest1(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setFlagCsv(false);
-        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         when(addressUtils.normalizeRequestToResult(any())).thenReturn(new NormalizeItemsResult());
         when(addressUtils.toJson(any())).thenReturn("json");
         when(addressUtils.createNewStartBatchRequest()).thenReturn(new PnRequest());
@@ -189,7 +189,7 @@ class NormalizeAddressServiceTest {
     void handlePostelCallback(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setFlagCsv(false);
-        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyRepository,pnAddressManagerConfig, normalizzatoreBatchService);
+        normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         when(normalizzatoreBatchService.findPostelBatch(any())).thenReturn(Mono.just(new NormalizzatoreBatch()));
         when(normalizzatoreBatchService.getResponse(any(),any())).thenReturn(Mono.empty());
         StepVerifier.create(normalizeAddressService.handlePostelCallback(PnPostelCallbackEvent.Payload.builder().build())).expectNextCount(0).verifyComplete();
