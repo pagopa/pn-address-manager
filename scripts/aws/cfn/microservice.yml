@@ -542,6 +542,7 @@ Resources:
               - dynamodb:Query
               - dynamodb:Scan
               - dynamodb:Delete
+              - dynamodb:DeleteItem
               - dynamodb:UpdateItem
               - dynamodb:PutItem
             Resource:
