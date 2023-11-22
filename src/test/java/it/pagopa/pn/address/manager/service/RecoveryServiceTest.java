@@ -135,8 +135,8 @@ class RecoveryServiceTest {
                 .thenReturn(Mono.just(page1))
                 .thenReturn(Mono.just(page2))
                 .thenThrow(RuntimeException.class);
-        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyString(), any()))
-                .thenReturn(Mono.just(List.of(pnRequest1)));
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), anyString(), any()))
+                .thenReturn(Mono.just(Page.create(List.of(pnRequest1))));
         when(pnRequestService.incrementAndCheckRetry(any(),any(),anyString()))
                 .thenReturn(Mono.empty());
         when(addressBatchRequestRepository.update(any()))

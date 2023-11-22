@@ -391,11 +391,8 @@ public class PnRequestService {
         return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(key, fileKey, sha256))
                 .flatMap(polling -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
-                    return retrieveAndUpdateBatchRequest(key, TAKEN_CHARGE, WORKING, false)
-                            .map(batchRequests -> {
-                                log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
-                                return polling;
-                            })
+                    return retrieveAndUpdateBatchRequest(key, TAKEN_CHARGE, WORKING, false).thenReturn(polling)
+                            .doOnNext(normalizzatoreBatch -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey))
                             .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to create PostelBatch with fileKey: {}", key, fileKey, e));
                 });
     }

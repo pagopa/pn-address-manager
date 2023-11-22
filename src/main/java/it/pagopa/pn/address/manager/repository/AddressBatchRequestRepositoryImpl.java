@@ -73,23 +73,6 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
     }
 
     @Override
-    public Mono<List<PnRequest>> getBatchRequestByBatchIdAndStatus(String batchId, BatchStatus status) {
-        Map<String, String> expressionNames = new HashMap<>();
-        expressionNames.put(STATUS_ALIAS, COL_STATUS);
-
-        Map<String, AttributeValue> expressionValues = new HashMap<>();
-        expressionValues.put(STATUS_PLACEHOLDER, AttributeValue.builder().s(status.getValue()).build());
-
-        QueryEnhancedRequest queryEnhancedRequest = QueryEnhancedRequest.builder()
-                .filterExpression(expressionBuilder(STATUS_EQ, expressionValues, expressionNames))
-                .queryConditional(QueryConditional.keyEqualTo(keyBuilder(batchId)))
-                .build();
-
-        return Flux.from(table.index(GSI_BL).query(queryEnhancedRequest).flatMapIterable(Page::items))
-                .collectList();
-    }
-
-    @Override
     public Mono<Page<PnRequest>> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastKey, String batchId, BatchStatus status) {
         Map<String, String> expressionNames = new HashMap<>();
         expressionNames.put(STATUS_ALIAS, COL_STATUS);

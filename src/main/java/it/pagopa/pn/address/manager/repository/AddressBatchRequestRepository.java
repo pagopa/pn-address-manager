@@ -17,8 +17,6 @@ public interface AddressBatchRequestRepository {
 
     Mono<Page<PnRequest>> getBatchRequestByNotBatchId(Map<String, AttributeValue> lastKey, int limit);
 
-    Mono<List<PnRequest>> getBatchRequestByBatchIdAndStatus(String batchId, BatchStatus status);
-
     Mono<Page<PnRequest>> getBatchRequestByBatchIdAndStatus(Map<String, AttributeValue> lastKey, String batchId, BatchStatus status);
 
     Mono<PnRequest> setNewBatchIdToBatchRequest(PnRequest pnRequest);
