@@ -391,24 +391,13 @@ public class PnRequestService {
         return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(key, fileKey, sha256))
                 .flatMap(polling -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
-                    return setBatchRequestStatusToWorking(key)
+                    return retrieveAndUpdateBatchRequest(key, TAKEN_CHARGE, WORKING, false)
                             .map(batchRequests -> {
                                 log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
                                 return polling;
                             })
                             .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to create PostelBatch with fileKey: {}", key, fileKey, e));
                 });
-    }
-
-    private Mono<List<PnRequest>> setBatchRequestStatusToWorking(String batchId) {
-        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batchId, BatchStatus.TAKEN_CHARGE)
-                .doOnNext(requests -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - updating {} requests in status {}", batchId, requests.size(), BatchStatus.WORKING))
-                .flatMapIterable(requests -> requests)
-                .doOnNext(request -> request.setStatus(BatchStatus.WORKING.getValue()))
-                .flatMap(addressBatchRequestRepository::update)
-                .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "correlationId {} - set status in {}", r.getCorrelationId(), r.getStatus()))
-                .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to set request in status {}", batchId, BatchStatus.WORKING, e))
-                .collectList();
     }
 
 
@@ -476,16 +465,16 @@ public class PnRequestService {
                 .flatMap(batch -> sqsService.sendIfCallbackToDlqQueue(batch).thenReturn(batch))
                 .flatMap(l -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - update related PnRequest");
-                    return retrieveAndUpdateBatchRequest(normalizzatoreBatch.getBatchId(), WORKING, TAKEN_CHARGE);
+                    return retrieveAndUpdateBatchRequest(normalizzatoreBatch.getBatchId(), WORKING, TAKEN_CHARGE, true);
                 });
     }
 
-    public Mono<Void> retrieveAndUpdateBatchRequest(String batchId, BatchStatus fromStatus, BatchStatus toStatus) {
-        return Flux.defer(() -> updateBatchRequest(getBatchRequestByBatchIdAndStatusReactive(Map.of(), batchId, fromStatus), toStatus))
+    public Mono<Void> retrieveAndUpdateBatchRequest(String batchId, BatchStatus fromStatus, BatchStatus toStatus, boolean isError) {
+        return Flux.defer(() -> updateBatchRequest(getBatchRequestByBatchIdAndStatusReactive(Map.of(), batchId, fromStatus), toStatus, isError))
                 .then();
     }
 
-    private Mono<Page<PnRequest>> updateBatchRequest(Mono<Page<PnRequest>> pageMono, BatchStatus status) {
+    private Mono<Page<PnRequest>> updateBatchRequest(Mono<Page<PnRequest>> pageMono, BatchStatus status, boolean isError) {
         return pageMono.flatMap(page -> {
             if (page.items().isEmpty()) {
                 log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request found for: {}", batchId);
@@ -493,7 +482,7 @@ public class PnRequestService {
             }
 
             Instant startPagedQuery = clock.instant();
-            return updateRequestStatus(page.items(), status)
+            return updateRequestStatus(page.items(), status, isError)
                     .thenReturn(page)
                     .doOnTerminate(() -> {
                         Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
@@ -501,7 +490,7 @@ public class PnRequestService {
                     })
                     .flatMap(lastProcessedPage -> {
                         if (lastProcessedPage.lastEvaluatedKey() != null) {
-                            return updateBatchRequest(getBatchRequestByBatchIdAndStatusReactive(lastProcessedPage.lastEvaluatedKey(), batchId, status), status);
+                            return updateBatchRequest(getBatchRequestByBatchIdAndStatusReactive(lastProcessedPage.lastEvaluatedKey(), batchId, status), status, isError);
                         } else {
                             return Mono.just(lastProcessedPage);
                         }
@@ -509,23 +498,27 @@ public class PnRequestService {
         });
     }
 
-    private Mono<Void> updateRequestStatus(List<PnRequest> items, BatchStatus status) {
+    private Mono<Void> updateRequestStatus(List<PnRequest> items, BatchStatus status, boolean isError) {
         return Flux.fromIterable(items)
                 .doOnNext(pnRequest -> pnRequest.setStatus(status.getValue()))
                 .collectList()
-                .flatMap(pnRequests -> incrementAndCheckRetry(pnRequests, null, batchId));
+                .flatMap(pnRequests -> {
+                    if(isError) {
+                        return incrementAndCheckRetry(pnRequests, null, batchId);
+                    }else{
+                        return updatePnRequestList(pnRequests);
+                    }
+                });
+    }
+
+    private Mono<Void> updatePnRequestList(List<PnRequest> pnRequests) {
+        return Flux.fromIterable(pnRequests)
+                .flatMap(addressBatchRequestRepository::update)
+                .then();
     }
 
     private Mono<Page<PnRequest>> getBatchRequestByBatchIdAndStatusReactive(Map<String, AttributeValue> lastEvaluatedKey, String batchId, BatchStatus status) {
         return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId, status);
-    }
-
-    public Mono<Void> updateBatchRequest(String batchId, BatchStatus status) {
-        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batchId, status)
-                .flatMap(batchRequests -> {
-                    batchRequests.forEach(batchRequest -> batchRequest.setStatus(TAKEN_CHARGE.getValue()));
-                    return incrementAndCheckRetry(batchRequests, null, batchId).then();
-                });
     }
 
     public Mono<Void> updateBatchRequest(List<PnRequest> pnRequests, String batchId) {
