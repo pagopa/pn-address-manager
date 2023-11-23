@@ -40,8 +40,7 @@ import java.util.*;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.CONTEXT_BATCH_ID;
-import static it.pagopa.pn.address.manager.constant.BatchSendStatus.NOT_SENT;
-import static it.pagopa.pn.address.manager.constant.BatchSendStatus.SENT;
+import static it.pagopa.pn.address.manager.constant.BatchSendStatus.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_POSTEL_ATTIVAZIONE;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
@@ -553,7 +552,11 @@ public class PnRequestService {
                     .flatMap(putEventsResult -> addressBatchRequestRepository.update(request)
                             .doOnNext(item -> log.debug("Normalize Address - correlationId {} - set Send Status in {}", request.getCorrelationId(), request.getStatus())));
             case ERROR -> sqsService.sendToDlqQueue(request)
-                    .thenReturn(request);
+                    .thenReturn(request)
+                    .map(pnRequest -> {
+                        pnRequest.setSendStatus(SENT_TO_DLQ.getValue());
+                        return request;
+                    });
             default -> Mono.just(request);
         };
 
