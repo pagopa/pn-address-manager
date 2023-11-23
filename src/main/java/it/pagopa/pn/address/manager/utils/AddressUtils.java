@@ -16,6 +16,7 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.NormalizerCallbackRequest;
 import lombok.CustomLog;
 import org.apache.commons.lang3.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
@@ -25,12 +26,11 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
+import static it.pagopa.pn.address.manager.constant.PostelNErrorNorm.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
 
@@ -282,42 +282,53 @@ public class AddressUtils {
     }
 
     public List<NormalizeResult> toResultItem(List<NormalizedAddress> normalizedAddresses, PnRequest pnRequest) {
-        return normalizedAddresses.stream().map(normalizedAddress -> {
-            NormalizeResult result = new NormalizeResult();
-            String[] index = normalizedAddress.getId().split("#");
-            if (index.length == 3) {
-                result.setId(index[2]);
-                log.info("Address with correlationId: [{}], createdAt: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1], index[2],
-                        normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
-                if (normalizedAddress.getFPostalizzabile() != null && normalizedAddress.getFPostalizzabile() == 0) {
-                    String errorMessage = evaluatedErrorToUpdateBatchRequest(normalizedAddress, index, pnRequest);
-                    result.setError(errorMessage);
-                } else {
-                    result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
-                }
-            }
-            return result;
-        }).toList();
+
+        List<PostelNErrorNorm> normalizedAddressNErroreNormList = new ArrayList<>();
+        List<NormalizeResult> results = normalizedAddresses.stream().map(normalizedAddress -> getNormalizeResult(normalizedAddress, normalizedAddressNErroreNormList)).toList();
+
+        Optional<PostelNErrorNorm> optionalErrorNormalizeResult = normalizedAddressNErroreNormList.stream()
+                .filter(errorNorm -> isPresentBlockedError(errorNorm.name()))
+                .findFirst();
+
+        Optional<PostelNErrorNorm> optionalRetryableNormalizeResult = normalizedAddressNErroreNormList.stream()
+                .filter(errorNorm -> isPresentRetryableError(errorNorm.name()))
+                .findFirst();
+
+        if (optionalErrorNormalizeResult.isPresent()) {
+            pnRequest.setStatus(ERROR.getValue());
+        } else if (optionalRetryableNormalizeResult.isPresent()) {
+            pnRequest.setStatus(TAKEN_CHARGE.getValue());
+        }
+
+        return results;
     }
 
-    private String evaluatedErrorToUpdateBatchRequest(NormalizedAddress normalizedAddress, String[] index, PnRequest pnRequest) {
-        if(normalizedAddress.getNErroreNorm() != null){
-            PostelNErrorNorm error = PostelNErrorNorm.fromCode(normalizedAddress.getNErroreNorm());
-            log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
-            switch (error){
-                case ERROR_901, ERROR_997, ERROR_998:
-                    pnRequest.setStatus(TAKEN_CHARGE.getValue());
-                    break;
-                case ERROR_999:
-                    pnRequest.setStatus(ERROR.getValue());
-                    break;
-                default:
-                    pnRequest.setStatus(WORKED.getValue());
+    @NotNull
+    private NormalizeResult getNormalizeResult(NormalizedAddress normalizedAddress, List<PostelNErrorNorm> normalizedAddressNErroreNormList) {
+        NormalizeResult result = new NormalizeResult();
+        String[] index = normalizedAddress.getId().split("#");
+        if (index.length == 3) {
+            result.setId(index[2]);
+            log.info("Address with correlationId: [{}], createdAt: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1], index[2],
+                    normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
+            if (normalizedAddress.getFPostalizzabile() != null && normalizedAddress.getFPostalizzabile() == 0) {
+                PostelNErrorNorm error = PostelNErrorNorm.fromCode(normalizedAddress.getNErroreNorm());
+                log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
+                normalizedAddressNErroreNormList.add(error);
+                result.setError(PNADDR001_MESSAGE);
+            } else {
+                result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
             }
-        }else{
-            log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], "Errore non presente");
         }
-        return PNADDR001_MESSAGE;
+        return result;
+    }
+
+    private boolean isPresentRetryableError(String nErrorNorm) {
+        return ERROR_901.name().equalsIgnoreCase(nErrorNorm) || ERROR_997.name().equalsIgnoreCase(nErrorNorm) || ERROR_998.name().equalsIgnoreCase(nErrorNorm);
+    }
+
+    private boolean isPresentBlockedError(String nErrorNorm) {
+        return ERROR_999.name().equalsIgnoreCase(nErrorNorm);
     }
 
     private AnalogAddress toAnalogAddress(NormalizedAddress normalizedAddress) {

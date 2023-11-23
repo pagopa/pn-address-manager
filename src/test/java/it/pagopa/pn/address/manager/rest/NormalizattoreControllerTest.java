@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.rest;
 
 import it.pagopa.pn.address.manager.config.SchedulerConfig;
 import it.pagopa.pn.address.manager.entity.ApiKeyModel;
+import it.pagopa.pn.address.manager.service.ApiKeyUtils;
 import it.pagopa.pn.address.manager.service.NormalizzatoreService;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
 import org.junit.jupiter.api.Test;
@@ -37,6 +38,9 @@ class NormalizattoreControllerTest {
     @MockBean
     ServerWebExchange serverWebExchange;
 
+    @MockBean
+    ApiKeyUtils apiKeyUtils;
+
     @Test
     void presignedUploadRequest() {
         PreLoadRequestData requestData = new PreLoadRequestData();
@@ -53,7 +57,7 @@ class NormalizattoreControllerTest {
         ApiKeyModel apiKeyModel = new ApiKeyModel();
         apiKeyModel.setApiKey("ApiKey");
         apiKeyModel.setCxId("cxId");
-        when(normalizzatoreService.checkApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
+        when(apiKeyUtils.checkPostelApiKey(any(), any())).thenReturn(Mono.just(apiKeyModel));
         when(normalizzatoreService.getFile(any())).thenReturn(Mono.just(fileDownloadResponse));
         StepVerifier.create(normalizeAddressController.getFile("fileKey","cxId","ApiKey",serverWebExchange))
                 .expectNext(ResponseEntity.ok().body(fileDownloadResponse));

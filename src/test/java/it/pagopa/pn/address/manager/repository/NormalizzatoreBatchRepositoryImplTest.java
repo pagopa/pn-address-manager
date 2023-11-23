@@ -182,24 +182,9 @@ class NormalizzatoreBatchRepositoryImplTest {
 		pnAddressManagerConfig.setNormalizer(normalizer);
 		pnAddressManagerConfig.getNormalizer().setPostel(postel);
 		pnAddressManagerConfig.getNormalizer().getPostel().setMaxRetry(3);
-		// Mocking current time
-		LocalDateTime currentTime = LocalDateTime.now(ZoneOffset.UTC);
-		Clock clock = Clock.fixed(currentTime.toInstant(ZoneOffset.UTC), ZoneOffset.UTC);
 
-		Key expectedKey = Key.builder()
-				.partitionValue(BatchStatus.WORKING.getValue())
-				.sortValue(AttributeValue.builder()
-						.s(currentTime.toString())
-						.build())
-				.build();
-
-		QueryConditional expectedQueryConditional = QueryConditional.sortLessThan(expectedKey);
-		QueryEnhancedRequest expectedQueryEnhancedRequest = QueryEnhancedRequest.builder()
-				.queryConditional(expectedQueryConditional)
-				.build();
 		when(dynamoDbEnhancedAsyncClient.table(any(), any()))
 				.thenReturn(dynamoDbAsyncTable);
-		PostelBatchRepository batchRequestRepository = new PostelBatchRepositoryImpl(dynamoDbEnhancedAsyncClient, pnAddressManagerConfig);
 
 		DynamoDbAsyncIndex<Object> index = mock(DynamoDbAsyncIndex.class);
 		when(dynamoDbAsyncTable.index(any()))
@@ -207,8 +192,10 @@ class NormalizzatoreBatchRepositoryImplTest {
 		when(index.query((QueryEnhancedRequest) any()))
 				.thenReturn(SdkPublisher.adapt(Mono.just(Page.create(List.of(batchRequest)))));
 
+		PostelBatchRepository batchRequestRepository = new PostelBatchRepositoryImpl(dynamoDbEnhancedAsyncClient, pnAddressManagerConfig);
+
 		// Invoking the method
-		Mono<Page<NormalizzatoreBatch>> resultMono = postelBatchRepository.getPostelBatchToClean();
+		Mono<Page<NormalizzatoreBatch>> resultMono = batchRequestRepository.getPostelBatchToClean(anyMap());
 		StepVerifier.create(resultMono)
 				.expectNextCount(1)
 				.verifyComplete();

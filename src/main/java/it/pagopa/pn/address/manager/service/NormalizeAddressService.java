@@ -36,19 +36,12 @@ public class NormalizeAddressService {
     private final AddressUtils addressUtils;
     private final SqsService sqsService;
     private final AddressBatchRequestRepository addressBatchRequestRepository;
-    private final ApiKeyRepository apiKeyRepository;
+    private final ApiKeyUtils apiKeyUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private final NormalizzatoreBatchService normalizzatoreBatchService;
 
-    public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
-        log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
-        return apiKeyRepository.findById(cxId)
-                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(ERROR_CLIENT_ID_MESSAGE, ERROR_CLIENT_ID_MESSAGE, HttpStatus.FORBIDDEN.value(), ERROR_CLIENT_ID)));
-
-    }
-
     public Mono<AcceptedResponse> normalizeAddress(String xApiKey, String cxId, NormalizeItemsRequest normalizeItemsRequest) {
-        return checkApiKey(cxId, xApiKey)
+        return apiKeyUtils.checkApiKey(cxId, xApiKey)
                 .doOnNext(apiKeyModel -> {
                     log.logCheckingOutcome(PROCESS_CHECKING_APIKEY, true);
                     log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for request: [{}]", normalizeItemsRequest.getCorrelationId());

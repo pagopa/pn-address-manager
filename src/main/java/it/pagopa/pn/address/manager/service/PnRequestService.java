@@ -40,8 +40,7 @@ import java.util.*;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.CONTEXT_BATCH_ID;
-import static it.pagopa.pn.address.manager.constant.BatchSendStatus.NOT_SENT;
-import static it.pagopa.pn.address.manager.constant.BatchSendStatus.SENT;
+import static it.pagopa.pn.address.manager.constant.BatchSendStatus.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_POSTEL_ATTIVAZIONE;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
@@ -355,14 +354,7 @@ public class PnRequestService {
     public Mono<Void> callPostelActivationApi(NormalizzatoreBatch normalizzatoreBatch) {
         log.logInvokingExternalService(PROCESS_SERVICE_POSTEL_ATTIVAZIONE, normalizzatoreBatch.getBatchId());
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - calling postel activation", normalizzatoreBatch.getBatchId());
-        return Mono.fromCallable(() -> postelClient.activatePostel(normalizzatoreBatch))
-                .onErrorResume(throwable -> {
-                    if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
-                        log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", normalizzatoreBatch.getBatchId(), ex);
-                        Mono.error(new PnPostelException("Error during call postel activation api", "NOR400", ex));
-                    }
-                    return Mono.error(throwable);
-                })
+        return postelClient.activatePostel(normalizzatoreBatch)
                 .flatMap(activatePostelResponse -> {
                     log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - called postel activation", normalizzatoreBatch.getBatchId());
                     if (!StringUtils.hasText(activatePostelResponse.getError())) {
@@ -371,12 +363,19 @@ public class PnRequestService {
                     return Mono.error(new PnPostelException("Error during call postel activation api", activatePostelResponse.getError(), null));
                 })
                 .doOnError(e -> log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to execute call to Activation Postel Api", normalizzatoreBatch.getBatchId(), e))
-                .onErrorResume(v -> incrementAndCheckRetry(normalizzatoreBatch, v).then(Mono.error(v)))
+                .onErrorResume(throwable -> {
+                    Throwable expToLaunch = throwable;
+                    if (throwable instanceof WebClientResponseException ex && ex.getStatusCode().equals(HttpStatus.BAD_REQUEST)) {
+                        log.error(ADDRESS_NORMALIZER_ASYNC + "batchId {} - Error during call postel activation api", normalizzatoreBatch.getBatchId(), ex);
+                        expToLaunch = new PnPostelException("Error during call postel activation api", "NOR400", ex);
+                    }
+                    return incrementAndCheckRetry(normalizzatoreBatch, expToLaunch);
+                })
                 .then();
     }
 
     private Mono<Void> updatePostelBatchToWorking(NormalizzatoreBatch normalizzatoreBatch) {
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - update PostelBatch with status: {}", normalizzatoreBatch.getBatchId(), BatchStatus.WORKING.getValue());
         normalizzatoreBatch.setStatus(BatchStatus.WORKING.getValue());
         normalizzatoreBatch.setWorkingTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getWorkingTtl()));
@@ -391,24 +390,10 @@ public class PnRequestService {
         return postelBatchRepository.create(addressConverter.createPostelBatchByBatchIdAndFileKey(key, fileKey, sha256))
                 .flatMap(polling -> {
                     log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
-                    return setBatchRequestStatusToWorking(key)
-                            .map(batchRequests -> {
-                                log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey);
-                                return polling;
-                            })
+                    return retrieveAndUpdateBatchRequest(key, TAKEN_CHARGE, WORKING, false).thenReturn(polling)
+                            .doOnNext(normalizzatoreBatch -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - created PostelBatch with fileKey: {}", key, fileKey))
                             .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to create PostelBatch with fileKey: {}", key, fileKey, e));
                 });
-    }
-
-    private Mono<List<PnRequest>> setBatchRequestStatusToWorking(String batchId) {
-        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batchId, BatchStatus.TAKEN_CHARGE)
-                .doOnNext(requests -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - updating {} requests in status {}", batchId, requests.size(), BatchStatus.WORKING))
-                .flatMapIterable(requests -> requests)
-                .doOnNext(request -> request.setStatus(BatchStatus.WORKING.getValue()))
-                .flatMap(addressBatchRequestRepository::update)
-                .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "correlationId {} - set status in {}", r.getCorrelationId(), r.getStatus()))
-                .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to set request in status {}", batchId, BatchStatus.WORKING, e))
-                .collectList();
     }
 
 
@@ -473,19 +458,63 @@ public class PnRequestService {
                 .doOnNext(r -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - retry incremented", normalizzatoreBatch.getBatchId()))
                 .doOnError(e -> log.warn(ADDRESS_NORMALIZER_ASYNC + "batchId {} - failed to increment retry", normalizzatoreBatch.getBatchId(), e))
                 .filter(r -> BatchStatus.ERROR.getValue().equals(r.getStatus()))
-                .flatMap(batch -> sqsService.sendToDlqQueue(batch).thenReturn(batch))
+                .flatMap(batch -> sqsService.sendIfCallbackToDlqQueue(batch).thenReturn(batch))
                 .flatMap(l -> {
-                    log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - call batch to send to SQS");
-                    return updateBatchRequest(normalizzatoreBatch.getBatchId(), WORKING);
+                    log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - update related PnRequest");
+                    return retrieveAndUpdateBatchRequest(normalizzatoreBatch.getBatchId(), WORKING, TAKEN_CHARGE, true);
                 });
     }
 
-    public Mono<Void> updateBatchRequest(String batchId, BatchStatus status) {
-        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(batchId, status)
-                .flatMap(batchRequests -> {
-                    batchRequests.forEach(batchRequest -> batchRequest.setStatus(TAKEN_CHARGE.getValue()));
-                    return incrementAndCheckRetry(batchRequests, null, batchId).then();
+    public Mono<Void> retrieveAndUpdateBatchRequest(String batchId, BatchStatus fromStatus, BatchStatus toStatus, boolean isError) {
+        return Flux.defer(() -> updateBatchRequest(getBatchRequestByBatchIdAndStatusReactive(Map.of(), batchId, fromStatus), toStatus, isError))
+                .then();
+    }
+
+    private Mono<Page<PnRequest>> updateBatchRequest(Mono<Page<PnRequest>> pageMono, BatchStatus status, boolean isError) {
+        return pageMono.flatMap(page -> {
+            if (page.items().isEmpty()) {
+                log.info(ADDRESS_NORMALIZER_ASYNC + "no batch request found for: {}", batchId);
+                return Mono.just(page);
+            }
+
+            Instant startPagedQuery = clock.instant();
+            return updateRequestStatus(page.items(), status, isError)
+                    .thenReturn(page)
+                    .doOnTerminate(() -> {
+                        Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+                        log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId: [{}] end internal query. Time spent is {} millis", batchId, timeSpent.toMillis());
+                    })
+                    .flatMap(lastProcessedPage -> {
+                        if (lastProcessedPage.lastEvaluatedKey() != null) {
+                            return updateBatchRequest(getBatchRequestByBatchIdAndStatusReactive(lastProcessedPage.lastEvaluatedKey(), batchId, status), status, isError);
+                        } else {
+                            return Mono.just(lastProcessedPage);
+                        }
+                    });
+        });
+    }
+
+    private Mono<Void> updateRequestStatus(List<PnRequest> items, BatchStatus status, boolean isError) {
+        return Flux.fromIterable(items)
+                .doOnNext(pnRequest -> pnRequest.setStatus(status.getValue()))
+                .collectList()
+                .flatMap(pnRequests -> {
+                    if(isError) {
+                        return incrementAndCheckRetry(pnRequests, null, batchId);
+                    }else{
+                        return updatePnRequestList(pnRequests);
+                    }
                 });
+    }
+
+    private Mono<Void> updatePnRequestList(List<PnRequest> pnRequests) {
+        return Flux.fromIterable(pnRequests)
+                .flatMap(addressBatchRequestRepository::update)
+                .then();
+    }
+
+    private Mono<Page<PnRequest>> getBatchRequestByBatchIdAndStatusReactive(Map<String, AttributeValue> lastEvaluatedKey, String batchId, BatchStatus status) {
+        return addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastEvaluatedKey, batchId, status);
     }
 
     public Mono<Void> updateBatchRequest(List<PnRequest> pnRequests, String batchId) {
@@ -523,7 +552,11 @@ public class PnRequestService {
                     .flatMap(putEventsResult -> addressBatchRequestRepository.update(request)
                             .doOnNext(item -> log.debug("Normalize Address - correlationId {} - set Send Status in {}", request.getCorrelationId(), request.getStatus())));
             case ERROR -> sqsService.sendToDlqQueue(request)
-                    .thenReturn(request);
+                    .thenReturn(request)
+                    .map(pnRequest -> {
+                        pnRequest.setSendStatus(SENT_TO_DLQ.getValue());
+                        return request;
+                    });
             default -> Mono.just(request);
         };
 

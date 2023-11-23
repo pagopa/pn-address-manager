@@ -2,14 +2,11 @@ package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
-import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
-import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
-import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
@@ -40,14 +37,14 @@ public class NormalizzatoreService {
     private final SqsService sqsService;
     private final SafeStorageService safeStorageService;
     private final PostelBatchRepository postelBatchRepository;
-    private final ApiKeyRepository apiKeyRepository;
+    private final ApiKeyUtils apiKeyUtils;
     private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
     private static final String CALLBACK_ERROR_LOG = "callbackNormalizedAddress error:{}";
 
 
     public Mono<PreLoadResponseData> presignedUploadRequest(PreLoadRequestData request, String pnAddressManagerCxId, String xApiKey) {
-        return checkApiKey(pnAddressManagerCxId, xApiKey)
+        return apiKeyUtils.checkPostelApiKey(pnAddressManagerCxId, xApiKey)
                 .doOnNext(apiKeyModel -> {
                     log.logCheckingOutcome(PROCESS_CHECKING_APIKEY, true);
                     log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for safeStorage presignedUploadRequest.");
@@ -89,7 +86,7 @@ public class NormalizzatoreService {
      * Finally send synchronous response to the caller with successfully or error response.
      */
     public Mono<OperationResultCodeResponse> callbackNormalizedAddress(NormalizerCallbackRequest callbackRequestData, String pnAddressManagerCxId, String xApiKey) {
-        return checkApiKey(pnAddressManagerCxId, xApiKey)
+        return apiKeyUtils.checkPostelApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> findPostelBatch(callbackRequestData.getRequestId().split(RETRY_SUFFIX)[0]))
                 .flatMap(postelBatch -> updateWithFileKeyTimestampAndError(postelBatch, callbackRequestData))
                 .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, postelBatch, pnAddressManagerCxId))
@@ -103,7 +100,7 @@ public class NormalizzatoreService {
         if(StringUtils.hasText(callbackRequestData.getUri())) {
             normalizzatoreBatch.setOutputFileKey(callbackRequestData.getUri().replace(SAFE_STORAGE_URL_PREFIX, ""));
         }
-        normalizzatoreBatch.setCallbackTimeStamp(LocalDateTime.now());
+        normalizzatoreBatch.setCallbackTimeStamp(LocalDateTime.now(ZoneOffset.UTC));
         normalizzatoreBatch.setError(callbackRequestData.getError());
 
         return postelBatchRepository.update(normalizzatoreBatch);
@@ -160,14 +157,6 @@ public class NormalizzatoreService {
                     return Mono.error(new PnAddressManagerException(String.format(ERROR_MESSAGE_ADDRESS_MANAGER_POSTELOUTPUTFILEKEYNOTFOUND, fileKey), HttpStatus.BAD_REQUEST.value(),
                                 SEMANTIC_ERROR_CODE));
                 });
-    }
-
-    public Mono<ApiKeyModel> checkApiKey(String cxId, String xApiKey) {
-        log.logChecking(PROCESS_CHECKING_APIKEY + ": starting check ApiKey");
-        return apiKeyRepository.findById(cxId)
-                .filter(apiKeyModel -> apiKeyModel.getApiKey().equalsIgnoreCase(xApiKey))
-                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(APIKEY_DOES_NOT_EXISTS, APIKEY_DOES_NOT_EXISTS, HttpStatus.FORBIDDEN.value(), "Api Key not found")));
-
     }
 
     private Mono<Void> sendToInternalQueueAndUpdatePostelBatchStatus(NormalizerCallbackRequest callbackRequestData, NormalizzatoreBatch normalizzatoreBatch) {
