@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
@@ -20,7 +19,6 @@ import software.amazon.awssdk.services.sqs.model.SendMessageRequest;
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -48,7 +46,7 @@ class SqsServiceTest {
         when(addressUtils.toObject("yourAddresses", NormalizeItemsRequest.class)).thenReturn(new NormalizeItemsRequest());
         when(sqsClient.getQueueUrl((GetQueueUrlRequest) any())).thenReturn(GetQueueUrlResponse.builder().queueUrl("url").build());
         when(sqsClient.sendMessage((SendMessageRequest) any())).thenReturn(SendMessageResponse.builder().build());
-        StepVerifier.create(sqsService.sendListToDlqQueue(List.of(pnRequest))).expectNextCount(0).verifyComplete();
+        StepVerifier.create(sqsService.sendToInputDlqQueue(pnRequest)).expectNextCount(0).verifyComplete();
         InternalCodeSqsDto internalCodeSqsDto = mock(InternalCodeSqsDto.class);
         NormalizeItemsRequest normalizeItemsRequest = mock(NormalizeItemsRequest.class);
 

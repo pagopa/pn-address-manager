@@ -402,6 +402,12 @@ Parameters:
     Description: Custom read timeout for postel Client (milliseconds)
     Default: 30000
 
+  PnAddressManagerNormalizerErrorMode:
+    Type: String
+    Default: DLQ
+    Description: It determines if PnRequest in error status have to send to DLQ or to eventBridge with error message
+    AllowedValues: [ DLQ, DISCARD ]
+
 
 Resources:
 
@@ -475,6 +481,7 @@ Resources:
         ContainerEnvEntry45: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXFILENUMBER=${PnAddressManagerMaxFileNumber}'
         ContainerEnvEntry46: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
         ContainerEnvEntry47: !Sub 'PN_ADDRESSMANAGER_ADDRESSLENGTHVALIDATION=${AddressLengthValidation}'
+        ContainerEnvEntry48: !Sub 'PN_ADDRESSMANAGER_NORMALIZERERRORMODE=${PnAddressManagerNormalizerErrorMode}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets

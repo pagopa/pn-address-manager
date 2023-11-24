@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.constant.NormalizerErrorMode;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
@@ -38,10 +39,10 @@ import java.nio.charset.StandardCharsets;
 import java.time.*;
 import java.util.*;
 
-import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
-import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.CONTEXT_BATCH_ID;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.BatchSendStatus.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
+import static it.pagopa.pn.address.manager.constant.NormalizerErrorMode.DISCARD;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_SERVICE_POSTEL_ATTIVAZIONE;
 import static it.pagopa.pn.commons.utils.MDCUtils.MDC_TRACE_ID_KEY;
 
@@ -420,18 +421,15 @@ public class PnRequestService {
                 .filter(r -> BatchStatus.ERROR.getValue().equals(r.getStatus()))
                 .collectList()
                 .filter(l -> !l.isEmpty())
-                .flatMap(l -> {
-                    log.debug(ADDRESS_NORMALIZER_ASYNC + "there is at least one request in ERROR - call batch to send to SQS");
-                    return sqsService.sendListToDlqQueue(l)
-                            .thenReturn(l)
-                            .flatMapIterable(batchRequests -> batchRequests)
-                            .map(batchRequest -> {
-                                log.info(ADDRESS_NORMALIZER_ASYNC + "sent to dlq queue message for correlationId: {}", batchRequest.getCorrelationId());
-                                batchRequest.setSendStatus(BatchSendStatus.SENT_TO_DLQ.name());
-                                return addressBatchRequestRepository.update(batchRequest);
-                            })
-                            .then();
-                });
+                .flatMapIterable(batchRequests -> batchRequests)
+                .map(pnRequest -> {
+                    if(!StringUtils.hasText(pnRequest.getMessage())) {
+                        pnRequest.setMessage(addressUtils.buildPnRequestMessageFromRequestWithoutCallback(pnRequest));
+                    }
+                    return pnRequest;
+                })
+                .flatMap(this::sendErrorEventToEventBusOrDlq)
+                .then();
     }
 
     /**
@@ -536,30 +534,41 @@ public class PnRequestService {
      * if the status is ERROR it sends the request to a Dead Letter Queue (DLQ). Other status is ignored.
      */
     private Mono<PnRequest> sendToEventBridgeOrInDlq(PnRequest request) {
-        LocalDateTime now = LocalDateTime.now();
-
         return switch (BatchStatus.fromValue(request.getStatus())) {
-            case WORKED -> sendEvents(request, request.getClientId())
-                    .map(putEventsResult -> {
-                        request.setSendStatus(SENT.getValue());
-                        request.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
-                        return request;
-                    })
-                    .onErrorResume(throwable -> {
-                        request.setSendStatus(NOT_SENT.getValue());
-                        return Mono.just(request);
-                    })
-                    .flatMap(putEventsResult -> addressBatchRequestRepository.update(request)
-                            .doOnNext(item -> log.debug("Normalize Address - correlationId {} - set Send Status in {}", request.getCorrelationId(), request.getStatus())));
-            case ERROR -> sqsService.sendToDlqQueue(request)
+            case WORKED -> sendEventToEventBus(request, SENT);
+            case ERROR -> sendErrorEventToEventBusOrDlq(request);
+            default -> Mono.just(request);
+        };
+    }
+
+    private Mono<PnRequest> sendErrorEventToEventBusOrDlq(PnRequest request) {
+        if (NormalizerErrorMode.valueOf(pnAddressManagerConfig.getNormalizerErrorMode()).equals(DISCARD)) {
+            return sendEventToEventBus(request, SENT_WITH_ERROR);
+        } else {
+            return sqsService.sendToInputDlqQueue(request)
                     .thenReturn(request)
                     .map(pnRequest -> {
                         pnRequest.setSendStatus(SENT_TO_DLQ.getValue());
                         return request;
-                    });
-            default -> Mono.just(request);
-        };
+                    })
+                    .flatMap(addressBatchRequestRepository::update);
+        }
+    }
 
+    private Mono<PnRequest> sendEventToEventBus(PnRequest request, BatchSendStatus toStatus) {
+        LocalDateTime now = LocalDateTime.now();
+        return sendEvents(request, request.getClientId())
+                .map(putEventsResult -> {
+                    request.setSendStatus(toStatus.getValue());
+                    request.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
+                    return request;
+                })
+                .onErrorResume(throwable -> {
+                    request.setSendStatus(NOT_SENT.getValue());
+                    return Mono.just(request);
+                })
+                .flatMap(putEventsResult -> addressBatchRequestRepository.update(request)
+                        .doOnNext(item -> log.debug("Normalize Address - correlationId {} - set Send Status in {}", request.getCorrelationId(), request.getStatus())));
     }
 
     private Mono<PutEventsResponse> sendEvents(PnRequest pnRequest, String cxId) {
