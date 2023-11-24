@@ -59,6 +59,7 @@ components:
             Se presente indica che l'indirizzo non è da considerarsi postalizzabile:
             - Indirizzo dichiarato non postalizzabile dal normalizzatore
             - Indirizzo avente come destinazione CAP/StatoEstero non abilitato
+            - Errore durante la normalizzazione dell'indirizzo (abilitato solo se env PnAddressManagerNormalizerErrorMode = DISCARD)
         
     DeduplicatesRequest:
       type: object
