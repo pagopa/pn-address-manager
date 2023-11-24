@@ -26,7 +26,7 @@
     "PnAddressManagerNormalizerPostelRecoveryAfter": "600",
     "PnAddressManagerNormalizerPostelMaxRetry": "12",
     "PostelCxId": "pn-norm-000",
-    "NormalizerRequestPrefix": "ACTIVATE_ERROR",
+    "NormalizerRequestPrefix": "",
     "PnAddressManagerCxId": "pn-address-manager",
     "PnAddressManagerBatchCleanRequestDelay": "120000",
     "PnAddressManagerNormalizerPostelWorkingTtl": "7200",
@@ -37,6 +37,6 @@
     "PnAddressManagerNormalizerBatchRecoveryLockAtLeast": "1000",
     "PnAddressManagerNormalizerPostelClientTimeout": "30000",
     "AddressLengthValidation": "250",
-    "PnAddressManagerNormalizerErrorMode": "DISCARD"
+    "PnAddressManagerNormalizerErrorMode": "DLQ"
   }
 }
