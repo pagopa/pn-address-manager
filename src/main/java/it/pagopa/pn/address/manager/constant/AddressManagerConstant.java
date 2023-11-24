@@ -26,4 +26,5 @@ public class AddressManagerConstant {
 	public static final String PNADDR002_MESSAGE = "Address with not Enabled postalCode / foreignState as destination";
 	public static final String RETRY_SUFFIX = ".RETRY_";
 	public static final String CONTEXT_BATCH_ID = "batch_id:";
+	public static final String PNADDR003_MESSAGE = "Error during address normalization";
 }

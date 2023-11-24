@@ -41,12 +41,6 @@ public class SqsService {
     private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
 
-    public Mono<Void> sendListToDlqQueue(List<PnRequest> pnRequests) {
-        return Flux.fromIterable(pnRequests)
-                .map(this::sendToDlqQueue)
-                .then();
-    }
-
     public Mono<Void> sendToDlqQueue(PnRequest pnRequest) {
         InternalCodeSqsDto internalCodeSqsDto = toInternalCodeSqsDto(pnRequest);
         return pushToInputDlqQueue(internalCodeSqsDto, pnRequest.getClientId())
