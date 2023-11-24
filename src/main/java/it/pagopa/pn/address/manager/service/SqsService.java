@@ -36,11 +36,13 @@ public class SqsService {
     private static final String INSERTING_MSG_WITH_DATA = "Inserting data {} in SQS {}";
     private static final String INSERTING_MSG_WITHOUT_DATA = "Inserted data in SQS {}";
 
+    private static final String STRING_DATA_TYPE = "String";
+
     private final SqsClient sqsClient;
     private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
 
-    public Mono<Void> sendToDlqQueue(PnRequest pnRequest) {
+    public Mono<Void> sendToInputDlqQueue(PnRequest pnRequest) {
         InternalCodeSqsDto internalCodeSqsDto = toInternalCodeSqsDto(pnRequest);
         return pushToInputDlqQueue(internalCodeSqsDto, pnRequest.getClientId())
                 .onErrorResume(throwable -> {
@@ -134,10 +136,10 @@ public class SqsService {
     private Map<String, MessageAttributeValue> buildMessageAttributeMap(String pnAddressManagerCxId, String eventType, String correlationId) {
         Map<String, MessageAttributeValue> attributes = new HashMap<>();
         if (StringUtils.hasText(pnAddressManagerCxId)) {
-            attributes.put("clientId", MessageAttributeValue.builder().stringValue(pnAddressManagerCxId).dataType("String").build());
+            attributes.put("clientId", MessageAttributeValue.builder().stringValue(pnAddressManagerCxId).dataType(STRING_DATA_TYPE).build());
         }
-        attributes.put("eventType", MessageAttributeValue.builder().stringValue(eventType).dataType("String").build());
-        attributes.put("requestId", MessageAttributeValue.builder().stringValue(correlationId).dataType("String").build());
+        attributes.put("eventType", MessageAttributeValue.builder().stringValue(eventType).dataType(STRING_DATA_TYPE).build());
+        attributes.put("requestId", MessageAttributeValue.builder().stringValue(correlationId).dataType(STRING_DATA_TYPE).build());
         return attributes;
     }
 }

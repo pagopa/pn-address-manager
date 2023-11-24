@@ -18,7 +18,7 @@ public class PnAddressManagerConfig {
     private String validationPattern;
     private Boolean enableValidation;
     private Boolean flagCsv;
-    private NormalizerErrorMode errorMode;
+    private String normalizerErrorMode;
     private EventBus eventBus;
     private Csv csv;
     private Sqs sqs;

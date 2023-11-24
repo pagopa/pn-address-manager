@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.constant.NormalizerErrorMode;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
@@ -421,6 +422,12 @@ public class PnRequestService {
                 .collectList()
                 .filter(l -> !l.isEmpty())
                 .flatMapIterable(batchRequests -> batchRequests)
+                .map(pnRequest -> {
+                    if(!StringUtils.hasText(pnRequest.getMessage())) {
+                        pnRequest.setMessage(addressUtils.buildPnRequestMessageFromRequestWithoutCallback(pnRequest));
+                    }
+                    return pnRequest;
+                })
                 .flatMap(this::sendErrorEventToEventBusOrDlq)
                 .then();
     }
@@ -535,36 +542,24 @@ public class PnRequestService {
     }
 
     private Mono<PnRequest> sendErrorEventToEventBusOrDlq(PnRequest request) {
-        if (pnAddressManagerConfig.getErrorMode() == DISCARD) {
-            NormalizeItemsResult normalizeItemsResult = createErrorResult(request);
-            request.setMessage(addressUtils.toJson(normalizeItemsResult));
+        if (NormalizerErrorMode.valueOf(pnAddressManagerConfig.getNormalizerErrorMode()).equals(DISCARD)) {
             return sendEventToEventBus(request, SENT_WITH_ERROR);
         } else {
-            return sqsService.sendToDlqQueue(request)
+            return sqsService.sendToInputDlqQueue(request)
                     .thenReturn(request)
                     .map(pnRequest -> {
                         pnRequest.setSendStatus(SENT_TO_DLQ.getValue());
-                        pnRequest.setMessage(PNADDR003_MESSAGE);
                         return request;
                     })
                     .flatMap(addressBatchRequestRepository::update);
         }
     }
 
-    private NormalizeItemsResult createErrorResult(PnRequest request) {
-        NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
-        normalizeItemsResult.setResultItems(null);
-        normalizeItemsResult.setCorrelationId(request.getCorrelationId());
-        normalizeItemsResult.setError(PNADDR003_MESSAGE);
-
-        return normalizeItemsResult;
-    }
-
-    private Mono<PnRequest> sendEventToEventBus(PnRequest request, BatchSendStatus status) {
+    private Mono<PnRequest> sendEventToEventBus(PnRequest request, BatchSendStatus toStatus) {
         LocalDateTime now = LocalDateTime.now();
         return sendEvents(request, request.getClientId())
                 .map(putEventsResult -> {
-                    request.setSendStatus(status.getValue());
+                    request.setSendStatus(toStatus.getValue());
                     request.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
                     return request;
                 })
