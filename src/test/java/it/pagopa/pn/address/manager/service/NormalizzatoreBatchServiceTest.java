@@ -102,7 +102,6 @@ class NormalizzatoreBatchServiceTest {
         pnRequest.setSendStatus("yourSendStatus");
         pnRequest.setMessage("yourMessage");
         pnRequest.setXApiKey("yourXApiKey");
-        pnRequest.setCxId("yourCxId");
         pnRequest.setAwsMessageId("yourAwsMessageId");
         when(clock.instant()).thenReturn(Instant.now());
         when(addressUtils.getNormalizeRequestFromBatchRequest(any())).thenReturn(List.of(new NormalizeRequest()));

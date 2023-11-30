@@ -11,5 +11,4 @@ import lombok.Setter;
 public class InternalCodeSqsDto {
     private NormalizeItemsRequest normalizeItemsRequest;
     private String pnAddressManagerCxId;
-    private String xApiKey;
 }

@@ -179,7 +179,6 @@ class RecoveryServiceTest {
         pnRequest.setSendStatus("yourSendStatus");
         pnRequest.setMessage("yourMessage");
         pnRequest.setXApiKey("yourXApiKey");
-        pnRequest.setCxId("yourCxId");
         pnRequest.setAwsMessageId("yourAwsMessageId");
         return pnRequest;
     }

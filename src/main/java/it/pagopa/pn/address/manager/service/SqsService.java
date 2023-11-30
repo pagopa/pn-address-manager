@@ -84,9 +84,8 @@ public class SqsService {
         normalizeItemsRequest.setCorrelationId(pnRequest.getCorrelationId());
 
         return InternalCodeSqsDto.builder()
-                .xApiKey(pnRequest.getXApiKey())
                 .normalizeItemsRequest(normalizeItemsRequest)
-                .pnAddressManagerCxId(pnRequest.getCxId())
+                .pnAddressManagerCxId(pnRequest.getClientId())
                 .build();
     }
 
