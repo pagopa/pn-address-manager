@@ -408,6 +408,10 @@ Parameters:
     Description: It determines if PnRequest in error status have to send to DLQ or to eventBridge with error message
     AllowedValues: [ DLQ, DISCARD ]
 
+  DownstreamErrorRateThreshold:
+    Type: Number
+    Default: 0.6 # 60%
+    Description: Threshold for downstream error rate (between 0 and 1)
 
 Resources:
 
@@ -645,3 +649,60 @@ Resources:
           RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
           DeadLetterConfig:
             Arn: !Ref AddressManagerEventBusDLQArn
+
+  # Monitoring
+  # CloudWatch metric to filer ERROR - FATAL lines, in Log group
+  DownstreamRequestsErrorMetricFilter: 
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      LogGroupName: !Ref EcsLogGroup
+      FilterPattern: "\"Response HTTP from\" \"vpce\" -\"200 OK\"" 
+      MetricTransformations: 
+        - MetricValue: 1
+          MetricNamespace: "DownstreamMetrics"
+          MetricName: !Sub "${ProjectName}-address-manager-DownstreamRequestsErrorMetric"
+
+  DownstreamRequestsMetricFilter: 
+    Type: AWS::Logs::MetricFilter
+    Properties: 
+      LogGroupName: !Ref EcsLogGroup
+      FilterPattern: "\"Response HTTP from\" \"vpce\"" 
+      MetricTransformations: 
+        - MetricValue: 1
+          MetricNamespace: "DownstreamMetrics"
+          MetricName: !Sub "${ProjectName}-address-manager-DownstreamErrorMetric"
+  
+  # Create alarm
+  DownstreamMetricAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "${ProjectName}-address-manager-Downstream-Alarm"
+      AlarmDescription: "CloudWatch alarm for when pn-address-manager downstream API rate exceeds a specific value."
+      TreatMissingData: notBreaching
+      AlarmActions: 
+        - !Ref AlarmSNSTopicArn
+      OKActions:
+        - !Ref AlarmSNSTopicArn
+      Metrics:
+        - Id: m1
+          MetricStat:
+            Metric:
+              MetricName: !Sub "${ProjectName}-address-manager-DownstreamErrorMetric"
+              Namespace: DownstreamMetrics
+            Period: 3600
+            Stat: Sum
+          ReturnData: False
+        - Id: m2
+          MetricStat:
+            Metric:
+              MetricName: !Sub "${ProjectName}-address-manager-DownstreamRequestsErrorMetric"
+              Namespace: DownstreamMetrics
+            Period: 3600
+            Stat: Sum
+          ReturnData: False
+        - Id: e1
+          Expression: "FILL(m2, 0)/FILL(m1, 1)"
+          Label: !Sub "${ProjectName}-address-manager-DownstreamRequestsErrorRate"
+      Threshold: !Ref DownstreamErrorRateThreshold
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanOrEqualToThreshold
