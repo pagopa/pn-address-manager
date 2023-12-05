@@ -19,12 +19,13 @@ import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 class RecoveryServiceTest {
@@ -151,6 +152,63 @@ class RecoveryServiceTest {
 
     }
 
+    @Test
+    void testCleanStoppedRequestWithRelatedBatchRequest () {
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
+        batchRequest.setQueryMaxSize(100);
+        batchRequest.setLockAtMost(100);
+        batchRequest.setLockAtLeast(100);
+        batchRequest.setRecoveryAfter(3);
+        batchRequest.setMaxRetry(3);
+        batchRequest.setRecoveryDelay(3);
+        batchRequest.setDelay(3);
+        batchRequest.setEventBridgeRecoveryDelay(3);
+        PnAddressManagerConfig.Normalizer normalizer = getNormalizer();
+        normalizer.setMaxCsvSize(100);
+        normalizer.setBatchRequest(batchRequest);
+        pnAddressManagerConfig.setNormalizer(normalizer);
+        pendingRequestService = new PendingRequestService(addressBatchRequestRepository,
+                pnRequestService,postelBatchRepository, clock);
+        PnRequest pnRequest1 = getBatchRequest();
+        PnRequest pnRequest2 = getBatchRequest();
+        NormalizzatoreBatch normalizzatoreBatch1 = new NormalizzatoreBatch();
+        normalizzatoreBatch1.setBatchId("id1");
+        Page<NormalizzatoreBatch> page1 = Page.create(List.of(normalizzatoreBatch1), Map.of("key", AttributeValue.builder().s("value").build()));
+        when(postelBatchRepository.getPostelBatchToClean(anyMap()))
+                .thenReturn(Mono.just(page1))
+                .thenThrow(RuntimeException.class);
+        List<PnRequest> requests = List.of(pnRequest1, pnRequest2);
+        when(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(anyMap(), anyString(), any()))
+                .thenReturn(Mono.just(Page.create(requests)));
+        when(pnRequestService.incrementAndCheckRetry(requests, null, "id1"))
+                .thenReturn(Mono.empty());
+
+        when(addressBatchRequestRepository.update(pnRequest1))
+                .thenReturn(Mono.just(pnRequest1));
+
+        pnRequest1.setStatus(BatchStatus.TAKEN_CHARGE.getValue());
+        when(addressBatchRequestRepository.update(pnRequest1))
+                .thenReturn(Mono.just(pnRequest1));
+        pnRequest1.setStatus(BatchStatus.NO_BATCH_ID.getValue());
+
+        when(addressBatchRequestRepository.update(pnRequest2))
+                .thenReturn(Mono.just(pnRequest2));
+
+        pnRequest2.setStatus(BatchStatus.TAKEN_CHARGE.getValue());
+        when(addressBatchRequestRepository.update(pnRequest2))
+                .thenReturn(Mono.just(pnRequest2));
+        pnRequest2.setStatus(BatchStatus.NO_BATCH_ID.getValue());
+
+        when(postelBatchRepository.deleteItem("id1"))
+                .thenReturn(Mono.empty());
+        when(clock.instant()).thenReturn(Instant.now());
+        Assertions.assertDoesNotThrow(() -> pendingRequestService.cleanPendingPostelBatch());
+
+        verify(pnRequestService, times(1)).incrementAndCheckRetry(requests, null, "id1");
+
+    }
+
     @NotNull
     private static PnAddressManagerConfig.Normalizer getNormalizer() {
         PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
@@ -170,7 +228,7 @@ class RecoveryServiceTest {
         pnRequest.setCorrelationId("yourCorrelationId");
         pnRequest.setAddresses("yourAddresses");
         pnRequest.setBatchId("NO_BATCH_ID");
-        pnRequest.setRetry(1);
+        pnRequest.setRetry(0);
         pnRequest.setTtl(3600L); // Your TTL value in seconds
         pnRequest.setClientId("yourClientId");
         pnRequest.setStatus(BatchStatus.NO_BATCH_ID.toString());
