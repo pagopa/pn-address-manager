@@ -88,28 +88,29 @@ public class PendingRequestService {
 
     private Mono<Page<PnRequest>> processRelatedBatchRequest(Mono<Page<PnRequest>> pageMono, String batchId) {
         return pageMono.flatMap(page -> {
-            if (page.items().isEmpty()) {
-                log.info(ADDRESS_NORMALIZER_ASYNC + "no postelBatch to recovery founded");
-                return Mono.just(page);
-            }
+                    if (page.items().isEmpty()) {
+                        log.info(ADDRESS_NORMALIZER_ASYNC + "no postelBatch to recovery founded");
+                        return Mono.just(page);
+                    }
 
-            Instant startPagedQuery = clock.instant();
-            return processRelatedRequest(page.items(), batchId)
-                    .thenReturn(page)
-                    .doOnTerminate(() -> {
-                        Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
-                        log.debug(ADDRESS_NORMALIZER_ASYNC + "end recovery batchRequest query. Time spent is {} millis", timeSpent.toMillis());
-                    })
-                    .flatMap(pnRequestPage ->  normalizzatoreBatchRepository.deleteItem(batchId)
-                            .thenReturn(pnRequestPage))
-                    .flatMap(lastProcessedPage -> {
-                        if (lastProcessedPage.lastEvaluatedKey() != null) {
-                            return processRelatedBatchRequest(getRelatedBatchRequest(lastProcessedPage.lastEvaluatedKey(), batchId), batchId);
-                        } else {
-                            return Mono.just(lastProcessedPage);
-                        }
-                    });
-        });
+                    Instant startPagedQuery = clock.instant();
+                    return processRelatedRequest(page.items(), batchId)
+                            .thenReturn(page)
+                            .doOnTerminate(() -> {
+                                Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
+                                log.debug(ADDRESS_NORMALIZER_ASYNC + "end recovery batchRequest query. Time spent is {} millis", timeSpent.toMillis());
+                            })
+                            .flatMap(lastProcessedPage -> {
+                                if (lastProcessedPage.lastEvaluatedKey() != null) {
+                                    return processRelatedBatchRequest(getRelatedBatchRequest(lastProcessedPage.lastEvaluatedKey(), batchId), batchId);
+                                } else {
+                                    return Mono.just(lastProcessedPage);
+                                }
+                            });
+
+                })
+                .flatMap(pnRequestPage -> normalizzatoreBatchRepository.deleteItem(batchId)
+                        .thenReturn(pnRequestPage));
     }
 
     private Mono<Void> processRelatedRequest(List<PnRequest> items, String batchId) {
@@ -118,9 +119,10 @@ public class PendingRequestService {
                     batchRequest.setStatus(TAKEN_CHARGE.getValue());
                     return pnRequestRepository.update(batchRequest);
                 })
+                .collectList()
                 .flatMap(batchRequest -> addressBatchRequestService.incrementAndCheckRetry(items, null, batchId))
-                .count()
-                .doOnNext(count -> log.debug(ADDRESS_NORMALIZER_ASYNC + " increment retry for {} request", count))
+                .thenReturn(items)
+                .doOnNext(count -> log.debug(ADDRESS_NORMALIZER_ASYNC + " increment retry for {} request", count.size()))
                 .then();
     }
 
