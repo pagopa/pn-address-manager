@@ -9,7 +9,7 @@
 	</parent>
 
 	<artifactId>pn-address-manager</artifactId>
-	<version>2.1.1</version>
+	<version>2.1.2-SNAPSHOT</version>
 	<name>pn-address-manager</name>
 	<description>PN Address Manager</description>
 
@@ -262,8 +262,8 @@
 								<swaggerAnnotations>false</swaggerAnnotations>
 								<openApiNullable>false</openApiNullable>
 							</configOptions>
-							<modelPackage>${project.groupId}.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto</modelPackage>
-							<apiPackage>${project.groupId}.address.manager.msclient.generated.pn.safe.storage.v1.api</apiPackage>
+							<modelPackage>${project.groupId}.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto</modelPackage>
+							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.pn.safe.storage.v1.api</apiPackage>
 							<modelNameSuffix>Dto</modelNameSuffix>
 						</configuration>
 					</execution>
@@ -285,8 +285,8 @@
 								<swaggerAnnotations>false</swaggerAnnotations>
 								<openApiNullable>false</openApiNullable>
 							</configOptions>
-							<modelPackage>>${project.groupId}.address.manager.microservice.msclient.generated.generated.postel.normalizzatore.v1.dto</modelPackage>
-							<apiPackage>${project.groupId}.address.manager.msclient.generated.postel.normalizzatore.v1.api</apiPackage>
+							<modelPackage>>${project.groupId}.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.dto</modelPackage>
+							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.api</apiPackage>
 						</configuration>
 					</execution>
 					<execution>
@@ -307,8 +307,8 @@
 								<swaggerAnnotations>false</swaggerAnnotations>
 								<openApiNullable>false</openApiNullable>
 							</configOptions>
-							<modelPackage>>${project.groupId}.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto</modelPackage>
-							<apiPackage>${project.groupId}.address.manager.msclient.generated.postel.deduplica.v1.api</apiPackage>
+							<modelPackage>>${project.groupId}.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto</modelPackage>
+							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.deduplica.v1.api</apiPackage>
 						</configuration>
 					</execution>
 					<execution>

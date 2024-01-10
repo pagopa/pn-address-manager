@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.fasterxml.jackson.core.JsonFactory;
@@ -16,13 +15,12 @@ import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator
 import com.fasterxml.jackson.databind.jsontype.impl.StdSubtypeResolver;
 import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
-import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
-import it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.ApiClient;
-import it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.RFC3339DateFormat;
 
 import java.text.DateFormat;
 
 
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.ApiClient;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.RFC3339DateFormat;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
@@ -38,7 +36,7 @@ class DeduplicaClientConfigTest {
         //   so wrote a non-Spring test instead.
         //   Diffblue AI was unable to find a test
 
-        DeduplicaClientConfig deduplicaClientConfig = new DeduplicaClientConfig(new ResponseExchangeFilter());
+        DeduplicaClientConfig deduplicaClientConfig = new DeduplicaClientConfig();
 
         PnAddressManagerConfig.Csv csv = new PnAddressManagerConfig.Csv();
         csv.setPathCap("Path Cap");
@@ -143,9 +141,7 @@ class DeduplicaClientConfigTest {
         when(exchangeFilterFunction.apply(Mockito.<ExchangeFunction>any())).thenReturn(mock(ExchangeFunction.class));
         ExchangeFilterFunction exchangeFilterFunction2 = mock(ExchangeFilterFunction.class);
         when(exchangeFilterFunction2.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction);
-        ResponseExchangeFilter responseExchangeFilter = mock(ResponseExchangeFilter.class);
-        when(responseExchangeFilter.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction2);
-        DeduplicaClientConfig deduplicaClientConfig = new DeduplicaClientConfig(responseExchangeFilter);
+        DeduplicaClientConfig deduplicaClientConfig = new DeduplicaClientConfig();
 
         PnAddressManagerConfig.Csv csv = new PnAddressManagerConfig.Csv();
         csv.setPathCap("Path Cap");
@@ -235,9 +231,6 @@ class DeduplicaClientConfigTest {
         assertEquals(" ", factory.getRootValueSeparator());
         assertSame(objectMapper, factory.getCodec());
         assertEquals(16385, factory.getParserFeatures());
-        verify(responseExchangeFilter).andThen(Mockito.<ExchangeFilterFunction>any());
-        verify(exchangeFilterFunction2).andThen(Mockito.<ExchangeFilterFunction>any());
-        verify(exchangeFilterFunction).apply(Mockito.<ExchangeFunction>any());
     }
 }
 

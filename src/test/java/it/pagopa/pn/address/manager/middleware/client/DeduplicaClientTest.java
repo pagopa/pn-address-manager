@@ -1,10 +1,10 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaRequest;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaResponse;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
-import it.pagopa.pn.address.manager.msclient.generated.postel.deduplica.v1.api.DeduplicaApi;
+
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.api.DeduplicaApi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
@@ -39,8 +39,6 @@ class DeduplicaClientTest {
         when(exchangeFilterFunction.apply(Mockito.<ExchangeFunction>any())).thenReturn(mock(ExchangeFunction.class));
         ExchangeFilterFunction exchangeFilterFunction2 = mock(ExchangeFilterFunction.class);
         when(exchangeFilterFunction2.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction);
-        ResponseExchangeFilter responseExchangeFilter = mock(ResponseExchangeFilter.class);
-        when(responseExchangeFilter.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction2);
         DeduplicaClient postelClient = new DeduplicaClient(defaultApi, pnAddressManagerConfig);
         postelClient.deduplica(new DeduplicaRequest());
         verify(defaultApi, times(1)).deduplica(anyString(),anyString(),any());

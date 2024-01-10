@@ -1,7 +1,7 @@
 package it.pagopa.pn.address.manager.middleware.client.safestorage;
 
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
-import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -67,7 +67,7 @@ class UploadDownloadClientTest {
 	@Test
 	void testUploadContentWithError () {
 		UploadDownloadClient uploadDownloadClient = new UploadDownloadClient();
-        FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
+		FileCreationResponseDto fileCreationResponse = mock(FileCreationResponseDto.class);
 		when(fileCreationResponse.getKey()).thenReturn("key");
 		when(fileCreationResponse.getUploadUrl()).thenReturn("http://localhost:8080898");
 		WebClientResponseException webClientResponseException = mock(WebClientResponseException.class);
