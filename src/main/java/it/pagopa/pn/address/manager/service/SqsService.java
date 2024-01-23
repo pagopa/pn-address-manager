@@ -12,6 +12,7 @@ import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
@@ -42,7 +43,13 @@ public class SqsService {
     private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
 
-    public Mono<Void> sendToInputDlqQueue(PnRequest pnRequest) {
+    public Mono<Void> sendListToDlqQueue(List<PnRequest> pnRequests) {
+        return Flux.fromIterable(pnRequests)
+                .map(this::sendToDlqQueue)
+                .then();
+    }
+
+    public Mono<Void> sendToDlqQueue(PnRequest pnRequest) {
         InternalCodeSqsDto internalCodeSqsDto = toInternalCodeSqsDto(pnRequest);
         return pushToInputDlqQueue(internalCodeSqsDto, pnRequest.getClientId())
                 .onErrorResume(throwable -> {

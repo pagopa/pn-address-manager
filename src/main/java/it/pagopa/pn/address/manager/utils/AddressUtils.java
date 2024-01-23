@@ -315,11 +315,7 @@ public class AddressUtils {
                 PostelNErrorNorm error = PostelNErrorNorm.fromCode(normalizedAddress.getNErroreNorm());
                 log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
                 normalizedAddressNErroreNormList.add(error);
-                if (isPresentBlockedError(error.name()) || isPresentRetryableError(error.name())) {
-                    result.setError(PNADDR003_MESSAGE);
-                } else {
-                    result.setError(PNADDR001_MESSAGE);
-                }
+                result.setError(PNADDR001_MESSAGE);
             } else {
                 result.setNormalizedAddress(toAnalogAddress(normalizedAddress));
             }
@@ -373,20 +369,5 @@ public class AddressUtils {
     public static Duration getTimeSpent(Instant start) {
         Instant end = Instant.now();
         return Duration.between(start, end);
-    }
-
-    public String buildPnRequestMessageFromRequestWithoutCallback(PnRequest pnRequest) {
-        List<NormalizeRequest> normalizeRequestList = getNormalizeRequestFromBatchRequest(pnRequest);
-
-        List<NormalizeResult> itemsResult = normalizeRequestList.stream()
-                .map(normalizeRequest -> {
-                    NormalizeResult normalizeResult = new NormalizeResult();
-                    normalizeResult.setId(normalizeRequest.getId());
-                    normalizeResult.setError(PNADDR003_MESSAGE);
-                    return normalizeResult;
-                })
-                .toList();
-
-        return toJson(itemsResult);
     }
 }

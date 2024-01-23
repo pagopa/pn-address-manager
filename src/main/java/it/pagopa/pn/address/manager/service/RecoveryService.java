@@ -161,7 +161,7 @@ public class RecoveryService {
 
     private Mono<PnRequest> checkSendStatusToSendToDLQ(PnRequest item) {
         if(BatchSendStatus.ERROR.getValue().equalsIgnoreCase(item.getSendStatus())) {
-            return sqsService.sendToInputDlqQueue(item)
+            return sqsService.sendToDlqQueue(item)
                     .thenReturn(item)
                     .doOnNext(r -> {
                         log.info(ADDRESS_NORMALIZER_ASYNC + "sent to dlq queue message for correlationId: {}", item.getCorrelationId());

@@ -6,8 +6,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 public enum BatchSendStatus {
     NOT_SENT("NOT_SENT"),
     SENT("SENT"),
-    SENT_WITH_ERROR("SENT_WITH_ERROR"),
-
     ERROR("ERROR"),
     SENT_TO_DLQ("SENT_TO_DLQ");
 

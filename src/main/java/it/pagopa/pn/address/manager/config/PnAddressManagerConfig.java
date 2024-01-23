@@ -1,6 +1,5 @@
 package it.pagopa.pn.address.manager.config;
 
-import it.pagopa.pn.address.manager.constant.NormalizerErrorMode;
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
 import lombok.Data;
 import lombok.Getter;
@@ -18,7 +17,6 @@ public class PnAddressManagerConfig {
     private String validationPattern;
     private Boolean enableValidation;
     private Boolean flagCsv;
-    private String normalizerErrorMode;
     private EventBus eventBus;
     private Csv csv;
     private Sqs sqs;
