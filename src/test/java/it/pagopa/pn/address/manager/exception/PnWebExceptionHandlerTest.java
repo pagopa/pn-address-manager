@@ -1,6 +1,5 @@
 package it.pagopa.pn.address.manager.exception;
 
-import it.pagopa.pn.address.manager.log.ResponseLoggingDecorator;
 import it.pagopa.pn.common.rest.error.v1.dto.Problem;
 import it.pagopa.pn.commons.exceptions.ExceptionHelper;
 import org.junit.jupiter.api.Test;
@@ -54,8 +53,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.CONTINUE);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
         pnWebExceptionHandler.handle(serverWebExchange, new Throwable());
         verify(exceptionHelper).handleException(Mockito.<Throwable>any());
         verify(serverWebExchange, atLeast(1)).getResponse();
@@ -79,8 +77,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.CONTINUE);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
         pnWebExceptionHandler.handle(serverWebExchange, new Throwable());
         verify(exceptionHelper).handleException(Mockito.<Throwable>any());
         verify(serverWebExchange, atLeast(1)).getResponse();
@@ -102,8 +99,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.CONTINUE);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
         pnWebExceptionHandler.handle(serverWebExchange, new Throwable());
         verify(exceptionHelper).handleException(Mockito.<Throwable>any());
         verify(serverWebExchange, atLeast(1)).getResponse();
@@ -126,8 +122,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.CONTINUE);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
         pnWebExceptionHandler.handle(serverWebExchange, new Throwable());
         verify(exceptionHelper).handleException(Mockito.<Throwable>any());
         verify(exceptionHelper).generateFallbackProblem();
@@ -146,9 +141,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
-
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
         MethodArgumentNotValidException exception = mock(MethodArgumentNotValidException.class);
         when(exception.getMessage()).thenReturn("error");
         StepVerifier.create(pnWebExceptionHandler.handle(serverWebExchange, exception))
@@ -162,9 +155,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
-
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
         MissingServletRequestParameterException exception = mock(MissingServletRequestParameterException.class);
         when(exception.getMessage()).thenReturn("error");
         StepVerifier.create(pnWebExceptionHandler.handle(serverWebExchange, exception))
@@ -178,9 +169,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
-
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
         WebExchangeBindException exception = mock(WebExchangeBindException.class);
         when(exception.getMessage()).thenReturn("error");
         StepVerifier.create(pnWebExceptionHandler.handle(serverWebExchange, exception))
@@ -194,8 +183,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
 
         ServerWebInputException exception = mock(ServerWebInputException.class);
         when(exception.getMessage()).thenReturn("error");
@@ -210,8 +198,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
 
         ConstraintViolationException exception = mock(ConstraintViolationException.class);
         when(exception.getMessage()).thenReturn("error");
@@ -226,8 +213,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
 
         MethodArgumentTypeMismatchException exception = mock(MethodArgumentTypeMismatchException.class);
         when(exception.getMessage()).thenReturn("error");
@@ -243,8 +229,7 @@ class PnWebExceptionHandlerTest {
         when(delegate.bufferFactory()).thenReturn(new DefaultDataBufferFactory());
         when(delegate.getStatusCode()).thenReturn(HttpStatus.BAD_REQUEST);
         DefaultServerWebExchange serverWebExchange = mock(DefaultServerWebExchange.class);
-        when(serverWebExchange.getResponse()).thenReturn(new ResponseLoggingDecorator(new ResponseLoggingDecorator(
-                new ResponseLoggingDecorator(new ResponseLoggingDecorator(new ResponseLoggingDecorator(delegate))))));
+        when(serverWebExchange.getResponse()).thenReturn((delegate));
 
         PnAddressManagerException exception = mock(PnAddressManagerException.class);
         when(exception.getMessage()).thenReturn("error");

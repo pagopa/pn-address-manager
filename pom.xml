@@ -262,9 +262,8 @@
 								<swaggerAnnotations>false</swaggerAnnotations>
 								<openApiNullable>false</openApiNullable>
 							</configOptions>
-							<modelPackage>${project.groupId}.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto</modelPackage>
-							<apiPackage>${project.groupId}.address.manager.msclient.generated.pn.safe.storage.v1.api</apiPackage>
-							<modelNameSuffix>Dto</modelNameSuffix>
+							<modelPackage>${project.groupId}.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto</modelPackage>
+							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.pn.safe.storage.v1.api</apiPackage>				<modelNameSuffix>Dto</modelNameSuffix>
 						</configuration>
 					</execution>
 					<execution>
@@ -285,9 +284,8 @@
 								<swaggerAnnotations>false</swaggerAnnotations>
 								<openApiNullable>false</openApiNullable>
 							</configOptions>
-							<modelPackage>>${project.groupId}.address.manager.microservice.msclient.generated.generated.postel.normalizzatore.v1.dto</modelPackage>
-							<apiPackage>${project.groupId}.address.manager.msclient.generated.postel.normalizzatore.v1.api</apiPackage>
-						</configuration>
+							<modelPackage>>${project.groupId}.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.dto</modelPackage>
+							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.api</apiPackage>				</configuration>
 					</execution>
 					<execution>
 						<id>generate-client-postel-deduplica</id>
@@ -307,9 +305,8 @@
 								<swaggerAnnotations>false</swaggerAnnotations>
 								<openApiNullable>false</openApiNullable>
 							</configOptions>
-							<modelPackage>>${project.groupId}.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto</modelPackage>
-							<apiPackage>${project.groupId}.address.manager.msclient.generated.postel.deduplica.v1.api</apiPackage>
-						</configuration>
+							<modelPackage>>${project.groupId}.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto</modelPackage>
+							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.deduplica.v1.api</apiPackage>			</configuration>
 					</execution>
 					<execution>
 						<id>generate-normalizzatore-webhook-server</id>
