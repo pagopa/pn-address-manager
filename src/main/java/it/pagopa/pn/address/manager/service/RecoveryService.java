@@ -4,7 +4,9 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchSendStatus;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
+import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.model.EventDetail;
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
+import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESSMANAGER_BATCHREQUEST;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESSMANAGER_BATCHREQUEST;
 
@@ -161,7 +164,7 @@ public class RecoveryService {
 
     private Mono<PnRequest> checkSendStatusToSendToDLQ(PnRequest item) {
         if(BatchSendStatus.ERROR.getValue().equalsIgnoreCase(item.getSendStatus())) {
-            return sqsService.sendToInputDlqQueue(item)
+            return sqsService.sendToDlqQueue(item)
                     .thenReturn(item)
                     .doOnNext(r -> {
                         log.info(ADDRESS_NORMALIZER_ASYNC + "sent to dlq queue message for correlationId: {}", item.getCorrelationId());

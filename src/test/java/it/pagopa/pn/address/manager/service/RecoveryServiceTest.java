@@ -103,7 +103,7 @@ class RecoveryServiceTest {
         when(addressBatchRequestRepository.setNewReservationIdToBatchRequest(any())).thenReturn(Mono.just(pnRequest2));
 
 
-        when(sqsService.sendToInputDlqQueue((PnRequest) any())).thenReturn(Mono.empty());
+        when(sqsService.sendToDlqQueue((PnRequest) any())).thenReturn(Mono.empty());
         when(eventService.sendEvent(anyString())).thenReturn(Mono.just(PutEventsResponse.builder().build()));
         Assertions.assertDoesNotThrow(() -> recoveryService.recoveryBatchSendToEventbridge());
     }

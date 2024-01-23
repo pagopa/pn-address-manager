@@ -46,7 +46,7 @@ public class PendingRequestService {
     @SchedulerLock(name = "cleanStoppedRequest", lockAtMostFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-most}",
             lockAtLeastFor = "${pn.address-manager.normalizer.batch-recovery.lock-at-least}")
     public void cleanPendingPostelBatch() {
-        log.trace(ADDRESS_NORMALIZER_ASYNC + "clean pending postel batch start");
+        log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation start");
         processPostelbatchToClean(getPostelBatchToClean(Map.of()))
                 .doOnNext(batchRequestPage -> log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation end"))
                 .subscribe();
@@ -65,7 +65,7 @@ public class PendingRequestService {
                     .thenReturn(page)
                     .doOnTerminate(() -> {
                         Duration timeSpent = AddressUtils.getTimeSpent(startPagedQuery);
-                        log.debug(ADDRESS_NORMALIZER_ASYNC + "end retrieve and process related batchRequest. Time spent is {} millis", timeSpent.toMillis());
+                        log.debug(ADDRESS_NORMALIZER_ASYNC + "end recovery batchRequest query. Time spent is {} millis", timeSpent.toMillis());
                     })
                     .flatMap(lastProcessedPage -> {
                         if (lastProcessedPage.lastEvaluatedKey() != null) {
@@ -81,7 +81,7 @@ public class PendingRequestService {
     private Mono<Void> retrieveAndProcessRelatedBatchRequest(List<NormalizzatoreBatch> items) {
         return Flux.fromIterable(items)
                 .flatMap(postelBatch -> processRelatedBatchRequest(getRelatedBatchRequest(Map.of(), postelBatch.getBatchId()), postelBatch.getBatchId()))
-                .doOnNext(batchRequestPage -> log.trace(ADDRESS_NORMALIZER_ASYNC + "clean pending postel batch end"))
+                .doOnNext(batchRequestPage -> log.trace(ADDRESS_NORMALIZER_ASYNC + "recovery postel activation end"))
                 .then();
 
     }

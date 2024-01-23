@@ -36,7 +36,6 @@
     "PnAddressManagerNormalizerBatchRecoveryLockAtMost": "120000",
     "PnAddressManagerNormalizerBatchRecoveryLockAtLeast": "1000",
     "PnAddressManagerNormalizerPostelClientTimeout": "30000",
-    "AddressLengthValidation": "250",
-    "PnAddressManagerNormalizerErrorMode": "DLQ"
+    "AddressLengthValidation": "250"
   }
 }

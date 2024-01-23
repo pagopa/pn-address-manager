@@ -46,7 +46,7 @@ class SqsServiceTest {
         when(addressUtils.toObject("yourAddresses", NormalizeItemsRequest.class)).thenReturn(new NormalizeItemsRequest());
         when(sqsClient.getQueueUrl((GetQueueUrlRequest) any())).thenReturn(GetQueueUrlResponse.builder().queueUrl("url").build());
         when(sqsClient.sendMessage((SendMessageRequest) any())).thenReturn(SendMessageResponse.builder().build());
-        StepVerifier.create(sqsService.sendToInputDlqQueue(pnRequest)).expectNextCount(0).verifyComplete();
+        StepVerifier.create(sqsService.sendToDlqQueue(pnRequest)).expectNextCount(0).verifyComplete();
         InternalCodeSqsDto internalCodeSqsDto = mock(InternalCodeSqsDto.class);
         NormalizeItemsRequest normalizeItemsRequest = mock(NormalizeItemsRequest.class);
 
