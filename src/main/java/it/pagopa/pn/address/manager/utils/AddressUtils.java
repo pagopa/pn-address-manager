@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.address.manager.constant.PostelNErrorNorm;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
@@ -76,19 +77,19 @@ public class AddressUtils {
         return normalizedAddressResponse;
     }
 
-    private boolean validateAddress(AnalogAddress analogAddress) {
-        return validateAddressField(analogAddress.getAddressRow())
-                && validateAddressField(analogAddress.getAddressRow2())
-                && validateAddressField(analogAddress.getCity())
-                && validateAddressField(analogAddress.getCity2())
-                && validateAddressField(analogAddress.getCountry())
-                && validateAddressField(analogAddress.getPr())
-                && validateAddressField(analogAddress.getCap());
+    private boolean validateAddress(AnalogAddress analogAddress, String pattern) {
+        return validateAddressField(analogAddress.getAddressRow(), pattern)
+                && validateAddressField(analogAddress.getAddressRow2(), pattern)
+                && validateAddressField(analogAddress.getCity(), pattern)
+                && validateAddressField(analogAddress.getCity2(), pattern)
+                && validateAddressField(analogAddress.getCountry(), pattern)
+                && validateAddressField(analogAddress.getPr(), pattern)
+                && validateAddressField(analogAddress.getCap(), pattern);
     }
 
-    private boolean validateAddressField(String fieldValue) {
+    private boolean validateAddressField(String fieldValue, String pattern) {
         if (!StringUtils.isBlank(fieldValue)) {
-            return fieldValue.matches("[" + pnAddressManagerConfig.getValidationPattern() + "]*");
+            return fieldValue.matches("[" + pattern + "]*");
         }
         return true;
     }
@@ -109,14 +110,6 @@ public class AddressUtils {
     private NormalizedAddressResponse verifyAddress(AnalogAddress analogAddress, String correlationId) {
         NormalizedAddressResponse normalizedAddressResponse = new NormalizedAddressResponse();
         log.logChecking(PROCESS_VERIFY_ADDRESS);
-        if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableValidation())
-                && !validateAddress(analogAddress)) {
-            log.logCheckingOutcome(PROCESS_VERIFY_ADDRESS, false, "Address contains invalid characters");
-            log.error("Error during verifyAddressInCsv for {}: Address contains invalid characters", correlationId);
-            normalizedAddressResponse.setError("Address contains invalid characters");
-            return normalizedAddressResponse;
-        }
-
         try {
             verifyAddressInCsv(analogAddress, normalizedAddressResponse);
         } catch (PnInternalAddressManagerException e) {
@@ -135,7 +128,7 @@ public class AddressUtils {
             normalizedAddressResponse.setItalian(true);
             verifyCapAndCity(analogAddress);
         } else {
-            searchCountry(analogAddress.getCountry(), countryMap);
+            searchCountry(analogAddress, countryMap);
         }
     }
 
@@ -146,6 +139,9 @@ public class AddressUtils {
             throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, "Cap, city and Province are mandatory", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         } else if (!compareWithCapModelObject(analogAddress)) {
             throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, "Invalid Address, Cap, City and Province: [" + analogAddress.getCap() + "," + analogAddress.getCity() + "," + analogAddress.getPr() + "]", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
+        } else if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableValidation())
+                && !validateAddress(analogAddress, pnAddressManagerConfig.getValidationPattern())) {
+            throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, "Address contains invalid characters", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         }
     }
 
@@ -156,11 +152,22 @@ public class AddressUtils {
                         && capModel.getCity().equalsIgnoreCase(analogAddress.getCity().trim()));
     }
 
-    private void searchCountry(String country, Map<String, String> countryMap) {
-        String normalizedCountry = StringUtils.normalizeSpace(country.toUpperCase());
+    private void searchCountry(AnalogAddress analogAddress, Map<String, String> countryMap) {
+        String normalizedCountry = StringUtils.normalizeSpace(analogAddress.getCountry().toUpperCase());
         if (!countryMap.containsKey(normalizedCountry)) {
             throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Country not found: [%s]", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
+        } else if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableValidation()) && !validateAddressWithMode(analogAddress)) {
+            throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, "Address contains invalid characters", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
         }
+    }
+
+    private boolean validateAddressWithMode(AnalogAddress analogAddress) {
+        if (ForeignValidationMode.STANDARD == pnAddressManagerConfig.getForeignValidationMode()) {
+            return validateAddress(analogAddress, pnAddressManagerConfig.getValidationPattern());
+        } else if (ForeignValidationMode.PATTERN == pnAddressManagerConfig.getForeignValidationMode()) {
+            return validateAddress(analogAddress, pnAddressManagerConfig.getForeignValidationPattern());
+        }
+        return true;
     }
 
     public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems, String correlationId) {
@@ -347,7 +354,7 @@ public class AddressUtils {
     public String getCorrelationIdCreatedAt(String id) {
         if (org.springframework.util.StringUtils.hasText(id)) {
             String[] splittedId = id.split("#");
-            if(splittedId.length == 3) {
+            if (splittedId.length == 3) {
                 return splittedId[0] + "#" + splittedId[1];
             }
         }

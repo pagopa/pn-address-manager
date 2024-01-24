@@ -1,5 +1,6 @@
 package it.pagopa.pn.address.manager.config;
 
+import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.commons.conf.SharedAutoConfiguration;
 import lombok.Data;
 import lombok.Getter;
@@ -31,6 +32,9 @@ public class PnAddressManagerConfig {
     private String safeStorageBasePath;
     private Boolean enableWhitelisting;
     private Integer addressLengthValidation;
+    private String foreignValidationPattern;
+    private ForeignValidationMode foreignValidationMode;
+
     @Data
     public static class Normalizer{
         private BatchRequest batchRequest;

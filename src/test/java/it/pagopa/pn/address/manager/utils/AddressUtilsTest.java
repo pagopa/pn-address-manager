@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
@@ -51,6 +52,9 @@ class AddressUtilsTest {
         when(pnAddressManagerConfig.getEnableValidation()).thenReturn(true);
         when(pnAddressManagerConfig.getFlagCsv()).thenReturn(true);
         when(pnAddressManagerConfig.getValidationPattern()).thenReturn("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-");
+        when(pnAddressManagerConfig.getForeignValidationPattern()).thenReturn("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-");
+        when(pnAddressManagerConfig.getForeignValidationMode()).thenReturn(ForeignValidationMode.STANDARD);
+
     }
 
     private Map<String, String> getMockedCountryMap() {
@@ -58,6 +62,8 @@ class AddressUtilsTest {
         mockedCountryMap.put("ITALIA","ITALIA");
         mockedCountryMap.put("AFRICA DEL SUD","SUDAFRICA");
         mockedCountryMap.put("AMERICA","STATI UNITI D'AMERICA");
+        mockedCountryMap.put("???","???");
+
         return mockedCountryMap;
     }
 
@@ -255,6 +261,24 @@ class AddressUtilsTest {
         NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
         normalizeItemsRequest.setRequestItems(new ArrayList<>());
         normalizeItemsRequest.setCorrelationId("correlationId");
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertNotNull(addressUtils.normalizeRequestToResult(normalizeItemsRequest));
+        assertNotNull(addressUtils.mapToAcceptedResponse(normalizeItemsRequest));
+    }
+    @Test
+    void normalizeRequestToResult1(){
+        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
+        normalizeItemsRequest.setCorrelationId("correlationId");
+        NormalizeRequest normalizeRequest = new NormalizeRequest();
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setCountry("AMERICA");
+        analogAddress.setAddressRow("abc");
+        analogAddress.setAddressRow2("abc");
+        analogAddress.setCity("abc");
+        analogAddress.setPr("abc");
+        normalizeRequest.setAddress(analogAddress);
+        normalizeItemsRequest.setRequestItems(List.of(normalizeRequest));
+
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeRequestToResult(normalizeItemsRequest));
         assertNotNull(addressUtils.mapToAcceptedResponse(normalizeItemsRequest));
