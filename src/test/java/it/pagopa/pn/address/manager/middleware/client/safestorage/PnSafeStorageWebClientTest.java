@@ -14,9 +14,8 @@ import com.fasterxml.jackson.databind.jsontype.impl.StdSubtypeResolver;
 import com.fasterxml.jackson.databind.ser.BeanSerializerFactory;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
-import it.pagopa.pn.address.manager.msclient.generated.pn.safe.storage.v1.ApiClient;
-import it.pagopa.pn.address.manager.msclient.generated.pn.safe.storage.v1.RFC3339DateFormat;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.ApiClient;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.RFC3339DateFormat;
 
 import java.text.DateFormat;
 
@@ -24,7 +23,7 @@ import org.junit.jupiter.api.Test;
 
 class PnSafeStorageWebClientTest {
     /**
-     * Method under test: {@link PnSafeStorageWebClient#fileUploadApi(PnAddressManagerConfig, ResponseExchangeFilter)}
+     * Method under test: {@link PnSafeStorageWebClient#fileUploadApi(PnAddressManagerConfig)}
      */
     @Test
     void testFileUploadApi() {
@@ -101,7 +100,7 @@ class PnSafeStorageWebClientTest {
         cfg.setSafeStorageBasePath("Safe Storage Base Path");
         cfg.setSqs(sqs);
         cfg.setValidationPattern("Validation Pattern");
-        ApiClient apiClient = pnSafeStorageWebClient.fileUploadApi(cfg, new ResponseExchangeFilter()).getApiClient();
+        ApiClient apiClient = pnSafeStorageWebClient.fileUploadApi(cfg).getApiClient();
         assertEquals(1, apiClient.getAuthentications().size());
         assertEquals("Safe Storage Base Path", apiClient.getBasePath());
         DateFormat dateFormat = apiClient.getDateFormat();
@@ -125,7 +124,7 @@ class PnSafeStorageWebClientTest {
     }
 
     /**
-     * Method under test: {@link PnSafeStorageWebClient#fileUploadApi(PnAddressManagerConfig, ResponseExchangeFilter)}
+     * Method under test: {@link PnSafeStorageWebClient#fileUploadApi(PnAddressManagerConfig)}
      */
     @Test
     void testFileUploadApi2() {
@@ -202,7 +201,7 @@ class PnSafeStorageWebClientTest {
         cfg.setSafeStorageBasePath("Safe Storage Base Path");
         cfg.setSqs(sqs);
         cfg.setValidationPattern("Validation Pattern");
-        ApiClient apiClient = pnSafeStorageWebClient.fileUploadApi(cfg, new ResponseExchangeFilter()).getApiClient();
+        ApiClient apiClient = pnSafeStorageWebClient.fileUploadApi(cfg).getApiClient();
         assertEquals(1, apiClient.getAuthentications().size());
         assertEquals("Safe Storage Base Path", apiClient.getBasePath());
         DateFormat dateFormat = apiClient.getDateFormat();
@@ -226,7 +225,7 @@ class PnSafeStorageWebClientTest {
     }
 
     /**
-     * Method under test: {@link PnSafeStorageWebClient#fileDownloadApi(PnAddressManagerConfig, ResponseExchangeFilter)}
+     * Method under test: {@link PnSafeStorageWebClient#fileDownloadApi(PnAddressManagerConfig)}
      */
     @Test
     void testFileDownloadApi() {
@@ -303,7 +302,7 @@ class PnSafeStorageWebClientTest {
         cfg.setSafeStorageBasePath("Safe Storage Base Path");
         cfg.setSqs(sqs);
         cfg.setValidationPattern("Validation Pattern");
-        ApiClient apiClient = pnSafeStorageWebClient.fileDownloadApi(cfg, new ResponseExchangeFilter()).getApiClient();
+        ApiClient apiClient = pnSafeStorageWebClient.fileDownloadApi(cfg).getApiClient();
         assertEquals(1, apiClient.getAuthentications().size());
         assertEquals("Safe Storage Base Path", apiClient.getBasePath());
         DateFormat dateFormat = apiClient.getDateFormat();
@@ -327,7 +326,7 @@ class PnSafeStorageWebClientTest {
     }
 
     /**
-     * Method under test: {@link PnSafeStorageWebClient#fileDownloadApi(PnAddressManagerConfig, ResponseExchangeFilter)}
+     * Method under test: {@link PnSafeStorageWebClient#fileDownloadApi(PnAddressManagerConfig)}
      */
     @Test
     void testFileDownloadApi2() {
@@ -404,7 +403,7 @@ class PnSafeStorageWebClientTest {
         cfg.setSafeStorageBasePath("Safe Storage Base Path");
         cfg.setSqs(sqs);
         cfg.setValidationPattern("Validation Pattern");
-        ApiClient apiClient = pnSafeStorageWebClient.fileDownloadApi(cfg, new ResponseExchangeFilter()).getApiClient();
+        ApiClient apiClient = pnSafeStorageWebClient.fileDownloadApi(cfg).getApiClient();
         assertEquals(1, apiClient.getAuthentications().size());
         assertEquals("Safe Storage Base Path", apiClient.getBasePath());
         DateFormat dateFormat = apiClient.getDateFormat();

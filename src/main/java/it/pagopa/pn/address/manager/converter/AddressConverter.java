@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.converter;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.*;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.*;
 import it.pagopa.pn.address.manager.constant.*;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;

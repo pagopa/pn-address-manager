@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.service;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.normalizzatore.v1.dto.NormalizzazioneResponse;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.dto.NormalizzazioneResponse;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
@@ -8,7 +9,6 @@ import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
-import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.middleware.client.NormalizzatoreClient;
 import it.pagopa.pn.address.manager.model.NormalizeRequestPostelInput;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;

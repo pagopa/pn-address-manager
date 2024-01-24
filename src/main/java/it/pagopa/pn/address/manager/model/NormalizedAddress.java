@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.model;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.AddressOut;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressOut;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.opencsv.bean.CsvBindByPosition;

@@ -1,9 +1,9 @@
 package it.pagopa.pn.address.manager.converter;
 
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.AddressIn;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.AddressOut;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaRequest;
-import _it.pagopa.pn.address.manager.microservice.msclient.generated.generated.postel.deduplica.v1.dto.DeduplicaResponse;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressIn;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressOut;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
@@ -77,7 +77,7 @@ class AddressConverterTest {
         assertNull(masterIn.getStato());
         assertNull(masterIn.getProvincia());
         assertNull(masterIn.getLocalitaAggiuntiva());
-        assertNull( masterIn.getIndirizzoAggiuntivo());
+        assertNull(masterIn.getIndirizzoAggiuntivo());
         assertEquals("42", masterIn.getId());
         assertNull(masterIn.getCap());
         assertNull(slaveIn.getProvincia());
@@ -97,40 +97,21 @@ class AddressConverterTest {
         assertThrows(PnInternalException.class, () -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
 
     }
-    @Test
-    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed001() {
-        AddressOut addressOut= mock(AddressOut.class);
-        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
-        risultatoDeduplica.setSlaveOut(addressOut);
-        risultatoDeduplica.setMasterOut(addressOut);
-        risultatoDeduplica.setErrore("DED001");
-        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
-    }
-    @Test
-    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed002() {
-        AddressOut addressOut= mock(AddressOut.class);
-        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
-        risultatoDeduplica.setSlaveOut(addressOut);
-        risultatoDeduplica.setMasterOut(addressOut);
-        risultatoDeduplica.setErrore("DED002");
-        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
-    }
-    @Test
-    void testCreateDeduplicatesResponseFromDeduplicaResponseErrorDed003() {
-        AddressOut addressOut= mock(AddressOut.class);
-        DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
-        risultatoDeduplica.setSlaveOut(addressOut);
-        risultatoDeduplica.setMasterOut(addressOut);
-        risultatoDeduplica.setErrore("DED003");
-        assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
-    }
+
     @Test
     void testCreateDeduplicatesResponseFromDeduplicaResponseError() {
-        AddressOut addressOut= mock(AddressOut.class);
+        createDeduplicatesResponseFromDeduplicaResponseError("DED001");
+        createDeduplicatesResponseFromDeduplicaResponseError("DED002");
+        createDeduplicatesResponseFromDeduplicaResponseError("DED003");
+        createDeduplicatesResponseFromDeduplicaResponseError("DED400");
+    }
+
+    void createDeduplicatesResponseFromDeduplicaResponseError(String errore) {
+        AddressOut addressOut = mock(AddressOut.class);
         DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
         risultatoDeduplica.setSlaveOut(addressOut);
         risultatoDeduplica.setMasterOut(addressOut);
-        risultatoDeduplica.setErrore("DED400");
+        risultatoDeduplica.setErrore(errore);
         assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
 
@@ -159,8 +140,9 @@ class AddressConverterTest {
         verify(risultatoDeduplica, atLeast(1)).getSlaveOut();
         verify(risultatoDeduplica).getRisultatoDedu();
     }
+
     @Test
-    void testCreateDeduplicatesResponseFromDeduplicaResponseGetAnalogAddressError(){
+    void testCreateDeduplicatesResponseFromDeduplicaResponseGetAnalogAddressError() {
         DeduplicaResponse risultatoDeduplica = new DeduplicaResponse();
         AddressOut addressOut = new AddressOut();
         addressOut.setfPostalizzabile(String.valueOf(0));

@@ -5,7 +5,7 @@ import it.pagopa.pn.address.manager.converter.NormalizzatoreConverter;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
-import it.pagopa.pn.address.manager.microservice.msclient.generated.pn.safe.storage.v1.dto.FileCreationRequestDto;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.PnSafeStorageClient;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
@@ -89,7 +89,7 @@ public class NormalizzatoreService {
         return apiKeyUtils.checkPostelApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> findPostelBatch(callbackRequestData.getRequestId().split(RETRY_SUFFIX)[0]))
                 .flatMap(postelBatch -> updateWithFileKeyTimestampAndError(postelBatch, callbackRequestData))
-                .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, postelBatch, pnAddressManagerCxId))
+                .flatMap(postelBatch -> checkOutputFileOnFileStorage(callbackRequestData, postelBatch))
                 .onErrorResume(throwable -> {
                     log.error(CALLBACK_ERROR_LOG, throwable.getMessage(), throwable);
                     return Mono.error(throwable);
@@ -112,7 +112,7 @@ public class NormalizzatoreService {
                         SEMANTIC_ERROR_CODE)));
     }
 
-    private Mono<OperationResultCodeResponse> checkOutputFileOnFileStorage(NormalizerCallbackRequest normalizerCallbackRequest, NormalizzatoreBatch normalizzatoreBatch, String pnAddressManagerCxId) {
+    private Mono<OperationResultCodeResponse> checkOutputFileOnFileStorage(NormalizerCallbackRequest normalizerCallbackRequest, NormalizzatoreBatch normalizzatoreBatch) {
         OperationResultCodeResponse response = getOperationResultCodeOK();
         if (!StringUtils.hasText(normalizerCallbackRequest.getError())) {
             return getFile(normalizerCallbackRequest.getUri())

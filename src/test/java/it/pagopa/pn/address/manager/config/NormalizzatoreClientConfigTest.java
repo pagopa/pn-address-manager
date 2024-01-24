@@ -19,12 +19,11 @@ import com.fasterxml.jackson.databind.introspect.BasicClassIntrospector;
 import com.fasterxml.jackson.databind.introspect.ClassIntrospector;
 import com.fasterxml.jackson.databind.introspect.DefaultAccessorNamingStrategy;
 import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
-import it.pagopa.pn.address.manager.log.ResponseExchangeFilter;
-import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.ApiClient;
-import it.pagopa.pn.address.manager.msclient.generated.postel.normalizzatore.v1.RFC3339DateFormat;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.ApiClient;
 
 import java.text.DateFormat;
 
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.RFC3339DateFormat;
 import org.junit.jupiter.api.Test;
 
 class NormalizzatoreClientConfigTest {
@@ -34,8 +33,7 @@ class NormalizzatoreClientConfigTest {
 	@Test
 	void testNormalizzatoreApi () {
 		// Arrange
-		NormalizzatoreClientConfig normalizzatoreClientConfig = new NormalizzatoreClientConfig(
-				new ResponseExchangeFilter());
+		NormalizzatoreClientConfig normalizzatoreClientConfig = new NormalizzatoreClientConfig();
 
 		PnAddressManagerConfig.Csv csv = new PnAddressManagerConfig.Csv();
 		csv.setPathCap("Path Cap");
@@ -140,8 +138,7 @@ class NormalizzatoreClientConfigTest {
 	@Test
 	void testNormalizzatoreApi2 () {
 		// Arrange
-		NormalizzatoreClientConfig normalizzatoreClientConfig = new NormalizzatoreClientConfig(
-				new ResponseExchangeFilter());
+		NormalizzatoreClientConfig normalizzatoreClientConfig = new NormalizzatoreClientConfig();
 
 		PnAddressManagerConfig.Csv csv = new PnAddressManagerConfig.Csv();
 		csv.setPathCap("Path Cap");
