@@ -47,18 +47,17 @@ public class NormalizeAddressService {
                     log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for request: [{}]", normalizeItemsRequest.getCorrelationId());
                 })
                 .flatMap(apiKeyModel -> checkFieldsLength(normalizeItemsRequest.getRequestItems(), normalizeItemsRequest.getCorrelationId()).thenReturn(normalizeItemsRequest))
-                .flatMap(request -> sendToInputQueue(xApiKey, cxId, request))
+                .flatMap(request -> sendToInputQueue(cxId, request))
                 .onErrorResume(throwable -> {
                     if(throwable instanceof PnInternalAddressManagerException exception && HttpStatus.FORBIDDEN.value() == exception.getStatus()){
                         return Mono.error(throwable);
                     }
-                    return sendToDlq(xApiKey, cxId, normalizeItemsRequest);
+                    return sendToDlq(cxId, normalizeItemsRequest);
                 });
     }
 
-    private Mono<AcceptedResponse> sendToInputQueue(String xApiKey, String cxId, NormalizeItemsRequest request) {
+    private Mono<AcceptedResponse> sendToInputQueue(String cxId, NormalizeItemsRequest request) {
         return sqsService.pushToInputQueue(InternalCodeSqsDto.builder()
-                        .xApiKey(xApiKey)
                         .pnAddressManagerCxId(cxId)
                         .normalizeItemsRequest(request)
                         .build(), cxId)
@@ -72,9 +71,8 @@ public class NormalizeAddressService {
                 });
     }
 
-    private Mono<AcceptedResponse> sendToDlq(String xApiKey, String cxId, NormalizeItemsRequest normalizeItemsRequest) {
+    private Mono<AcceptedResponse> sendToDlq(String cxId, NormalizeItemsRequest normalizeItemsRequest) {
         return sqsService.pushToInputDlqQueue(InternalCodeSqsDto.builder()
-                        .xApiKey(xApiKey)
                         .pnAddressManagerCxId(cxId)
                         .normalizeItemsRequest(normalizeItemsRequest)
                         .build(), cxId)
