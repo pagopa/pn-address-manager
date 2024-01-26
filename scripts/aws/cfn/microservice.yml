@@ -402,6 +402,15 @@ Parameters:
     Description: Custom read timeout for postel Client (milliseconds)
     Default: 30000
 
+  PhysicalAddressForeignContryValidationCharsValue:
+    Type: String
+    Description: 'Physical foreign address validation. Allowed Characters'
+    Default: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-"
+
+  ForeignCountryPatternValidationMode:
+    Type: String
+    Description: 'Mode of foreign country validation: "STANDARD|PASSTHROUGH|PATTERN"'
+    Default: STANDARD
 
 Resources:
 
@@ -475,6 +484,8 @@ Resources:
         ContainerEnvEntry45: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_MAXFILENUMBER=${PnAddressManagerMaxFileNumber}'
         ContainerEnvEntry46: !Sub 'PN_ADDRESSMANAGER_ENABLEWHITELISTING=${enableWhitelisting}'
         ContainerEnvEntry47: !Sub 'PN_ADDRESSMANAGER_ADDRESSLENGTHVALIDATION=${AddressLengthValidation}'
+        ContainerEnvEntry48: !Sub 'PN_ADDRESS_MANAGER_FOREIGN_VALIDATION_PATTERN=${PhysicalAddressForeignContryValidationCharsValue}'
+        ContainerEnvEntry49: !Sub 'PN_ADDRESS_MANAGER_FOREIGN_VALIDATION_MODE=${ForeignCountryPatternValidationMode}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets
