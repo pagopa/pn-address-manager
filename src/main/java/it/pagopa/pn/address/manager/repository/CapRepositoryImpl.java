@@ -30,7 +30,9 @@ public class CapRepositoryImpl implements CapRepository {
                 .partitionValue(cap)
                 .build();
         return Mono.fromFuture(table.getItem(key))
-                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(CAP_DOES_NOT_EXISTS, CAP_DOES_NOT_EXISTS, HttpStatus.NOT_FOUND.value(), "Cap not found")));
-
+                .switchIfEmpty(Mono.defer(() -> {
+                    var errorMessage = String.format(CAP_DOES_NOT_EXISTS, cap);
+                    return Mono.error(new PnInternalAddressManagerException(errorMessage, errorMessage, HttpStatus.NOT_FOUND.value(), errorMessage));
+                }));
     }
 }
