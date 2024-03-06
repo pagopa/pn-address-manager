@@ -153,14 +153,16 @@ public class NormalizzatoreBatchService {
     }
 
     private String verifyPostelAddressResponseAndRetrieveMessage(List<NormalizedAddress> normalizedAddresses, PnRequest pnRequest) {
+        MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, pnRequest.getCorrelationId());
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         normalizeItemsResult.setCorrelationId(pnRequest.getCorrelationId());
         normalizeItemsResult.setResultItems(addressUtils.toResultItem(normalizedAddresses, pnRequest));
-        return Flux.fromIterable(normalizeItemsResult.getResultItems())
+        final Mono<String> resultVerify = Flux.fromIterable(normalizeItemsResult.getResultItems())
                 .flatMap(capAndCountryService::verifyCapAndCountryList)
                 .collectList()
-                .map(addressUtils::toJson)
-                .block();
+                .map(addressUtils::toJson);
+
+        return MDCUtils.addMDCToContextAndExecute(resultVerify).block();
     }
 
     public Mono<Void> resetRelatedBatchRequestForRetry(NormalizzatoreBatch normalizzatoreBatch) {
