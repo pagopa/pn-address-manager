@@ -61,7 +61,7 @@ public class CapAndCountryService {
                     && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
                 return verifyCap(item.getNormalizedAddress().getCap())
                         .onErrorResume(throwable -> {
-                            log.warn("Verify cap in whitelist result: {}", throwable.getMessage());
+                            log.warn("Error during verify country: {}", throwable.getMessage());
                             item.setError(PNADDR002_MESSAGE);
                             item.setNormalizedAddress(null);
                             return Mono.empty();
@@ -69,7 +69,7 @@ public class CapAndCountryService {
             } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
                         .onErrorResume(throwable -> {
-                            log.warn("Verify country in whitelist result: {}", throwable.getMessage());
+                            log.warn("Error during verify country: {}", throwable.getMessage());
                             item.setError(PNADDR002_MESSAGE);
                             item.setNormalizedAddress(null);
                             return Mono.empty();

@@ -30,7 +30,9 @@ public class CountryRepositoryImpl implements CountryRepository{
                 .partitionValue(country)
                 .build();
         return Mono.fromFuture(table.getItem(key))
-                .switchIfEmpty(Mono.error(new PnInternalAddressManagerException(COUNTRY_DOES_NOT_EXISTS, COUNTRY_DOES_NOT_EXISTS, HttpStatus.NOT_FOUND.value(), "Country not found")));
-
+                .switchIfEmpty(Mono.defer(() -> {
+                    var errorMessage = String.format(COUNTRY_DOES_NOT_EXISTS, country);
+                    return Mono.error(new PnInternalAddressManagerException(errorMessage, errorMessage, HttpStatus.NOT_FOUND.value(), errorMessage));
+                }));
     }
 }
