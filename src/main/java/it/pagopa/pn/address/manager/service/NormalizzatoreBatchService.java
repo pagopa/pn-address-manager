@@ -13,9 +13,11 @@ import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
+import it.pagopa.pn.commons.utils.MDCUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -122,24 +124,28 @@ public class NormalizzatoreBatchService {
 
     private Mono<Void> processCallbackResponse(List<PnRequest> items, String batchId, Map<String, List<NormalizedAddress>> map ) {
         return Flux.fromIterable(items)
-                .map(batchRequest -> retrieveNormalizedAddressAndSetToBatchRequestMessage(batchRequest, map))
+                .flatMap(batchRequest -> retrieveNormalizedAddressAndSetToBatchRequestMessage(batchRequest, map))
                 .collectList()
                 .flatMap(batchRequestList -> pnRequestService.updateBatchRequest(batchRequestList, batchId));
     }
 
-    private PnRequest retrieveNormalizedAddressAndSetToBatchRequestMessage(PnRequest pnRequest, Map<String, List<NormalizedAddress>> map) {
+    private Mono<PnRequest> retrieveNormalizedAddressAndSetToBatchRequestMessage(PnRequest pnRequest, Map<String, List<NormalizedAddress>> map) {
         log.info("Start check postel response for normalizeRequest with correlationId: [{}]", pnRequest.getCorrelationId());
-        String correlationIdCreatedAt = addressUtils.getCorrelationIdCreatedAt(pnRequest);
-        if (map.get(correlationIdCreatedAt) != null
-                && map.get(correlationIdCreatedAt).size() == addressUtils.getNormalizeRequestFromBatchRequest(pnRequest).size()) {
-            log.info("Postel response for request with correlationId: [{}] and createdAt: [{}] is complete", pnRequest.getCorrelationId(), pnRequest.getCreatedAt());
-            pnRequest.setStatus(BatchStatus.WORKED.name());
-            pnRequest.setMessage(verifyPostelAddressResponseAndRetrieveMessage(map.get(correlationIdCreatedAt), pnRequest));
-        } else {
-            log.error("Postel response for request with correlationId: [{}] is not complete", pnRequest.getCorrelationId());
-            pnRequest.setStatus(TAKEN_CHARGE.name());
-        }
-        return pnRequest;
+        MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, pnRequest.getCorrelationId());
+        Mono<PnRequest> pnRequestMono = Mono.fromCallable(() -> {
+            String correlationIdCreatedAt = addressUtils.getCorrelationIdCreatedAt(pnRequest);
+            if (map.get(correlationIdCreatedAt) != null
+                    && map.get(correlationIdCreatedAt).size() == addressUtils.getNormalizeRequestFromBatchRequest(pnRequest).size()) {
+                log.info("Postel response for request with correlationId: [{}] and createdAt: [{}] is complete", pnRequest.getCorrelationId(), pnRequest.getCreatedAt());
+                pnRequest.setStatus(BatchStatus.WORKED.name());
+                pnRequest.setMessage(verifyPostelAddressResponseAndRetrieveMessage(map.get(correlationIdCreatedAt), pnRequest));
+            } else {
+                log.error("Postel response for request with correlationId: [{}] is not complete", pnRequest.getCorrelationId());
+                pnRequest.setStatus(TAKEN_CHARGE.name());
+            }
+            return pnRequest;
+        });
+        return MDCUtils.addMDCToContextAndExecute(pnRequestMono);
     }
 
     public Mono<NormalizzatoreBatch> findPostelBatch(String requestId) {
@@ -147,14 +153,16 @@ public class NormalizzatoreBatchService {
     }
 
     private String verifyPostelAddressResponseAndRetrieveMessage(List<NormalizedAddress> normalizedAddresses, PnRequest pnRequest) {
+        MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, pnRequest.getCorrelationId());
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         normalizeItemsResult.setCorrelationId(pnRequest.getCorrelationId());
         normalizeItemsResult.setResultItems(addressUtils.toResultItem(normalizedAddresses, pnRequest));
-        return Flux.fromIterable(normalizeItemsResult.getResultItems())
+        final Mono<String> resultVerify = Flux.fromIterable(normalizeItemsResult.getResultItems())
                 .flatMap(capAndCountryService::verifyCapAndCountryList)
                 .collectList()
-                .map(addressUtils::toJson)
-                .block();
+                .map(addressUtils::toJson);
+
+        return MDCUtils.addMDCToContextAndExecute(resultVerify).block();
     }
 
     public Mono<Void> resetRelatedBatchRequestForRetry(NormalizzatoreBatch normalizzatoreBatch) {
