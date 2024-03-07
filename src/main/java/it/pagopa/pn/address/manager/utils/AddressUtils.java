@@ -21,16 +21,18 @@ import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Base64Utils;
+import reactor.core.publisher.Mono;
 
 import java.security.MessageDigest;
-import java.time.Duration;
-import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.*;
+import java.time.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
-import static it.pagopa.pn.address.manager.constant.BatchStatus.*;
+import static it.pagopa.pn.address.manager.constant.BatchStatus.ERROR;
+import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
 import static it.pagopa.pn.address.manager.constant.PostelNErrorNorm.*;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_VERIFY_ADDRESS;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.*;
@@ -88,10 +90,7 @@ public class AddressUtils {
     }
 
     private boolean validateAddressField(String fieldValue, String pattern) {
-        if (!StringUtils.isBlank(fieldValue)) {
-            return fieldValue.matches("[" + pattern + "]*");
-        }
-        return true;
+        return StringUtils.isBlank(fieldValue) || fieldValue.matches(pattern) || fieldValue.matches("[" + pattern + "]*");
     }
 
     private AnalogAddress toUpperCase(AnalogAddress analogAddress) {
@@ -156,18 +155,16 @@ public class AddressUtils {
         String normalizedCountry = StringUtils.normalizeSpace(analogAddress.getCountry().toUpperCase());
         if (!countryMap.containsKey(normalizedCountry)) {
             throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, String.format("Country not found: [%s]", normalizedCountry), HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_COUNTRYNOTFOUND);
-        } else if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableValidation()) && !validateAddressWithMode(analogAddress)) {
-            throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, "Address contains invalid characters", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_ADDRESS_MANAGER_CAPNOTFOUND);
+        } else if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableValidation()) && !validateAddress(analogAddress, pnAddressManagerConfig.getValidationPattern())) {
+            throw new PnInternalAddressManagerException(ERROR_DURING_VERIFY_CSV, "Address contains invalid characters", HttpStatus.BAD_REQUEST.value(), PN_ADDRESS_MANAGER_INVALID_CHARACTERS);
         }
     }
 
-    private boolean validateAddressWithMode(AnalogAddress analogAddress) {
-        if (ForeignValidationMode.STANDARD == pnAddressManagerConfig.getForeignValidationMode()) {
-            return validateAddress(analogAddress, pnAddressManagerConfig.getValidationPattern());
-        } else if (ForeignValidationMode.PATTERN == pnAddressManagerConfig.getForeignValidationMode()) {
-            return validateAddress(analogAddress, pnAddressManagerConfig.getForeignValidationPattern());
+    public Mono<Void> validateForeignAddress(AnalogAddress analogAddress) {
+        if (ForeignValidationMode.PATTERN == pnAddressManagerConfig.getForeignValidationMode() && !validateAddress(analogAddress, pnAddressManagerConfig.getForeignValidationPattern())) {
+            return Mono.error(new PnInternalAddressManagerException(ERROR_MESSAGE_FOREIGN_COUNTRY_ADDRESS_NOT_VALIDATED_WITH_PATTERN, "Address contains invalid characters", HttpStatus.BAD_REQUEST.value(), ERROR_CODE_FOREIGN_COUNTRY_ADDRESS_NOT_VALIDATED_WITH_PATTERN));
         }
-        return true;
+        return Mono.empty();
     }
 
     public List<NormalizeResult> normalizeAddresses(List<NormalizeRequest> requestItems, String correlationId) {

@@ -8,6 +8,7 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.Deduplicates
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.repository.CapRepository;
 import it.pagopa.pn.address.manager.repository.CountryRepository;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,9 @@ class CapAndCountryServiceTest {
 
     @MockBean
     private CapRepository capRepository;
+
+    @MockBean
+    private AddressUtils addressUtils;
 
     @MockBean
     private CountryRepository countryRepository;

@@ -8,6 +8,7 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.Deduplicates
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.repository.CapRepository;
 import it.pagopa.pn.address.manager.repository.CountryRepository;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ public class CapAndCountryService {
 
     private final CapRepository capRepository;
     private final CountryRepository countryRepository;
+    private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
 
     public Mono<DeduplicatesResponse> verifyCapAndCountry(DeduplicatesResponse item) {
@@ -42,6 +44,7 @@ public class CapAndCountryService {
                         .thenReturn(item);
             } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
+                        .flatMap(countryModel -> addressUtils.validateForeignAddress(item.getNormalizedAddress()))
                         .onErrorResume(throwable -> {
                             log.warn("Error during verify country deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
                             item.setError(DeduplicatesError.PNADDR002.name());
@@ -68,6 +71,7 @@ public class CapAndCountryService {
                         }).thenReturn(item);
             } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
                 return verifyCountry(item.getNormalizedAddress().getCountry())
+                        .flatMap(countryModel -> addressUtils.validateForeignAddress(item.getNormalizedAddress()))
                         .onErrorResume(throwable -> {
                             log.warn("Error during verify country: {}", throwable.getMessage());
                             item.setError(PNADDR002_MESSAGE);

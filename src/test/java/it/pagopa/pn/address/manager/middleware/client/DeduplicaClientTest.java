@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.middleware.client;
 import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
 import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.api.DeduplicaApi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,6 +35,7 @@ class DeduplicaClientTest {
         pnAddressManagerConfig.getNormalizer().setPostelAuthKey("postelAuthKey");
         pnAddressManagerConfig.setNormalizer(normalizer);
         pnAddressManagerConfig.setDeduplicaBasePath("http://localhost:8080");
+        pnAddressManagerConfig.setForeignValidationMode(ForeignValidationMode.PASSTHROUGH);
         ExchangeFilterFunction exchangeFilterFunction = mock(ExchangeFilterFunction.class);
         when(exchangeFilterFunction.apply(Mockito.<ExchangeFunction>any())).thenReturn(mock(ExchangeFunction.class));
         ExchangeFilterFunction exchangeFilterFunction2 = mock(ExchangeFilterFunction.class);
