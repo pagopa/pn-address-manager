@@ -653,6 +653,9 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("RM  ");
         base.setCap("00010");
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setForeignValidationPattern(".*");
+        pnAddressManagerConfig.setValidationPattern(".*");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeAddress(base, "1", "correlationid"));
     }
