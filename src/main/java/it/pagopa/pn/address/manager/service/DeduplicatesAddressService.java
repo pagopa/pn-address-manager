@@ -2,23 +2,20 @@ package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
-import it.pagopa.pn.address.manager.entity.ApiKeyModel;
-import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
-import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
+import it.pagopa.pn.commons.utils.MDCUtils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_SYNC;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_CHECKING_APIKEY;
-import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.APIKEY_DOES_NOT_EXISTS;
 
 @Service
 @CustomLog
@@ -33,8 +30,8 @@ public class DeduplicatesAddressService {
     private final AddressConverter addressConverter;
 
     public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request, String pnAddressManagerCxId, String xApiKey) {
-
-        return apiKeyUtils.checkApiKey(pnAddressManagerCxId, xApiKey)
+        MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, request.getCorrelationId());
+        Mono<DeduplicatesResponse> deduplicatesResponseMono = apiKeyUtils.checkApiKey(pnAddressManagerCxId, xApiKey)
                 .flatMap(apiKeyModel -> {
                     log.logCheckingOutcome(PROCESS_CHECKING_APIKEY, true);
                     log.info(ADDRESS_NORMALIZER_SYNC + "Founded apikey for request: [{}]", request.getCorrelationId());
@@ -46,7 +43,8 @@ public class DeduplicatesAddressService {
                             .map(risultatoDeduplica -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, request.getCorrelationId()))
                             .flatMap(capAndCountryService::verifyCapAndCountry)
                             .doOnError(Mono::error);
-               });
+                });
+        return MDCUtils.addMDCToContextAndExecute(deduplicatesResponseMono);
     }
 
     private DeduplicatesResponse createDeduplicatesResponseByDeduplicatesRequest(DeduplicatesRequest request) {
