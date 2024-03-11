@@ -4,6 +4,7 @@ import it.pagopa.pn.address.manager.LocalStackTestConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -34,7 +35,7 @@ class AddressPnRequestRepositoryImplIT {
         PnRequest pnRequest = getBatchRequest();
         StepVerifier.create(addressBatchRequestRepository.create(pnRequest))
                 .assertNext(request -> {
-                    assertThat(request.getBatchId()).isEqualTo("test");
+                    assertThat(request.getBatchId()).isEqualTo("test2");
                     assertThat(request.getCorrelationId()).isEqualTo("TEST_LOCALDATETIME");
                     assertThat(request.getClientId()).isEqualTo("cxId");
                     assertThat(request.getCreatedAt()).isNotNull();
@@ -49,6 +50,7 @@ class AddressPnRequestRepositoryImplIT {
         Map<String, AttributeValue> lastKey = new HashMap<>();
         StepVerifier.create(addressBatchRequestRepository.getBatchRequestByBatchIdAndStatus(lastKey, "test", BatchStatus.WORKED))
                 .assertNext(page -> page.items().forEach(request -> {
+                    Assertions.assertEquals(2, page.items().size());
                     assertThat(request.getBatchId()).isEqualTo("test");
                     assertThat(request.getCorrelationId()).isEqualTo("TEST_LOCALDATETIME");
                     assertThat(request.getClientId()).isEqualTo("cxId");
