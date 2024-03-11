@@ -3,9 +3,11 @@ package it.pagopa.pn.address.manager.repository;
 import it.pagopa.pn.address.manager.LocalStackTestConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
@@ -23,7 +25,8 @@ class AddressPnRequestRepositoryImplIT {
     @Autowired
     private AddressBatchRequestRepositoryImpl addressBatchRequestRepository;
 
-
+    @MockBean
+    private AddressUtils addressUtils;
 
     @Test
     void create() {
