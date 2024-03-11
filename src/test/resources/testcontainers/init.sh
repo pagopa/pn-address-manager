@@ -173,6 +173,17 @@ aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb update-time-to-live --table-name addressManager-PNRequest --time-to-live-specification "Enabled=true, AttributeName=ttl"
 
+echo "PN-ADDRESS-MANAGER PUT PNREQUEST"
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb put-item \
+    --table-name addressManager-PNRequest \
+    --item '{"correlationId":{"S":"TEST_LOCALDATETIME1"},"createdAt":{"S":"2024-03-06T15:03:10.073Z"},"batchId":{"S":"test"},"clientId":{"S":"cxId"},"lastReserved":{"S":"2024-03-06T15:05:23.591Z"},"retry":{"N":"0"},"status":{"S":"WORKED"}}'
+
+aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
+    dynamodb put-item \
+    --table-name addressManager-PNRequest \
+    --item '{"correlationId":{"S":"TEST_LOCALDATETIME2"},"createdAt":{"S":"2024-03-06T15:03:10.073"},"batchId":{"S":"test"},"clientId":{"S":"cxId"},"lastReserved":{"S":"2024-03-06T15:05:23.591"},"retry":{"N":"0"},"status":{"S":"WORKED"}}'
+
 aws --profile default --region us-east-1 --endpoint-url=http://localstack:4566 \
     dynamodb create-table \
     --table-name addressManager-ShedLock \

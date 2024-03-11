@@ -1,7 +1,9 @@
 package it.pagopa.pn.address.manager.entity;
 
+import it.pagopa.pn.address.manager.converter.LocalDateTimeToInstant;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
@@ -52,23 +54,39 @@ public class NormalizzatoreBatch {
     private String status;
 
     @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_LAST_RESERVED)
+            @DynamoDbAttribute(COL_LAST_RESERVED),
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
+    }))
+    @Setter(onMethod = @__({
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
     }))
     private LocalDateTime lastReserved;
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_WORKINGTTL),
-            @DynamoDbSecondarySortKey(indexNames = GSI_SWT)
+            @DynamoDbSecondarySortKey(indexNames = GSI_SWT),
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
+    }))
+    @Setter(onMethod = @__({
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
     }))
     private LocalDateTime workingTtl;
 
     @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_TIMESTAMP)
+            @DynamoDbAttribute(COL_TIMESTAMP),
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
+    }))
+    @Setter(onMethod = @__({
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
     }))
     private LocalDateTime createdAt;
 
     @Getter(onMethod = @__({
-            @DynamoDbAttribute(COL_CALLBACK_TIMESTAMP)
+            @DynamoDbAttribute(COL_CALLBACK_TIMESTAMP),
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
+    }))
+    @Setter(onMethod = @__({
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
     }))
     private LocalDateTime callbackTimeStamp;
 

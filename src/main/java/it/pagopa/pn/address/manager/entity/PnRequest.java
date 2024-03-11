@@ -1,7 +1,9 @@
 package it.pagopa.pn.address.manager.entity;
 
+import it.pagopa.pn.address.manager.converter.LocalDateTimeToInstant;
 import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
@@ -54,13 +56,21 @@ public class PnRequest {
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_LAST_RESERVED),
-            @DynamoDbSecondarySortKey(indexNames = {GSI_BL, GSI_SSL})
+            @DynamoDbSecondarySortKey(indexNames = {GSI_BL, GSI_SSL}),
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
+    }))
+    @Setter(onMethod = @__({
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
     }))
     private LocalDateTime lastReserved;
 
     @Getter(onMethod = @__({
             @DynamoDbAttribute(COL_CREATED_AT),
-            @DynamoDbSortKey
+            @DynamoDbSortKey,
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
+    }))
+    @Setter(onMethod = @__({
+            @DynamoDbConvertedBy(LocalDateTimeToInstant.class)
     }))
     private LocalDateTime createdAt;
 
