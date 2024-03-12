@@ -9,8 +9,8 @@
     "AutoscalingThreshold": "2500",
     "CountriesCsv": "PagoPA-Lista-Nazioni.csv",
     "CapCsv": "PagoPA-ListaCLP.csv",
-    "EnablePatternValidation": "true",
-    "PhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-@_",
+    "FlagCsvEnablePatternValidation": "true",
+    "FlagCsvPhysicalAddressValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-@_",
     "NormalizzatoreBasePath": "http://internal-EcsA-20230406081307135800000004-20484703.eu-south-1.elb.amazonaws.com:8080",
     "DeduplicaBasePath": "http://internal-EcsA-20230406081307135800000004-20484703.eu-south-1.elb.amazonaws.com:8080",
     "PnAddressManagerNormalizerBatchRequestTtl": "604800",
@@ -37,8 +37,8 @@
     "PnAddressManagerNormalizerBatchRecoveryLockAtLeast": "1000",
     "PnAddressManagerNormalizerPostelClientTimeout": "30000",
     "AddressLengthValidation": "250",
-    "PhysicalAddressForeignContryValidationCharsValue": "@_0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '\\-",
-    "ForeignCountryPatternValidationMode": "STANDARD"
+    "PhysicalAddressForeignCountryValidationCharsValue": ".*",
+    "ForeignCountryPatternValidationMode": "PASSTHROUGH"
 
   }
 }

@@ -19,16 +19,10 @@ import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.NormalizerCallbackRequest;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.event.annotation.BeforeTestExecution;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.time.LocalDateTime;
@@ -38,15 +32,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -69,7 +55,7 @@ class AddressUtilsTest {
         when(pnAddressManagerConfig.getFlagCsv()).thenReturn(true);
         when(pnAddressManagerConfig.getValidationPattern()).thenReturn("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-");
         when(pnAddressManagerConfig.getForeignValidationPattern()).thenReturn("01234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-");
-        when(pnAddressManagerConfig.getForeignValidationMode()).thenReturn(ForeignValidationMode.STANDARD);
+        when(pnAddressManagerConfig.getForeignValidationMode()).thenReturn(ForeignValidationMode.PASSTHROUGH);
 
     }
 
@@ -296,7 +282,7 @@ class AddressUtilsTest {
 
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig1, objectMapper);
 
-        AnalogAddress analogAddress =new AnalogAddress();
+        AnalogAddress analogAddress = new AnalogAddress();
         analogAddress.setCountry("AMERICA");
         NormalizedAddressResponse actualNormalizeAddressResult = addressUtils.normalizeAddress(analogAddress, "42", "42");
         assertEquals("AMERICA", actualNormalizeAddressResult.getNormalizedAddress().getCountry());
@@ -318,7 +304,7 @@ class AddressUtilsTest {
 
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig1, objectMapper);
 
-        AnalogAddress analogAddress =new AnalogAddress();
+        AnalogAddress analogAddress = new AnalogAddress();
         analogAddress.setCountry("???");
         NormalizedAddressResponse actualNormalizeAddressResult = addressUtils.normalizeAddress(analogAddress, "42", "42");
         assertEquals("Address contains invalid characters", actualNormalizeAddressResult.getError());
@@ -667,6 +653,9 @@ class AddressUtilsTest {
         base.setAddressRow2("42");
         base.setPr("RM  ");
         base.setCap("00010");
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setForeignValidationPattern(".*");
+        pnAddressManagerConfig.setValidationPattern(".*");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeAddress(base, "1", "correlationid"));
     }
@@ -683,6 +672,41 @@ class AddressUtilsTest {
         base.setCountry("ARUBA");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeAddress(base, "1", "correlationid"));
+    }
+
+    /**
+     * Method under test: {@link AddressUtils#validateForeignAddress(AnalogAddress)}
+     */
+    @Test
+    void testValidateForeignAddress2() {
+
+        CsvService csvService = mock(CsvService.class);
+        when(csvService.capList()).thenReturn(new ArrayList<>());
+        when(csvService.countryMap()).thenReturn(new HashMap<>());
+        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, new ObjectMapper());
+        addressUtils.validateForeignAddress(new AnalogAddress());
+        verify(csvService).capList();
+        verify(csvService).countryMap();
+    }
+    /**
+     * Method under test: {@link AddressUtils#validateForeignAddress(AnalogAddress)}
+     */
+    @Test
+    void testValidateForeignAddress3() {
+
+        CsvService csvService = mock(CsvService.class);
+        when(csvService.capList()).thenReturn(new ArrayList<>());
+        when(csvService.countryMap()).thenReturn(new HashMap<>());
+        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setForeignValidationMode(ForeignValidationMode.PATTERN);
+        pnAddressManagerConfig.setForeignValidationPattern("123");
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setCountry("ALBANIA");
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, new ObjectMapper());
+        addressUtils.validateForeignAddress(analogAddress);
+        verify(csvService).capList();
+        verify(csvService).countryMap();
     }
 
     /**
