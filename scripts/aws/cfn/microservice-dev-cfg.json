@@ -38,6 +38,6 @@
     "PnAddressManagerNormalizerPostelClientTimeout": "30000",
     "AddressLengthValidation": "250",
     "PhysicalAddressForeignCountryValidationCharsValue": ".*",
-    "ForeignCountryPatternValidationMode": "PATTERN"
+    "ForeignCountryPatternValidationMode": "PASSTHROUGH"
   }
 }
