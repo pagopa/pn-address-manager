@@ -37,7 +37,7 @@
     "PnAddressManagerNormalizerBatchRecoveryLockAtLeast": "1000",
     "PnAddressManagerNormalizerPostelClientTimeout": "30000",
     "AddressLengthValidation": "250",
-    "PhysicalAddressForeignCountryValidationCharsValue": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ./ '-",
+    "PhysicalAddressForeignCountryValidationCharsValue": ".*",
     "ForeignCountryPatternValidationMode": "PASSTHROUGH"
 
   }
