@@ -39,6 +39,5 @@
     "AddressLengthValidation": "250",
     "PhysicalAddressForeignCountryValidationCharsValue": ".*",
     "ForeignCountryPatternValidationMode": "PASSTHROUGH"
-
   }
 }
