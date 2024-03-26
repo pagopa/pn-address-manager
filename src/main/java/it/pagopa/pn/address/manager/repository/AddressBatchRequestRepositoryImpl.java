@@ -136,7 +136,7 @@ public class AddressBatchRequestRepositoryImpl implements AddressBatchRequestRep
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         AttributeValue lastReserved = AttributeValue.builder()
-                .s(pnRequest.getLastReserved() != null ? pnRequest.getLastReserved().toString() : "")
+                .s(pnRequest.getLastReserved() != null ? pnRequest.getLastReserved().toInstant(ZoneOffset.UTC).toString() : "")
                 .build();
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, lastReserved);
 

@@ -69,7 +69,7 @@ public class PostelBatchRepositoryImpl implements PostelBatchRepository {
 
         Map<String, AttributeValue> expressionValues = new HashMap<>();
         AttributeValue lastReserved = AttributeValue.builder()
-                .s(normalizzatoreBatch.getLastReserved() != null ? normalizzatoreBatch.getLastReserved().toString() : "")
+                .s(normalizzatoreBatch.getLastReserved() != null ? normalizzatoreBatch.getLastReserved().toInstant(ZoneOffset.UTC).toString() : "")
                 .build();
         expressionValues.put(LAST_RESERVED_PLACEHOLDER, lastReserved);
 
