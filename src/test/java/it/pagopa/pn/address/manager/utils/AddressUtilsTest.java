@@ -18,6 +18,7 @@ import it.pagopa.pn.address.manager.service.CsvService;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.NormalizerCallbackRequest;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -31,6 +32,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
+import static it.pagopa.pn.address.manager.constant.BatchStatus.WORKING;
+import static it.pagopa.pn.address.manager.constant.ErrorNormEvaluationMode.AUTO;
+import static it.pagopa.pn.address.manager.constant.ErrorNormEvaluationMode.MANUAL;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -495,9 +500,48 @@ class AddressUtilsTest {
     }
 
     @Test
+    void toResultItemWithError901EvaluationModeAuto() {
+        PnAddressManagerConfig.Normalizer normalizer = mock(PnAddressManagerConfig.Normalizer.class);
+        PnAddressManagerConfig.Postel postel = mock(PnAddressManagerConfig.Postel.class);
+        when(pnAddressManagerConfig.getNormalizer()).thenReturn(normalizer);
+        when(normalizer.getPostel()).thenReturn(postel);
+        when(postel.getErrorNorm901EvaluationMode()).thenReturn(AUTO.name());
+        when(pnAddressManagerConfig.getNormalizer().getPostel().getErrorNorm901EvaluationMode()).thenReturn(AUTO.name());
+        NormalizedAddress normalizedAddress = getNormalizedAddress(42, 901, 0);
+        NormalizedAddress normalizedAddress1 = getNormalizedAddress(0, 901, 0);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
+        normalizedAddresses.add(normalizedAddress);
+        normalizedAddresses.add(normalizedAddress1);
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setStatus(WORKING.name());
+        addressUtils.toResultItem(normalizedAddresses, pnRequest);
+        Assertions.assertEquals(WORKING.name(), pnRequest.getStatus());
+    }
+
+    @Test
+    void toResultItemWithError901EvaluationModeManual() {
+        PnAddressManagerConfig.Normalizer normalizer = mock(PnAddressManagerConfig.Normalizer.class);
+        PnAddressManagerConfig.Postel postel = mock(PnAddressManagerConfig.Postel.class);
+        when(pnAddressManagerConfig.getNormalizer()).thenReturn(normalizer);
+        when(normalizer.getPostel()).thenReturn(postel);
+        when(postel.getErrorNorm901EvaluationMode()).thenReturn(MANUAL.name());
+        NormalizedAddress normalizedAddress = getNormalizedAddress(42,901, 0);
+        NormalizedAddress normalizedAddress1 = getNormalizedAddress(0, 901, 0);
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
+        normalizedAddresses.add(normalizedAddress);
+        normalizedAddresses.add(normalizedAddress1);
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setStatus(WORKING.name());
+        addressUtils.toResultItem(normalizedAddresses, pnRequest);
+        Assertions.assertEquals(TAKEN_CHARGE.name(), pnRequest.getStatus());
+    }
+
+    @Test
     void toResultItem() {
-        NormalizedAddress normalizedAddress = getNormalizedAddress(42);
-        NormalizedAddress normalizedAddress1 = getNormalizedAddress(0);
+        NormalizedAddress normalizedAddress = getNormalizedAddress(42, 0, 1);
+        NormalizedAddress normalizedAddress1 = getNormalizedAddress(0, 0, 1);
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
@@ -507,20 +551,13 @@ class AddressUtilsTest {
 
     @Test
     void toResultItemNotPostalizzabile() {
+        PnAddressManagerConfig.Normalizer normalizer = mock(PnAddressManagerConfig.Normalizer.class);
+        PnAddressManagerConfig.Postel postel = mock(PnAddressManagerConfig.Postel.class);
+        when(pnAddressManagerConfig.getNormalizer()).thenReturn(normalizer);
+        when(normalizer.getPostel()).thenReturn(postel);
+        when(postel.getErrorNorm901EvaluationMode()).thenReturn(MANUAL.name());
         NormalizedAddress normalizedAddress = getNormalizedAddressNotPostalizzabile(42);
         NormalizedAddress normalizedAddress1 = getNormalizedAddressNotPostalizzabile(0);
-        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
-        normalizedAddresses.add(normalizedAddress);
-        normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
-    }
-
-    @Test
-    void toResultItemNotPostalizzabileERROR_901() {
-        NormalizedAddress normalizedAddress = getNormalizedAddressNotPostalizzabile(42);
-        NormalizedAddress normalizedAddress1 = getNormalizedAddressNotPostalizzabile(0);
-        normalizedAddress.setNErroreNorm(901);
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
@@ -530,6 +567,11 @@ class AddressUtilsTest {
 
     @Test
     void toResultItemNotPostalizzabileERROR_999() {
+        PnAddressManagerConfig.Normalizer normalizer = mock(PnAddressManagerConfig.Normalizer.class);
+        PnAddressManagerConfig.Postel postel = mock(PnAddressManagerConfig.Postel.class);
+        when(pnAddressManagerConfig.getNormalizer()).thenReturn(normalizer);
+        when(normalizer.getPostel()).thenReturn(postel);
+        when(postel.getErrorNorm901EvaluationMode()).thenReturn(MANUAL.name());
         NormalizedAddress normalizedAddress = getNormalizedAddressNotPostalizzabile(42);
         NormalizedAddress normalizedAddress1 = getNormalizedAddressNotPostalizzabile(0);
         normalizedAddress.setNErroreNorm(999);
@@ -567,13 +609,13 @@ class AddressUtilsTest {
     }
 
     @NotNull
-    private static NormalizedAddress getNormalizedAddress(int nRisultatoNorm) {
+    private static NormalizedAddress getNormalizedAddress(int nRisultatoNorm, int erroreNorm, int postalizzabile) {
         NormalizedAddress normalizedAddress = new NormalizedAddress();
         normalizedAddress.setId("1#1#1");
         normalizedAddress.setNRisultatoNorm(nRisultatoNorm);
-        normalizedAddress.setNErroreNorm(0);
+        normalizedAddress.setNErroreNorm(erroreNorm);
         normalizedAddress.setSSiglaProv("MI");
-        normalizedAddress.setFPostalizzabile(1);
+        normalizedAddress.setFPostalizzabile(postalizzabile);
         normalizedAddress.setSStatoUff("Lombardia");
         normalizedAddress.setSStatoAbb("LO");
         normalizedAddress.setSStatoSpedizione("Lombardy");

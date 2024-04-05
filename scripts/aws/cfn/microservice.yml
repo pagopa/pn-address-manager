@@ -412,6 +412,11 @@ Parameters:
     Description: 'Mode of foreign country validation: "PASSTHROUGH|PATTERN"'
     Default: PASSTHROUGH
 
+  PostelErrorNorm901EvaluationMode:
+    Type: String
+    Description: 'Mode of error 901 evaluation: "AUTO|MANUAL"'
+    Default: AUTO
+
 Resources:
 
   # PN-address-manager microservice
@@ -486,6 +491,7 @@ Resources:
         ContainerEnvEntry47: !Sub 'PN_ADDRESSMANAGER_ADDRESSLENGTHVALIDATION=${AddressLengthValidation}'
         ContainerEnvEntry48: !Sub 'PN_ADDRESS_MANAGER_FOREIGN_VALIDATION_PATTERN=${PhysicalAddressForeignCountryValidationCharsValue}'
         ContainerEnvEntry49: !Sub 'PN_ADDRESS_MANAGER_FOREIGN_VALIDATION_MODE=${ForeignCountryPatternValidationMode}'
+        ContainerEnvEntry50: !Sub 'PN_ADDRESS_MANAGER_POSTEL_ERRORNORM901_EVALUATION_MODE=${PostelErrorNorm901EvaluationMode}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets
