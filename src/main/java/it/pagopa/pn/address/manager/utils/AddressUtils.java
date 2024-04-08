@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.constant.ErrorNormEvaluationMode;
 import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.address.manager.constant.PostelNErrorNorm;
 import it.pagopa.pn.address.manager.entity.PnRequest;
@@ -328,7 +329,10 @@ public class AddressUtils {
     }
 
     private boolean isPresentRetryableError(String nErrorNorm) {
-        return ERROR_901.name().equalsIgnoreCase(nErrorNorm) || ERROR_997.name().equalsIgnoreCase(nErrorNorm) || ERROR_998.name().equalsIgnoreCase(nErrorNorm);
+        if(ErrorNormEvaluationMode.MANUAL.name().equalsIgnoreCase(pnAddressManagerConfig.getNormalizer().getPostel().getErrorNorm901EvaluationMode())) {
+            return ERROR_901.name().equalsIgnoreCase(nErrorNorm) || ERROR_997.name().equalsIgnoreCase(nErrorNorm) || ERROR_998.name().equalsIgnoreCase(nErrorNorm);
+        }
+        return ERROR_997.name().equalsIgnoreCase(nErrorNorm) || ERROR_998.name().equalsIgnoreCase(nErrorNorm);
     }
 
     private boolean isPresentBlockedError(String nErrorNorm) {
