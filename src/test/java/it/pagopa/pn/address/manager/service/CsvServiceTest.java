@@ -8,10 +8,9 @@ import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -23,26 +22,46 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-@ContextConfiguration(classes = {CsvService.class, PnAddressManagerConfig.class})
 @ExtendWith(MockitoExtension.class)
 class CsvServiceTest {
 
-    @Autowired
+    @InjectMocks
     private CsvService csvService;
 
-    @MockBean
+    @Mock
     private PnAddressManagerConfig pnAddressManagerConfig;
 
     @Test
     void readItemsFromCsv() throws IOException {
-
+        PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
+        PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
+        postel.setCsvIncludeEscape(true);
+        normalizer.setPostel(postel);
+        when(pnAddressManagerConfig.getNormalizer()).thenReturn(normalizer);
         CsvService csvService = new CsvService(pnAddressManagerConfig);
         File file = new File("src/test/resources", "test-escape.csv");
         InputStream inputStream = new FileInputStream(file);
         byte[] bytes = inputStream.readAllBytes();
 
         assertNotNull(csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0));
+
+    }
+
+    @Test
+    void readItemsFromCsvError() throws IOException {
+        PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
+        PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
+        postel.setCsvIncludeEscape(false);
+        normalizer.setPostel(postel);
+        when(pnAddressManagerConfig.getNormalizer()).thenReturn(normalizer);
+        CsvService csvService = new CsvService(pnAddressManagerConfig);
+        File file = new File("src/test/resources", "test-escape.csv");
+        InputStream inputStream = new FileInputStream(file);
+        byte[] bytes = inputStream.readAllBytes();
+
+        Assertions.assertThrows(PnInternalAddressManagerException.class, () -> csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0));
 
     }
 

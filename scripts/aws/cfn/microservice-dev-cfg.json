@@ -39,6 +39,7 @@
     "AddressLengthValidation": "250",
     "PhysicalAddressForeignCountryValidationCharsValue": ".*",
     "ForeignCountryPatternValidationMode": "PASSTHROUGH",
-    "PostelErrorNorm901EvaluationMode": "AUTO"
+    "PostelErrorNorm901EvaluationMode": "AUTO",
+    "PostelCsvIncludeEscape": "true"
   }
 }
