@@ -4,16 +4,19 @@ package it.pagopa.pn.address.manager.service;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.model.CapModel;
+import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,21 +31,18 @@ class CsvServiceTest {
     @Autowired
     private CsvService csvService;
 
-    @Autowired
+    @MockBean
     private PnAddressManagerConfig pnAddressManagerConfig;
 
     @Test
     void readItemsFromCsv() throws IOException {
-        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
-        PnAddressManagerConfig.Csv csv = new PnAddressManagerConfig.Csv();
-        csv.setPathCap("Mock-ListaCLP.csv");
-        csv.setPathCountry("Mock-Lista-Nazioni.csv");
-        pnAddressManagerConfig.setCsv(csv);
 
         CsvService csvService = new CsvService(pnAddressManagerConfig);
-        FileWriter writer = new FileWriter(new File("src/test/resources", "test.csv"));
+        File file = new File("src/test/resources", "test-escape.csv");
+        InputStream inputStream = new FileInputStream(file);
+        byte[] bytes = inputStream.readAllBytes();
 
-        assertNotNull(csvService.readItemsFromCsv(CapModel.class, writer.getEncoding().getBytes(), 0));
+        assertNotNull(csvService.readItemsFromCsv(NormalizedAddress.class, bytes, 0));
 
     }
 

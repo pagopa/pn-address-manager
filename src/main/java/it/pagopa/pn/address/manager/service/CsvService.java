@@ -69,6 +69,7 @@ public class CsvService {
             CsvToBeanBuilder<T> csvToBeanBuilder = new CsvToBeanBuilder<>(stringReader);
             csvToBeanBuilder.withSeparator(';');
             csvToBeanBuilder.withQuoteChar(DEFAULT_QUOTE_CHARACTER);
+            csvToBeanBuilder.withEscapeChar(NO_ESCAPE_CHARACTER);
             csvToBeanBuilder.withSkipLines(skipLines);
             csvToBeanBuilder.withType(csvClass);
 
