@@ -69,7 +69,9 @@ public class CsvService {
             CsvToBeanBuilder<T> csvToBeanBuilder = new CsvToBeanBuilder<>(stringReader);
             csvToBeanBuilder.withSeparator(';');
             csvToBeanBuilder.withQuoteChar(DEFAULT_QUOTE_CHARACTER);
-            csvToBeanBuilder.withEscapeChar(NO_ESCAPE_CHARACTER);
+            if(Boolean.TRUE.equals(pnAddressManagerConfig.getNormalizer().getPostel().getCsvIncludeEscape())) {
+                csvToBeanBuilder.withEscapeChar(NO_ESCAPE_CHARACTER);
+            }
             csvToBeanBuilder.withSkipLines(skipLines);
             csvToBeanBuilder.withType(csvClass);
 

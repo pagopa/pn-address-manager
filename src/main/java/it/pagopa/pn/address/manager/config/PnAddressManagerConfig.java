@@ -53,6 +53,7 @@ public class PnAddressManagerConfig {
         private Integer recoveryDelay;
         private String requestPrefix;
         private String errorNorm901EvaluationMode;
+        private Boolean csvIncludeEscape;
 
     }
 
