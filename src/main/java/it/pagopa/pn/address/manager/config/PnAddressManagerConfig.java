@@ -7,9 +7,11 @@ import lombok.Getter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Getter
 @Configuration
+@EnableScheduling
 @ConfigurationProperties( prefix = "pn.address-manager")
 @Data
 @Import(SharedAutoConfiguration.class)

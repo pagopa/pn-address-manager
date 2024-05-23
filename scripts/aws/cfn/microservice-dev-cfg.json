@@ -40,6 +40,9 @@
     "PhysicalAddressForeignCountryValidationCharsValue": ".*",
     "ForeignCountryPatternValidationMode": "PASSTHROUGH",
     "PostelErrorNorm901EvaluationMode": "AUTO",
-    "PostelCsvIncludeEscape": "true"
+    "PostelCsvIncludeEscape": "true",
+    "PnCronAnalyzer": "* */1 * * * *",
+    "WireTapLogActivation": "true",
+    "MountEfs": "true"
   }
 }

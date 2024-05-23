@@ -58,6 +58,34 @@ Parameters:
   EcsLogGroup:
     Type: String
 
+  # Logging parameters
+  WireTapLogActivation:
+    Type: String
+    Default: false
+    Description: Activation of wire logs
+    AllowedValues:
+      - true
+      - false
+
+  PnCronAnalyzer:
+    Type: String
+    Default: '-'
+    Description: Cron for which you send the metric to CloudWatch
+
+  # EFS parameters
+  FargateEFSFileSystemID:
+    Type: String
+    Description: "EFS Filesystem"
+
+  MountEfs:
+    Type: String
+    Default: false
+    AllowedValues:
+      - "true"
+      - "false"
+
+
+
   # Heath Check parameters
   HealthCheckInterval:
     Description: Seconds between two health check
@@ -443,6 +471,9 @@ Resources:
         AutoscalingCheckPeriod: !Ref AutoscalingCheckPeriod
         MinTasksNumber: !Ref MinTasksNumber
         MaxTasksNumber: !Ref MaxTasksNumber
+        EfsFilesystem: !Ref FargateEFSFileSystemID
+        MountEfs: !Ref MountEfs
+        WireTapLogActivation: !Ref WireTapLogActivation
         AutoscalingDataPointN: !Ref AutoscalingDataPointN
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
@@ -498,6 +529,8 @@ Resources:
         ContainerEnvEntry49: !Sub 'PN_ADDRESSMANAGER_FOREIGN_VALIDATION_MODE=${ForeignCountryPatternValidationMode}'
         ContainerEnvEntry50: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_ERRORNORM901EVALUATIONMODE=${PostelErrorNorm901EvaluationMode}'
         ContainerEnvEntry51: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_CSVINCLUDEESCAPE=${PostelCsvIncludeEscape}'
+        ContainerEnvEntry52: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
+        ContainerEnvEntry53: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets
