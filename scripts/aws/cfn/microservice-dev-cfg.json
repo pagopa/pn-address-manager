@@ -42,7 +42,7 @@
     "PostelErrorNorm901EvaluationMode": "AUTO",
     "PostelCsvIncludeEscape": "true",
     "PnCronAnalyzer": "* */1 * * * *",
-    "WireTapLogActivation": "true",
-    "MountEfs": "true"
+    "WireTapLogActivation": "false",
+    "MountEfs": "false"
   }
 }
