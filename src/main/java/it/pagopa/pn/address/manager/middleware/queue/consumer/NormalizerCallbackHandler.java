@@ -12,6 +12,8 @@ import org.springframework.messaging.Message;
 
 import java.util.function.Consumer;
 
+import static it.pagopa.pn.commons.utils.MDCUtils.MDC_PN_CTX_REQUEST_ID;
+
 @Configuration
 @CustomLog
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class NormalizerCallbackHandler {
         return message -> {
             log.logStartingProcess(HANDLER_POSTEL_CALLBACK);
             log.debug(HANDLER_POSTEL_CALLBACK + "- message: {}", message);
-            MDC.put("batchId", message.getPayload().getRequestId());
+            MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, message.getPayload().getRequestId());
 
             var mono = normalizeAddressService.handlePostelCallback(message.getPayload())
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_POSTEL_CALLBACK))

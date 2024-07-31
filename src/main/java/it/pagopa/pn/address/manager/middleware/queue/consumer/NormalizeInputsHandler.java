@@ -12,6 +12,8 @@ import org.springframework.messaging.Message;
 
 import java.util.function.Consumer;
 
+import static it.pagopa.pn.commons.utils.MDCUtils.MDC_PN_CTX_REQUEST_ID;
+
 @Configuration
 @CustomLog
 @RequiredArgsConstructor
@@ -26,7 +28,7 @@ public class NormalizeInputsHandler {
         return message -> {
             log.logStartingProcess(HANDLER_REQUEST);
             log.debug(HANDLER_REQUEST + "- message: {}", message);
-            MDC.put("correlationId", message.getPayload().getNormalizeItemsRequest().getCorrelationId());
+            MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, message.getPayload().getNormalizeItemsRequest().getCorrelationId());
             var mono = normalizeAddressService.handleRequest(message.getPayload())
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))
                     .doOnError(throwable ->  {
