@@ -2,6 +2,7 @@ package it.pagopa.pn.address.manager.middleware.queue.consumer;
 
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCallbackEvent;
 import it.pagopa.pn.address.manager.service.NormalizeAddressService;
+import it.pagopa.pn.commons.utils.MDCUtils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
@@ -10,6 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.Message;
 
 import java.util.function.Consumer;
+
+import static it.pagopa.pn.commons.utils.MDCUtils.MDC_PN_CTX_REQUEST_ID;
 
 @Configuration
 @CustomLog
@@ -25,15 +28,16 @@ public class NormalizerCallbackHandler {
         return message -> {
             log.logStartingProcess(HANDLER_POSTEL_CALLBACK);
             log.debug(HANDLER_POSTEL_CALLBACK + "- message: {}", message);
-            MDC.put("batchId", message.getPayload().getRequestId());
+            MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, message.getPayload().getRequestId());
 
-            normalizeAddressService.handlePostelCallback(message.getPayload())
+            var mono = normalizeAddressService.handlePostelCallback(message.getPayload())
                     .doOnSuccess(unused -> log.logEndingProcess(HANDLER_POSTEL_CALLBACK))
                     .doOnError(throwable ->  {
                                 log.logEndingProcess(HANDLER_POSTEL_CALLBACK, false, throwable.getMessage());
                                 HandleEventUtils.handleException(message.getHeaders(), throwable);
-                            })
-                    .block();
+                            });
+
+            MDCUtils.addMDCToContextAndExecute(mono).block();
         };
     }
 
