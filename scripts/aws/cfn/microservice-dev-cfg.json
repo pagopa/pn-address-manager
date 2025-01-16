@@ -41,7 +41,7 @@
     "ForeignCountryPatternValidationMode": "PASSTHROUGH",
     "PostelErrorNorm901EvaluationMode": "AUTO",
     "PostelCsvIncludeEscape": "true",
-    "PnCronAnalyzer": "* */1 * * * *",
+    "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
     "MountEfs": "false"
   }
