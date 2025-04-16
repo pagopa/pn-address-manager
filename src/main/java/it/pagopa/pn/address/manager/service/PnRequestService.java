@@ -378,7 +378,7 @@ public class PnRequestService {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         log.info(ADDRESS_NORMALIZER_ASYNC + "batchId {} - update PostelBatch with status: {}", normalizzatoreBatch.getBatchId(), BatchStatus.WORKING.getValue());
         normalizzatoreBatch.setStatus(BatchStatus.WORKING.getValue());
-        normalizzatoreBatch.setWorkingTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getWorkingTtl()));
+        normalizzatoreBatch.setWorkingTtl(now.plus(pnAddressManagerConfig.getNormalizer().getPostel().getWorkingTtl()));
         return postelBatchRepository.update(normalizzatoreBatch)
                 .doOnNext(polling -> log.debug(ADDRESS_NORMALIZER_ASYNC + "batchId {} - updated PostelBatch with status: {}", normalizzatoreBatch.getBatchId(), BatchStatus.WORKING.getValue()))
                 .then();
@@ -542,7 +542,7 @@ public class PnRequestService {
             case WORKED -> sendEvents(request, request.getClientId())
                     .map(putEventsResult -> {
                         request.setSendStatus(SENT.getValue());
-                        request.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
+                        request.setTtl(now.plus(pnAddressManagerConfig.getNormalizer().getBatchRequest().getTtl()).toEpochSecond(ZoneOffset.UTC));
                         return request;
                     })
                     .onErrorResume(throwable -> {

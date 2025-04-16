@@ -164,7 +164,7 @@ public class NormalizzatoreService {
         return sqsService.pushToCallbackQueue(addressUtils.getPostelCallbackSqsDto(callbackRequestData, normalizzatoreBatch.getBatchId()))
                 .map(sendMessageResponse -> {
                     normalizzatoreBatch.setStatus(WORKED.name());
-                    normalizzatoreBatch.setTtl(now.plusSeconds(pnAddressManagerConfig.getNormalizer().getPostel().getTtl()).toEpochSecond(ZoneOffset.UTC));
+                    normalizzatoreBatch.setTtl(now.plus(pnAddressManagerConfig.getNormalizer().getPostel().getTtl()).toEpochSecond(ZoneOffset.UTC));
                     return normalizzatoreBatch;
                 })
                 .flatMap(postelBatchRepository::update)
