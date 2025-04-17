@@ -563,12 +563,12 @@ class AddressUtilsTest {
         assertEquals("1", pnRequest.getPostelResponseCodes().get(0).getId());
         assertEquals(42, recipient_1.getNRisultatoNorm());
         assertEquals(0, recipient_1.getNErroreNorm());
-        assertEquals(0, recipient_1.getFPostalizzabile());
+        assertEquals(1, recipient_1.getFPostalizzabile());
         PostelResponseCodeRecipient recipient_2 = pnRequest.getPostelResponseCodes().get(1).getPostelResponseCodeRecipient();
         assertEquals("1", pnRequest.getPostelResponseCodes().get(1).getId());
         assertEquals(0, recipient_2.getNRisultatoNorm());
         assertEquals(0, recipient_2.getNErroreNorm());
-        assertEquals(0, recipient_2.getFPostalizzabile());
+        assertEquals(1, recipient_2.getFPostalizzabile());
     }
 
     @Test
@@ -592,12 +592,12 @@ class AddressUtilsTest {
         assertEquals("1", pnRequest.getPostelResponseCodes().get(0).getId());
         assertEquals(42, recipient_1.getNRisultatoNorm());
         assertEquals(0, recipient_1.getNErroreNorm());
-        assertEquals(1, recipient_1.getFPostalizzabile());
+        assertEquals(0, recipient_1.getFPostalizzabile());
         PostelResponseCodeRecipient recipient_2 = pnRequest.getPostelResponseCodes().get(1).getPostelResponseCodeRecipient();
         assertEquals("1", pnRequest.getPostelResponseCodes().get(1).getId());
         assertEquals(0, recipient_2.getNRisultatoNorm());
         assertEquals(0, recipient_2.getNErroreNorm());
-        assertEquals(1, recipient_2.getFPostalizzabile());
+        assertEquals(0, recipient_2.getFPostalizzabile());
     }
 
     @Test
