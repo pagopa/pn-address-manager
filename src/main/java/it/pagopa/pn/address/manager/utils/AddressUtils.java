@@ -9,6 +9,8 @@ import it.pagopa.pn.address.manager.constant.ErrorNormEvaluationMode;
 import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.address.manager.constant.PostelNErrorNorm;
 import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.PostelResponseCodeRecipient;
+import it.pagopa.pn.address.manager.entity.PostelResponseCodes;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationRequestDto;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
@@ -25,7 +27,10 @@ import org.springframework.util.Base64Utils;
 import reactor.core.publisher.Mono;
 
 import java.security.MessageDigest;
-import java.time.*;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -288,8 +293,11 @@ public class AddressUtils {
 
     public List<NormalizeResult> toResultItem(List<NormalizedAddress> normalizedAddresses, PnRequest pnRequest) {
 
+        List<PostelResponseCodes> postelResponseCodesList = new ArrayList<>();
         List<PostelNErrorNorm> normalizedAddressNErroreNormList = new ArrayList<>();
-        List<NormalizeResult> results = normalizedAddresses.stream().map(normalizedAddress -> getNormalizeResult(normalizedAddress, normalizedAddressNErroreNormList)).toList();
+        List<NormalizeResult> results = normalizedAddresses.stream().map(normalizedAddress -> getNormalizeResult(normalizedAddress, normalizedAddressNErroreNormList, postelResponseCodesList)).toList();
+
+        pnRequest.setPostelResponseCodes(postelResponseCodesList);
 
         Optional<PostelNErrorNorm> optionalErrorNormalizeResult = normalizedAddressNErroreNormList.stream()
                 .filter(errorNorm -> isPresentBlockedError(errorNorm.name()))
@@ -309,13 +317,14 @@ public class AddressUtils {
     }
 
     @NotNull
-    private NormalizeResult getNormalizeResult(NormalizedAddress normalizedAddress, List<PostelNErrorNorm> normalizedAddressNErroreNormList) {
+    private NormalizeResult getNormalizeResult(NormalizedAddress normalizedAddress, List<PostelNErrorNorm> normalizedAddressNErroreNormList, List<PostelResponseCodes> postelResponseCodesList) {
         NormalizeResult result = new NormalizeResult();
         String[] index = normalizedAddress.getId().split("#");
         if (index.length == 3) {
             result.setId(index[2]);
             log.info("Address with correlationId: [{}], createdAt: [{}] and index: [{}] has FPostalizzabile = {}, NRisultatoNorm = {}, NErroreNorm = {}", index[0], index[1], index[2],
                     normalizedAddress.getFPostalizzabile(), normalizedAddress.getNRisultatoNorm(), normalizedAddress.getNErroreNorm());
+            postelResponseCodesList.add(constructPostelResponseCodes(normalizedAddress, index[2]));
             if (normalizedAddress.getFPostalizzabile() != null && normalizedAddress.getFPostalizzabile() == 0) {
                 PostelNErrorNorm error = PostelNErrorNorm.fromCode(normalizedAddress.getNErroreNorm());
                 log.warn("Error during normalize address: correlationId: [{}] and index: [{}] - error: {}", index[0], index[1], error.getDescription());
@@ -326,6 +335,17 @@ public class AddressUtils {
             }
         }
         return result;
+    }
+
+    private PostelResponseCodes constructPostelResponseCodes(NormalizedAddress normalizedAddress, String index) {
+        PostelResponseCodes postelResponseCodes = new PostelResponseCodes();
+        postelResponseCodes.setId(index);
+        PostelResponseCodeRecipient postelResponseCodeRecipient = new PostelResponseCodeRecipient();
+        postelResponseCodeRecipient.setFPostalizzabile(normalizedAddress.getFPostalizzabile());
+        postelResponseCodeRecipient.setNRisultatoNorm(normalizedAddress.getNRisultatoNorm());
+        postelResponseCodeRecipient.setNErroreNorm(normalizedAddress.getNErroreNorm());
+        postelResponseCodes.setPostelResponseCodeRecipient(postelResponseCodeRecipient);
+        return postelResponseCodes;
     }
 
     private boolean isPresentRetryableError(String nErrorNorm) {

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.type.TypeFactory;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.PostelResponseCodeRecipient;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
@@ -515,6 +516,17 @@ class AddressUtilsTest {
         pnRequest.setStatus(WORKING.name());
         addressUtils.toResultItem(normalizedAddresses, pnRequest);
         Assertions.assertEquals(WORKING.name(), pnRequest.getStatus());
+        assertEquals(2, pnRequest.getPostelResponseCodes().size());
+        PostelResponseCodeRecipient recipient_1 = pnRequest.getPostelResponseCodes().get(0).getPostelResponseCodeRecipient();
+        assertEquals("1", pnRequest.getPostelResponseCodes().get(0).getId());
+        assertEquals(42, recipient_1.getNRisultatoNorm());
+        assertEquals(901, recipient_1.getNErroreNorm());
+        assertEquals(0, recipient_1.getFPostalizzabile());
+        PostelResponseCodeRecipient recipient_2 = pnRequest.getPostelResponseCodes().get(1).getPostelResponseCodeRecipient();
+        assertEquals("1", pnRequest.getPostelResponseCodes().get(1).getId());
+        assertEquals(0, recipient_2.getNRisultatoNorm());
+        assertEquals(901, recipient_2.getNErroreNorm());
+        assertEquals(0, recipient_2.getFPostalizzabile());
     }
 
     @Test
@@ -545,7 +557,19 @@ class AddressUtilsTest {
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
+        PnRequest pnRequest = new PnRequest();
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, pnRequest));
+        assertEquals(2, pnRequest.getPostelResponseCodes().size());
+        PostelResponseCodeRecipient recipient_1 = pnRequest.getPostelResponseCodes().get(0).getPostelResponseCodeRecipient();
+        assertEquals("1", pnRequest.getPostelResponseCodes().get(0).getId());
+        assertEquals(42, recipient_1.getNRisultatoNorm());
+        assertEquals(0, recipient_1.getNErroreNorm());
+        assertEquals(1, recipient_1.getFPostalizzabile());
+        PostelResponseCodeRecipient recipient_2 = pnRequest.getPostelResponseCodes().get(1).getPostelResponseCodeRecipient();
+        assertEquals("1", pnRequest.getPostelResponseCodes().get(1).getId());
+        assertEquals(0, recipient_2.getNRisultatoNorm());
+        assertEquals(0, recipient_2.getNErroreNorm());
+        assertEquals(1, recipient_2.getFPostalizzabile());
     }
 
     @Test
@@ -562,7 +586,19 @@ class AddressUtilsTest {
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
         normalizedAddresses.add(normalizedAddress);
         normalizedAddresses.add(normalizedAddress1);
-        assertNotNull(addressUtils.toResultItem(normalizedAddresses, new PnRequest()));
+        PnRequest pnRequest = new PnRequest();
+        assertNotNull(addressUtils.toResultItem(normalizedAddresses, pnRequest));
+        assertEquals(2, pnRequest.getPostelResponseCodes().size());
+        PostelResponseCodeRecipient recipient_1 = pnRequest.getPostelResponseCodes().get(0).getPostelResponseCodeRecipient();
+        assertEquals("1", pnRequest.getPostelResponseCodes().get(0).getId());
+        assertEquals(42, recipient_1.getNRisultatoNorm());
+        assertEquals(0, recipient_1.getNErroreNorm());
+        assertEquals(0, recipient_1.getFPostalizzabile());
+        PostelResponseCodeRecipient recipient_2 = pnRequest.getPostelResponseCodes().get(1).getPostelResponseCodeRecipient();
+        assertEquals("1", pnRequest.getPostelResponseCodes().get(1).getId());
+        assertEquals(0, recipient_2.getNRisultatoNorm());
+        assertEquals(0, recipient_2.getNErroreNorm());
+        assertEquals(0, recipient_2.getFPostalizzabile());
     }
 
     @Test

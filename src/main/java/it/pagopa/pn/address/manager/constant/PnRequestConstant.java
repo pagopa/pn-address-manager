@@ -19,6 +19,7 @@ public final class PnRequestConstant {
     public static final String COL_CREATED_AT = "createdAt";
     public static final String COL_SEND_STATUS = "sendStatus";
     public static final String COL_MESSAGE = "message";
+    public static final String COL_POSTEL_RESPONSE_CODES = "postelResponseCodes";
     public static final String COL_XAPIKEY = "xApiKey";
     public static final String COL_CXID = "cxId";
     public static final String COL_AWS_MESSAGE_ID = "aws-messageId";

@@ -8,6 +8,7 @@ import lombok.ToString;
 import software.amazon.awssdk.enhanced.dynamodb.mapper.annotations.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import static it.pagopa.pn.address.manager.constant.PnRequestConstant.*;
 
@@ -79,6 +80,11 @@ public class PnRequest {
             @DynamoDbSecondaryPartitionKey(indexNames = GSI_SSL)
     }))
     private String sendStatus;
+
+    @Getter(onMethod = @__({
+            @DynamoDbAttribute(COL_POSTEL_RESPONSE_CODES)
+    }))
+    private List<PostelResponseCodes> postelResponseCodes;
 
     @ToString.Exclude
     @Getter(onMethod = @__({
