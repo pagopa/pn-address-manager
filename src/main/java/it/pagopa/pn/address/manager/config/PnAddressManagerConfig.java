@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.time.Duration;
+
 @Getter
 @Configuration
 @EnableScheduling
@@ -48,8 +50,8 @@ public class PnAddressManagerConfig {
 
     @Data
     public static class Postel{
-        private Integer ttl;
-        private Integer workingTtl;
+        private Duration ttl;
+        private Duration workingTtl;
         private Integer maxRetry;
         private Integer recoveryAfter;
         private Integer recoveryDelay;
@@ -61,7 +63,7 @@ public class PnAddressManagerConfig {
 
     @Data
     public static class BatchRequest{
-        private Integer ttl;
+        private Duration ttl;
         private Integer maxRetry;
         private Integer queryMaxSize;
         private Integer delay;

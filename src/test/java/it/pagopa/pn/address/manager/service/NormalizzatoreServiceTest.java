@@ -12,17 +12,24 @@ import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
 import it.pagopa.pn.address.manager.repository.PostelBatchRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.*;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -81,17 +88,28 @@ class NormalizzatoreServiceTest {
         apiKeyModel.setApiKey("id");
         when(apiKeyUtils.checkPostelApiKey(anyString(), anyString())).thenReturn(Mono.just(apiKeyModel));
         when(normalizzatoreBatchService.findPostelBatch(anyString())).thenReturn(Mono.just(new NormalizzatoreBatch()));
-        FileDownloadResponse fileDownloadResponse = mock(FileDownloadResponse.class);
-        when(safeStorageService.getFile(anyString(),anyString())).thenReturn(Mono.just(fileDownloadResponse));
-        when(postelBatchRepository.update(any()))
-                .thenReturn(Mono.just(new NormalizzatoreBatch()));
-        when(safeStorageService.getFile("fileKey",pnAddressManagerConfig.getPagoPaCxId()))
-                .thenReturn(Mono.just(fileDownloadResponse));
+        FileDownloadResponse fileDownloadResponse = new FileDownloadResponse();
+        fileDownloadResponse.setChecksum("sha256");
+        when(safeStorageService.getFile(normalizerCallbackRequest.getUri(), pnAddressManagerConfig.getPagoPaCxId())).thenReturn(Mono.just(fileDownloadResponse));
         when(sqsService.pushToCallbackQueue(any()))
                 .thenReturn(Mono.just(SendMessageResponse.builder().build()));
-        when(postelBatchRepository.update(any()))
+
+        when(pnAddressManagerConfig.getNormalizer()).thenReturn(mock(PnAddressManagerConfig.Normalizer.class));
+        when(pnAddressManagerConfig.getNormalizer().getPostel()).thenReturn(mock(PnAddressManagerConfig.Postel.class));
+        long expectedTtlSeconds = 3600L; // esempio di TTL atteso in secondi
+        when(pnAddressManagerConfig.getNormalizer().getPostel().getTtl()).thenReturn(Duration.ofSeconds(expectedTtlSeconds));
+
+        ArgumentCaptor<NormalizzatoreBatch> batchCaptor = ArgumentCaptor.forClass(NormalizzatoreBatch.class);
+        when(postelBatchRepository.update(batchCaptor.capture()))
                 .thenReturn(Mono.just(new NormalizzatoreBatch()));
-        StepVerifier.create(normalizzatoreService.callbackNormalizedAddress(normalizerCallbackRequest,"id","id")).expectError().verify();
+
+        StepVerifier.create(normalizzatoreService.callbackNormalizedAddress(normalizerCallbackRequest,"id","id")).assertNext(Assertions::assertNotNull).verifyComplete();
+
+        // Verifica che il TTL sia stato impostato correttamente
+        NormalizzatoreBatch capturedBatch = batchCaptor.getValue();
+        assertNotNull(capturedBatch);
+        long expectedTtlEpochSeconds = LocalDateTime.now().plusSeconds(expectedTtlSeconds).toEpochSecond(ZoneOffset.UTC);
+        assertEquals(expectedTtlEpochSeconds, capturedBatch.getTtl(), 5); // tolleranza di 5 secondi
     }
 
     @Test

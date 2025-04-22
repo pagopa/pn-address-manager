@@ -3,6 +3,7 @@ package it.pagopa.pn.address.manager.service;
 import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.dto.NormalizzazioneResponse;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
+import org.mockito.ArgumentCaptor;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
@@ -23,13 +24,11 @@ import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
 
-import java.time.Clock;
-import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.*;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.when;
 
@@ -76,7 +75,8 @@ class AddressBatchRequestTest {
         pnAddressManagerConfig = new PnAddressManagerConfig();
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer3();
         PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
-        postel.setWorkingTtl(12);
+        long ttl = 3600L;
+        postel.setWorkingTtl(Duration.ofSeconds(ttl));
         normalizer.setPostel(postel);
         pnAddressManagerConfig.setNormalizer(normalizer);
 
@@ -115,9 +115,15 @@ class AddressBatchRequestTest {
         when(addressPnRequestRepository.update(pnRequest1)).thenReturn(Mono.just(pnRequest1));
         NormalizzazioneResponse responseActivatePostel = new NormalizzazioneResponse();
         when(postelClient.activatePostel(any())).thenReturn(Mono.just(responseActivatePostel));
-        when(postelBatchRepository.update(normalizzatoreBatch)).thenReturn(Mono.just(normalizzatoreBatch));
+        ArgumentCaptor<NormalizzatoreBatch> batchCaptor = ArgumentCaptor.forClass(NormalizzatoreBatch.class);
+        when(postelBatchRepository.update(batchCaptor.capture())).thenReturn(Mono.just(normalizzatoreBatch));
         Assertions.assertDoesNotThrow(() -> addressPnRequestService.batchAddressRequest());
 
+        // Verifica che il TTL sia stato impostato correttamente
+        NormalizzatoreBatch capturedBatch = batchCaptor.getValue();
+        assertNotNull(capturedBatch);
+        int expectedTtl = LocalDateTime.now(ZoneOffset.UTC).plusSeconds(ttl).getHour();
+        assertEquals(expectedTtl, capturedBatch.getWorkingTtl().getHour());
     }
     @Test
     void batchAddressRequest2(){
@@ -135,7 +141,7 @@ class AddressBatchRequestTest {
         batchRequest.setEventBridgeRecoveryDelay(3);
         normalizer.setMaxFileNumber(2);
         PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
-        postel.setWorkingTtl(12);
+        postel.setWorkingTtl(Duration.ofSeconds(12));
         normalizer.setPostel(postel);
 
         batchRequest.setQueryMaxSize(5);
@@ -341,15 +347,24 @@ class AddressBatchRequestTest {
     void updateBatchRequest3(){
         pnAddressManagerConfig = new PnAddressManagerConfig();
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer3();
+        long ttl = 3600L;
+        normalizer.getBatchRequest().setTtl(Duration.ofSeconds(ttl));
         pnAddressManagerConfig.setNormalizer(normalizer);
         addressPnRequestService = new PnRequestService(addressPnRequestRepository,postelBatchRepository,addressConverter,sqsService,
                 postelClient,safeStorageService,pnAddressManagerConfig,eventService, csvService, addressUtils, clock);
         PnRequest pnRequest1 = getPnRequest();
         pnRequest1.setStatus(BatchStatus.WORKED.toString());
-        when(addressPnRequestRepository.update(pnRequest1)).thenReturn(Mono.just(pnRequest1));
+        ArgumentCaptor<PnRequest> batchCaptor = ArgumentCaptor.forClass(PnRequest.class);
+        when(addressPnRequestRepository.update(batchCaptor.capture())).thenReturn(Mono.just(pnRequest1));
         when(sqsService.sendToDlqQueue(pnRequest1)).thenReturn(Mono.empty());
         when(eventService.sendEvent(any())).thenReturn(Mono.just(PutEventsResponse.builder().build()));
         StepVerifier.create(addressPnRequestService.updateBatchRequest(List.of(pnRequest1),"batchId")).expectNextCount(0).verifyComplete();
+
+        // Verifica che il TTL sia stato impostato correttamente
+        PnRequest capturedBatch = batchCaptor.getValue();
+        assertNotNull(capturedBatch);
+        long expectedTtlEpochSeconds = LocalDateTime.now().plusSeconds(ttl).toEpochSecond(ZoneOffset.UTC);
+        assertEquals(expectedTtlEpochSeconds, capturedBatch.getTtl(), 5); // tolleranza di 5 secondi
     }
 
 

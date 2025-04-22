@@ -23,6 +23,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -430,7 +431,7 @@ class AddressUtilsTest {
     void createNewStartBatchRequest() {
         PnAddressManagerConfig.Normalizer n = new PnAddressManagerConfig.Normalizer();
         PnAddressManagerConfig.BatchRequest batchRequest = new PnAddressManagerConfig.BatchRequest();
-        batchRequest.setTtl(0);
+        batchRequest.setTtl(Duration.ofMinutes(0));
         n.setBatchRequest(batchRequest);
         pnAddressManagerConfig = new PnAddressManagerConfig();
         pnAddressManagerConfig.setNormalizer(n);

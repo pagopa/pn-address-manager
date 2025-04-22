@@ -302,9 +302,9 @@ Parameters:
     Description: Name of DynamoDB table used for storing and managing ClientID and API keys
 
   PnAddressManagerNormalizerBatchRequestTtl:
-    Type: Number
-    Description: TTL of batch request table setting after PN request completion (seconds)
-    Default: 1209600
+    Type: String
+    Description: 'Duration for TTL of batch request table setting after PN request completion (available temporal unit: seconds, minutes, hours, days)'
+    Default: 262800m
 
   PnAddressManagerNormalizerBatchRequestDelay:
     Type: Number
@@ -398,14 +398,14 @@ Parameters:
     Default: 30000
 
   PnAddressManagerNormalizerPostelWorkingTtl:
-    Type: Number
-    Description: NormalizzatoreBatch remains in WORKING status for the duration specified by the TTL after which its manually deleted (seconds)
-    Default: 1209600
+    Type: String
+    Description: 'NormalizzatoreBatch remains in WORKING status for the duration specified by the TTL after which its manually deleted (available temporal unit: seconds, minutes, hours, days)'
+    Default: 1209600s
 
   PnAddressManagerNormalizerPostelTtl:
-    Type: Number
-    Description: TTL of NormalizzatoreBatch table setting after PN request completion (seconds)
-    Default: 1209600
+    Type: String
+    Description: 'Duration for TTL of NormalizzatoreBatch table setting after PN request completion (available temporal unit: seconds, minutes, hours, days)'
+    Default: 1209600s
 
   ShedLockTableName:
     Type: String

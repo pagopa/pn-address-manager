@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ser.DefaultSerializerProvider;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.ApiClient;
 
 import java.text.DateFormat;
+import java.time.Duration;
 
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.RFC3339DateFormat;
 import org.junit.jupiter.api.Test;
@@ -61,15 +62,15 @@ class NormalizzatoreClientConfigTest {
 		batchRequest.setQueryMaxSize(3);
 		batchRequest.setRecoveryAfter(2);
 		batchRequest.setRecoveryDelay(2);
-		batchRequest.setTtl(2);
+		batchRequest.setTtl(Duration.ofMinutes(2));
 
 		PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
 		postel.setMaxRetry(3);
 		postel.setRecoveryAfter(2);
 		postel.setRecoveryDelay(2);
 		postel.setRequestPrefix("Request Prefix");
-		postel.setTtl(2);
-		postel.setWorkingTtl(2);
+		postel.setTtl(Duration.ofSeconds(2));
+		postel.setWorkingTtl(Duration.ofSeconds(2));
 
 		PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
 		normalizer.setBatchRequest(batchRequest);
@@ -166,15 +167,15 @@ class NormalizzatoreClientConfigTest {
 		batchRequest.setQueryMaxSize(3);
 		batchRequest.setRecoveryAfter(2);
 		batchRequest.setRecoveryDelay(2);
-		batchRequest.setTtl(2);
+		batchRequest.setTtl(Duration.ofMinutes(2));
 
 		PnAddressManagerConfig.Postel postel = new PnAddressManagerConfig.Postel();
 		postel.setMaxRetry(3);
 		postel.setRecoveryAfter(2);
 		postel.setRecoveryDelay(2);
 		postel.setRequestPrefix("Request Prefix");
-		postel.setTtl(2);
-		postel.setWorkingTtl(2);
+		postel.setTtl(Duration.ofSeconds(2));
+		postel.setWorkingTtl(Duration.ofSeconds(2));
 
 		PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
 		normalizer.setBatchRequest(batchRequest);

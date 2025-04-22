@@ -18,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.time.Duration;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -224,7 +226,7 @@ class AddressConverterTest {
         batchRequest.setMaxRetry(3);
         batchRequest.setRecoveryAfter(2);
         batchRequest.setRecoveryDelay(2);
-        batchRequest.setTtl(2);
+        batchRequest.setTtl(Duration.ofMinutes(2));
 
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer(batchRequest);
 
@@ -244,7 +246,7 @@ class AddressConverterTest {
         postel.setMaxRetry(3);
         postel.setRecoveryAfter(2);
         postel.setRecoveryDelay(2);
-        postel.setTtl(2);
+        postel.setTtl(Duration.ofSeconds(2));
         postel.setRequestPrefix("");
 
         PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
@@ -265,7 +267,7 @@ class AddressConverterTest {
         batchRequest.setMaxRetry(3);
         batchRequest.setRecoveryAfter(2);
         batchRequest.setRecoveryDelay(2);
-        batchRequest.setTtl(2);
+        batchRequest.setTtl(Duration.ofMinutes(2));
 
         PnAddressManagerConfig.Normalizer normalizer = getNormalizer1(batchRequest);
 
@@ -287,7 +289,7 @@ class AddressConverterTest {
         postel.setRecoveryAfter(2);
         postel.setRecoveryDelay(2);
         postel.setRequestPrefix("Request Prefix");
-        postel.setTtl(2);
+        postel.setTtl(Duration.ofSeconds(2));
 
         PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
         normalizer.setBatchRequest(batchRequest);
