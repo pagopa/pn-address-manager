@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.PNADDR002_MESSAGE;
 
@@ -97,6 +98,9 @@ public class CapAndCountryService {
 
     private Mono<CapModel> checkValidity(CapModel capModel) {
         LocalDateTime now = LocalDateTime.now();
+        log.info("now LocalDate: {}", now);
+        LocalDateTime now2 = LocalDateTime.now(ZoneOffset.UTC);
+        log.info("now2 LocalDate: {}", now2);
         if (capModel.getStartValidity() != null && capModel.getStartValidity().isAfter(now)) {
             return Mono.error(new Throwable(String.format("Cap is present in whitelist but start validity date is %s", capModel.getStartValidity())));
         } else if (capModel.getEndValidity() != null && capModel.getEndValidity().isBefore(now)) {
