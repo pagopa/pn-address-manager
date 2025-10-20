@@ -266,7 +266,7 @@ class CapAndCountryServiceTest {
         capModel.setEndValidity(LocalDateTime.now().minusDays(1));
         capModel.setCap("12345");
         when(capRepository.findValidCap(any())).thenReturn(Mono.just(capModel));
-        StepVerifier.create(capAndCountryService.verifyCapAndCountryList(item)).expectNext(item).verifyComplete();
+        StepVerifier.create(capAndCountryService.verifyCapAndCountry(item)).expectNext(item).verifyComplete();
     }
     @Test
     void verifyCapAndCountryListError(){
@@ -286,7 +286,7 @@ class CapAndCountryServiceTest {
         countryModel.setStartValidity(LocalDateTime.now());
         countryModel.setEndValidity(LocalDateTime.now().minusDays(1));
         when(countryRepository.findByName(anyString())).thenReturn(Mono.just(countryModel));
-        StepVerifier.create(capAndCountryService.verifyCapAndCountryList(item)).expectNext(item).verifyComplete();
+        StepVerifier.create(capAndCountryService.verifyCapAndCountry(item)).expectNext(item).verifyComplete();
     }
     @Test
     void verifyCapAndCountryList1(){
@@ -305,7 +305,7 @@ class CapAndCountryServiceTest {
         capModel.setStartValidity(LocalDateTime.now());
         capModel.setEndValidity(LocalDateTime.now().minusDays(1));
         when(countryRepository.findByName(any())).thenReturn(Mono.just(capModel));
-        StepVerifier.create(capAndCountryService.verifyCapAndCountryList(item)).expectNext(item).verifyComplete();
+        StepVerifier.create(capAndCountryService.verifyCapAndCountry(item)).expectNext(item).verifyComplete();
     }
 }
 

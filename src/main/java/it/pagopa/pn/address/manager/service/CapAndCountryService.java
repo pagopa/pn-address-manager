@@ -4,6 +4,7 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.DeduplicatesError;
 import it.pagopa.pn.address.manager.entity.CapModel;
 import it.pagopa.pn.address.manager.entity.CountryModel;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.repository.CapRepository;
@@ -11,11 +12,12 @@ import it.pagopa.pn.address.manager.repository.CountryRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.PNADDR002_MESSAGE;
 
@@ -26,61 +28,42 @@ public class CapAndCountryService {
 
     private final CapRepository capRepository;
     private final CountryRepository countryRepository;
-    private final AddressUtils addressUtils;
     private final PnAddressManagerConfig pnAddressManagerConfig;
 
     public Mono<DeduplicatesResponse> verifyCapAndCountry(DeduplicatesResponse item) {
-        if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {
-            if ((!StringUtils.hasText(item.getNormalizedAddress().getCountry())
-                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITA"))
-                    && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
-                return verifyCap(item.getNormalizedAddress().getCap())
-                        .onErrorResume(throwable -> {
-                            log.warn("Error during verify CAP deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
-                            item.setError(DeduplicatesError.PNADDR002.name());
-                            item.setNormalizedAddress(null);
-                            return Mono.empty();
-                        })
-                        .thenReturn(item);
-            } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
-                return verifyCountry(item.getNormalizedAddress().getCountry())
-                        .flatMap(countryModel -> addressUtils.validateForeignAddress(item.getNormalizedAddress()))
-                        .onErrorResume(throwable -> {
-                            log.warn("Error during verify country deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
-                            item.setError(DeduplicatesError.PNADDR002.name());
-                            item.setNormalizedAddress(null);
-                            return Mono.empty();
-                        })
-                        .thenReturn(item);
-            }
+        if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && Objects.nonNull(item.getNormalizedAddress())) {
+            return verifyCapAndCountry(item.getNormalizedAddress())
+                    .onErrorResume(throwable -> {
+                        log.warn("Error during verify CAP or country deduplicate: correlationId: [{}] - error: {}", item.getCorrelationId(), throwable.getMessage());
+                        item.setError(DeduplicatesError.PNADDR002.name());
+                        item.setNormalizedAddress(null);
+                        return Mono.empty();
+                    })
+                    .thenReturn(item);
         }
         return Mono.just(item);
     }
 
-    public Mono<NormalizeResult> verifyCapAndCountryList(NormalizeResult item) {
-        if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && item.getNormalizedAddress() != null) {
-            if ((!StringUtils.hasText(item.getNormalizedAddress().getCountry())
-                    || item.getNormalizedAddress().getCountry().toUpperCase().trim().startsWith("ITA"))
-                    && StringUtils.hasText(item.getNormalizedAddress().getCap())) {
-                return verifyCap(item.getNormalizedAddress().getCap())
+    public Mono<NormalizeResult> verifyCapAndCountry(NormalizeResult item) {
+        if (Boolean.TRUE.equals(pnAddressManagerConfig.getEnableWhitelisting()) && Objects.nonNull(item.getNormalizedAddress())) {
+                return verifyCapAndCountry(item.getNormalizedAddress())
                         .onErrorResume(throwable -> {
-                            log.warn("Error during verify country: {}", throwable.getMessage());
+                            log.warn("Error during verify cap or country: {}", throwable.getMessage());
                             item.setError(PNADDR002_MESSAGE);
                             item.setNormalizedAddress(null);
                             return Mono.empty();
-                        }).thenReturn(item);
-            } else if(StringUtils.hasText(item.getNormalizedAddress().getCountry())){
-                return verifyCountry(item.getNormalizedAddress().getCountry())
-                        .flatMap(countryModel -> addressUtils.validateForeignAddress(item.getNormalizedAddress()))
-                        .onErrorResume(throwable -> {
-                            log.warn("Error during verify country: {}", throwable.getMessage());
-                            item.setError(PNADDR002_MESSAGE);
-                            item.setNormalizedAddress(null);
-                            return Mono.empty();
-                        }).thenReturn(item);
-            }
+                        })
+                        .thenReturn(item);
         }
         return Mono.just(item);
+    }
+
+    Mono<AnalogAddress> verifyCapAndCountry(AnalogAddress analogAddress){
+        if ((StringUtils.isBlank(analogAddress.getCountry()) || analogAddress.getCountry().toUpperCase().trim().startsWith("ITA"))) {
+            return verifyCap(analogAddress.getCap()).thenReturn(analogAddress);
+        } else {
+            return verifyCountry(analogAddress.getCountry()).thenReturn(analogAddress);
+        }
     }
 
     private Mono<CountryModel> verifyCountry(String country) {

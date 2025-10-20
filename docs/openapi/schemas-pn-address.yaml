@@ -97,6 +97,7 @@ components:
             Codice di errore del servizio di deduplica
             - _PNADDR001_: Indirizzo dichiarato non postalizzabile dal normalizzatore
             - _PNADDR002_: Indirizzo dichiarato postalizzabile dal normalizzatore ma con CAP/stato estero non abilitati
+            - _PNADDR003_: validazione response normalizzatore non superata
             - _PNADDR999_: Errore del servizio di normalizzazione
         normalizedAddress:
           $ref: '#/components/schemas/AnalogAddress'
