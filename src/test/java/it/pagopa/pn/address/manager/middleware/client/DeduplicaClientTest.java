@@ -17,7 +17,6 @@ import reactor.core.publisher.Mono;
 
 import static org.mockito.Mockito.*;
 
-@SpringBootTest
 @ExtendWith(SpringExtension.class)
 class DeduplicaClientTest {
 
