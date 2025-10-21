@@ -18,8 +18,8 @@ import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -41,29 +41,29 @@ class NormalizzatoreBatchServiceTest {
     @Autowired
     NormalizzatoreBatchService normalizzatoreBatchService;
 
-    @MockBean
+    @MockitoBean
     AddressBatchRequestRepository addressBatchRequestRepository;
-    @MockBean
+    @MockitoBean
     PostelBatchRepository postelBatchRepository;
-    @MockBean
+    @MockitoBean
     CsvService csvService;
-    @MockBean
+    @MockitoBean
     AddressUtils addressUtils;
-    @MockBean
+    @MockitoBean
     UploadDownloadClient uploadDownloadClient;
 
-    @MockBean
+    @MockitoBean
     PnRequestService pnRequestService;
-    @MockBean
+    @MockitoBean
     CapAndCountryService capAndCountryService;
 
-    @MockBean
+    @MockitoBean
     PnAddressManagerConfig pnAddressManagerConfig;
 
-    @MockBean
+    @MockitoBean
     SafeStorageService safeStorageService;
 
-    @MockBean
+    @MockitoBean
     Clock clock;
 
     @Test

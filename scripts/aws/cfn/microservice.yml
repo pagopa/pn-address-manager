@@ -486,7 +486,6 @@ Resources:
         ContainerEnvEntry6: !Sub 'PN_ADDRESSMANAGER_CAPCSV=${CapCsv}'
         ContainerEnvEntry7: !Sub 'PN_ADDRESSMANAGER_ENABLEPATTERNVALIDATION=${FlagCsvEnablePatternValidation}'
         ContainerEnvEntry8: !Sub 'PN_ADDRESSMANAGER_VALIDATIONPATTERN=${FlagCsvPhysicalAddressValidationCharsValue}'
-        ContainerEnvEntry9: !Sub 'PN_ADDRESSMANAGER_TOPICS_GATEWAYEVENTS=${PnAddressManagerInputsQueueName},${PnAddressManagerCallbackQueueName}'
         ContainerEnvEntry10: !Sub 'PN_ADDRESSMANAGER_SQS_INPUTQUEUENAME=${PnAddressManagerInputsQueueName}'
         ContainerEnvEntry11: !Sub 'PN_ADDRESSMANAGER_SQS_INPUTDLQQUEUENAME=${PnAddressManagerInputsDLQName}'
         ContainerEnvEntry12: !Sub 'PN_ADDRESSMANAGER_SQS_CALLBACKQUEUENAME=${PnAddressManagerCallbackQueueName}'

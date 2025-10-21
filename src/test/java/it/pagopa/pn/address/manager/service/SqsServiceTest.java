@@ -9,9 +9,8 @@ import it.pagopa.pn.address.manager.model.PostelCallbackSqsDto;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.sqs.SqsClient;
 import software.amazon.awssdk.services.sqs.model.GetQueueUrlRequest;
@@ -31,9 +30,9 @@ class SqsServiceTest {
 
     SqsService sqsService;
 
-    @MockBean SqsClient sqsClient;
-    @MockBean AddressUtils addressUtils;
-    @MockBean PnAddressManagerConfig pnAddressManagerConfig;
+    @MockitoBean SqsClient sqsClient;
+    @MockitoBean AddressUtils addressUtils;
+    @MockitoBean PnAddressManagerConfig pnAddressManagerConfig;
 
     @Test
     void sendListToDlqQueue(){

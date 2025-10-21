@@ -23,7 +23,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Base64Utils;
 import reactor.core.publisher.Mono;
 
 import java.security.MessageDigest;
@@ -31,10 +30,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.ERROR;
@@ -231,7 +227,7 @@ public class AddressUtils {
     }
 
     private static String bytesToBase64(byte[] hash) {
-        return Base64Utils.encodeToString(hash);
+        return Base64.getEncoder().encodeToString(hash);
     }
 
     public String toJson(Object obj) {

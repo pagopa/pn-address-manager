@@ -5,7 +5,7 @@ import it.pagopa.pn.address.manager.entity.CapModel;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
@@ -21,17 +21,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 class CapRepositoryImplTest {
 
-    @MockBean
+    @MockitoBean
     private DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
 
-    @MockBean
+    @MockitoBean
     private DynamoDbAsyncTable<Object> dynamoDbAsyncTable;
 
     private CapRepositoryImpl capRepository;
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         PnAddressManagerConfig.Dao dao = new PnAddressManagerConfig.Dao();
         dao.setBatchRequestTableName("table");
         PnAddressManagerConfig addressManagerConfig = new PnAddressManagerConfig();

@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -20,10 +20,10 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration (classes = {PnSafeStorageClient.class})
 @ExtendWith (SpringExtension.class)
 class PnSafeStorageClientTest {
-	@MockBean
+    @MockitoBean
 	private FileDownloadApi fileDownloadApi;
 
-	@MockBean
+    @MockitoBean
 	private FileUploadApi fileUploadApi;
 
 	@Autowired

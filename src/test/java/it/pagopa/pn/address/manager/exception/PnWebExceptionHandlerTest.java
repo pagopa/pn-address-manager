@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.core.io.buffer.DefaultDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,7 @@ import org.springframework.http.server.reactive.HttpHeadResponseDecorator;
 import org.springframework.messaging.handler.annotation.support.MethodArgumentNotValidException;
 import org.springframework.messaging.handler.annotation.support.MethodArgumentTypeMismatchException;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.support.WebExchangeBindException;
@@ -22,7 +22,7 @@ import org.springframework.web.server.ServerWebInputException;
 import org.springframework.web.server.adapter.DefaultServerWebExchange;
 import reactor.test.StepVerifier;
 
-import javax.validation.ConstraintViolationException;
+import jakarta.validation.ConstraintViolationException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
@@ -34,7 +34,7 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {PnWebExceptionHandler.class})
 @ExtendWith(SpringExtension.class)
 class PnWebExceptionHandlerTest {
-    @MockBean
+    @MockitoBean
     private ExceptionHelper exceptionHelper;
 
     @Autowired

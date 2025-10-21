@@ -17,7 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -37,16 +37,15 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
 class NormalizzatoreServiceTest {
-    @MockBean PnSafeStorageClient pnSafeStorageClient;
-    @MockBean NormalizzatoreConverter normalizzatoreConverter;
-    @MockBean
-    NormalizzatoreBatchService normalizzatoreBatchService;
-    @MockBean SqsService sqsService;
-    @MockBean SafeStorageService safeStorageService;
-    @MockBean PostelBatchRepository postelBatchRepository;
-    @MockBean ApiKeyUtils apiKeyUtils;
-    @MockBean AddressUtils addressUtils;
-    @MockBean PnAddressManagerConfig pnAddressManagerConfig;
+    @MockitoBean PnSafeStorageClient pnSafeStorageClient;
+    @MockitoBean NormalizzatoreConverter normalizzatoreConverter;
+    @MockitoBean NormalizzatoreBatchService normalizzatoreBatchService;
+    @MockitoBean SqsService sqsService;
+    @MockitoBean SafeStorageService safeStorageService;
+    @MockitoBean PostelBatchRepository postelBatchRepository;
+    @MockitoBean ApiKeyUtils apiKeyUtils;
+    @MockitoBean AddressUtils addressUtils;
+    @MockitoBean PnAddressManagerConfig pnAddressManagerConfig;
 
     NormalizzatoreService normalizzatoreService;
 

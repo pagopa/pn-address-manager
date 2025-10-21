@@ -7,9 +7,9 @@ import it.pagopa.pn.address.manager.service.NormalizeAddressService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -26,10 +26,10 @@ class NormalizeAddressControllerTest {
     @Autowired
     NormalizeAddressController normalizeAddressController;
 
-    @MockBean
+    @MockitoBean
     private NormalizeAddressService normalizeAddressService;
 
-    @MockBean
+    @MockitoBean
     ServerWebExchange serverWebExchange;
 
     @Test

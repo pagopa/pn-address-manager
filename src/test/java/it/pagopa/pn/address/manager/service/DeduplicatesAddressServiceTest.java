@@ -11,7 +11,7 @@ import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -23,22 +23,22 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 class DeduplicatesAddressServiceTest {
 
-    @MockBean
+    @MockitoBean
     AddressUtils addressUtils;
 
-    @MockBean
+    @MockitoBean
     DeduplicaClient postelClient;
 
-    @MockBean
+    @MockitoBean
     PnAddressManagerConfig pnAddressManagerConfig;
 
-    @MockBean
+    @MockitoBean
     ApiKeyUtils apiKeyUtils;
 
-    @MockBean
+    @MockitoBean
     CapAndCountryService capAndCountryService;
 
-    @MockBean
+    @MockitoBean
     AddressConverter addressConverter;
 
     private DeduplicatesAddressService deduplicatesAddressService;
