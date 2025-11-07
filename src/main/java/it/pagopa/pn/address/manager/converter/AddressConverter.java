@@ -16,6 +16,7 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.Objects;
 
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_CODE_ADDRESS_MANAGER_DEDUPLICA_POSTEL;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESS_MANAGER_DEDUPLICA_POSTEL;
@@ -82,7 +83,7 @@ public class AddressConverter {
     }
 
     private void getAnalogAddress(DeduplicaResponse risultatoDeduplica, DeduplicatesResponse deduplicatesResponse, String correlationId) {
-        if (risultatoDeduplica.getSlaveOut() != null) {
+        if (Objects.nonNull(risultatoDeduplica.getSlaveOut())) {
             if (StringUtils.hasText(risultatoDeduplica.getSlaveOut().getfPostalizzabile())
                     && risultatoDeduplica.getSlaveOut().getfPostalizzabile().equalsIgnoreCase("0")) {
                 log.warn("Error during deduplicate and normalize addreses: correlationId: [{}] - error: {}",
