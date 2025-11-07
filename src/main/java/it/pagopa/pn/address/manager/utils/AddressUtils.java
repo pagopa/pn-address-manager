@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.CollectionType;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.constant.BatchStatus;
-import it.pagopa.pn.address.manager.constant.ErrorNormEvaluationMode;
-import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
-import it.pagopa.pn.address.manager.constant.PostelNErrorNorm;
+import it.pagopa.pn.address.manager.constant.*;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.entity.PostelResponseCodeRecipient;
 import it.pagopa.pn.address.manager.entity.PostelResponseCodes;
@@ -393,5 +390,32 @@ public class AddressUtils {
     public static Duration getTimeSpent(Instant start) {
         Instant end = Instant.now();
         return Duration.between(start, end);
+    }
+
+    public DeduplicatesResponse verifyRequiredFields(DeduplicatesResponse deduplicatesResponse) {
+        if(Objects.nonNull(deduplicatesResponse.getNormalizedAddress()) && !checkAnalogFieldsNotBlank(deduplicatesResponse.getNormalizedAddress())){
+            deduplicatesResponse.setError(DeduplicatesError.PNADDR003.name());
+            deduplicatesResponse.setNormalizedAddress(null);
+        }
+        return deduplicatesResponse;
+    }
+
+    public boolean verifyRequiredFields(List<NormalizeResult> normalizedResults) {
+        return normalizedResults.stream().allMatch(normalizedAddress -> {
+            boolean validAddress = checkAnalogFieldsNotBlank(normalizedAddress.getNormalizedAddress());
+            if (!validAddress) {
+                log.error("Address with id: {} has missing required fields", normalizedAddress.getId());
+            }
+            return validAddress;
+        });
+    }
+
+
+    private boolean checkAnalogFieldsNotBlank(AnalogAddress analogAddress) {
+        if (StringUtils.isBlank(analogAddress.getCountry()) || analogAddress.getCountry().toUpperCase().trim().startsWith("ITA")) {
+            return StringUtils.isNotBlank(analogAddress.getAddressRow()) && StringUtils.isNotBlank(analogAddress.getCity()) && StringUtils.isNotBlank(analogAddress.getCap());
+        } else {
+            return StringUtils.isNotBlank(analogAddress.getAddressRow()) && StringUtils.isNotBlank(analogAddress.getCity());
+        }
     }
 }

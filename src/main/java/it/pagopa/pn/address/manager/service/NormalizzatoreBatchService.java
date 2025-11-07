@@ -8,6 +8,7 @@ import it.pagopa.pn.address.manager.exception.PnAddressManagerException;
 import it.pagopa.pn.address.manager.exception.PnFileNotFoundException;
 import it.pagopa.pn.address.manager.exception.PostelException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsResult;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
 import it.pagopa.pn.address.manager.middleware.client.safestorage.UploadDownloadClient;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
@@ -32,9 +33,9 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
-import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_ASYNC;
-import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.SEMANTIC_ERROR_CODE;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.*;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
 import static it.pagopa.pn.address.manager.exception.PnAddressManagerExceptionCodes.ERROR_MESSAGE_ADDRESS_MANAGER_POSTELOUTPUTFILEKEYNOTFOUND;
 import static java.util.stream.Collectors.groupingBy;
@@ -134,11 +135,17 @@ public class NormalizzatoreBatchService {
         MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, pnRequest.getCorrelationId());
         Mono<PnRequest> pnRequestMono = Mono.fromCallable(() -> {
             String correlationIdCreatedAt = addressUtils.getCorrelationIdCreatedAt(pnRequest);
-            if (map.get(correlationIdCreatedAt) != null
-                    && map.get(correlationIdCreatedAt).size() == addressUtils.getNormalizeRequestFromBatchRequest(pnRequest).size()) {
+            List<NormalizedAddress> normalizedAddresses = map.get(correlationIdCreatedAt);
+            if (Objects.nonNull(normalizedAddresses) && normalizedAddresses.size() == addressUtils.getNormalizeRequestFromBatchRequest(pnRequest).size()) {
                 log.info("Postel response for request with correlationId: [{}] and createdAt: [{}] is complete", pnRequest.getCorrelationId(), pnRequest.getCreatedAt());
-                pnRequest.setStatus(BatchStatus.WORKED.name());
-                pnRequest.setMessage(verifyPostelAddressResponseAndRetrieveMessage(map.get(correlationIdCreatedAt), pnRequest));
+                List<NormalizeResult> normalizedResults = addressUtils.toResultItem(normalizedAddresses, pnRequest);
+                if(!addressUtils.verifyRequiredFields(normalizedResults)){
+                    pnRequest.setStatus(BatchStatus.ERROR.name());
+                    pnRequest.setMessage(PNADDR003_MESSAGE);
+                }else {
+                    pnRequest.setStatus(BatchStatus.WORKED.name());
+                    pnRequest.setMessage(verifyPostelAddressResponseAndRetrieveMessage(normalizedResults, pnRequest));
+                }
             } else {
                 log.error("Postel response for request with correlationId: [{}] is not complete", pnRequest.getCorrelationId());
                 pnRequest.setStatus(TAKEN_CHARGE.name());
@@ -152,13 +159,13 @@ public class NormalizzatoreBatchService {
         return postelBatchRepository.findByBatchId(requestId);
     }
 
-    private String verifyPostelAddressResponseAndRetrieveMessage(List<NormalizedAddress> normalizedAddresses, PnRequest pnRequest) {
+    private String verifyPostelAddressResponseAndRetrieveMessage(List<NormalizeResult> normalizedResults, PnRequest pnRequest) {
         MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, pnRequest.getCorrelationId());
         NormalizeItemsResult normalizeItemsResult = new NormalizeItemsResult();
         normalizeItemsResult.setCorrelationId(pnRequest.getCorrelationId());
-        normalizeItemsResult.setResultItems(addressUtils.toResultItem(normalizedAddresses, pnRequest));
+        normalizeItemsResult.setResultItems(normalizedResults);
         final Mono<String> resultVerify = Flux.fromIterable(normalizeItemsResult.getResultItems())
-                .flatMap(capAndCountryService::verifyCapAndCountryList)
+                .flatMap(capAndCountryService::verifyCapAndCountry)
                 .collectList()
                 .map(addressUtils::toJson);
 

@@ -13,7 +13,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
-
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_SYNC;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_CHECKING_APIKEY;
 
@@ -41,6 +40,7 @@ public class DeduplicatesAddressService {
                     return postelClient
                             .deduplica(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
                             .map(risultatoDeduplica -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, request.getCorrelationId()))
+                            .map(addressUtils::verifyRequiredFields)
                             .flatMap(capAndCountryService::verifyCapAndCountry)
                             .doOnError(Mono::error);
                 });

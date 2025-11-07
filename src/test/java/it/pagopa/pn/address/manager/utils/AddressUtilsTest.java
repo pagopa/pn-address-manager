@@ -4,14 +4,12 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.DeduplicatesError;
 import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.entity.PostelResponseCodeRecipient;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeItemsRequest;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeResult;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
@@ -927,6 +925,141 @@ class AddressUtilsTest {
         List<NormalizeResult> resultItems = addressUtils.normalizeAddresses(normalizeRequestList, "correlationid");
         assertEquals(1, resultItems.size());
         assertEquals("42", resultItems.get(0).getId());
+    }
+
+    @Test
+    void verifyRequiredFields_shouldSetErrorAndNullAddress_whenFieldsAreMissing() {
+        DeduplicatesResponse response = new DeduplicatesResponse();
+        AnalogAddress address = new AnalogAddress();
+        address.setAddressRow("");
+        address.setCity("Rome");
+        address.setCap("");
+        response.setNormalizedAddress(address);
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        DeduplicatesResponse result = addressUtils.verifyRequiredFields(response);
+
+        assertEquals(DeduplicatesError.PNADDR003.name(), result.getError());
+        assertNull(result.getNormalizedAddress());
+    }
+
+    @Test
+    void verifyRequiredFields_shouldSetErrorAndNullAddress_whenFieldsAreMissingForForeign() {
+        DeduplicatesResponse response = new DeduplicatesResponse();
+        AnalogAddress address = new AnalogAddress();
+        address.setAddressRow("");
+        address.setCity("");
+        address.setCap("");
+        address.setCountry("FRANCE");
+        response.setNormalizedAddress(address);
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        DeduplicatesResponse result = addressUtils.verifyRequiredFields(response);
+
+        assertEquals(DeduplicatesError.PNADDR003.name(), result.getError());
+        assertNull(result.getNormalizedAddress());
+    }
+
+    @Test
+    void verifyRequiredFields_validForeignAddress() {
+        DeduplicatesResponse response = new DeduplicatesResponse();
+        AnalogAddress address = new AnalogAddress();
+        address.setAddressRow("ADDRESS");
+        address.setCity("CITY");
+        address.setCap("");
+        address.setCountry("FRANCE");
+        response.setNormalizedAddress(address);
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        DeduplicatesResponse result = addressUtils.verifyRequiredFields(response);
+
+        assertNull(result.getError());
+        assertNotNull(result.getNormalizedAddress());
+    }
+
+    @Test
+    void verifyRequiredFields_validAddress() {
+        DeduplicatesResponse response = new DeduplicatesResponse();
+        AnalogAddress address = new AnalogAddress();
+        address.setAddressRow("VIA APPIA 1");
+        address.setCity("ROMA");
+        address.setCap("00100");
+        response.setNormalizedAddress(address);
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        DeduplicatesResponse result = addressUtils.verifyRequiredFields(response);
+
+        assertNull(result.getError());
+        assertNotNull(result.getNormalizedAddress());
+    }
+
+    @Test
+    void verifyRequiredFields_shouldReturnTrue_whenAllAddressesAreValid() {
+        AnalogAddress address = new AnalogAddress();
+        address.setAddressRow("Via Roma");
+        address.setCity("Roma");
+        address.setCap("00100");
+
+        NormalizeResult result = new NormalizeResult();
+        result.setId("1");
+        result.setNormalizedAddress(address);
+
+        List<NormalizeResult> results = List.of(result);
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertTrue(addressUtils.verifyRequiredFields(results));
+    }
+
+    @Test
+    void verifyRequiredFields_shouldReturnFalse_whenAnyAddressIsInvalid() {
+        AnalogAddress validAddress = new AnalogAddress();
+        validAddress.setAddressRow("Via Roma");
+        validAddress.setCity("Roma");
+        validAddress.setCap("00100");
+
+        AnalogAddress invalidAddress = new AnalogAddress();
+        invalidAddress.setAddressRow("");
+        invalidAddress.setCity("");
+        invalidAddress.setCap("");
+
+        NormalizeResult validResult = new NormalizeResult();
+        validResult.setId("1");
+        validResult.setNormalizedAddress(validAddress);
+
+        NormalizeResult invalidResult = new NormalizeResult();
+        invalidResult.setId("2");
+        invalidResult.setNormalizedAddress(invalidAddress);
+
+        List<NormalizeResult> results = List.of(validResult, invalidResult);
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertFalse(addressUtils.verifyRequiredFields(results));
+    }
+
+    @Test
+    void verifyRequiredFields_shouldReturnTru_whenAllAddressIsValid() {
+        AnalogAddress validAddress = new AnalogAddress();
+        validAddress.setAddressRow("Via Roma");
+        validAddress.setCity("Roma");
+        validAddress.setCap("00100");
+
+        AnalogAddress invalidAddress = new AnalogAddress();
+        validAddress.setAddressRow("Via Roma");
+        validAddress.setCity("Roma");
+        validAddress.setCap("00100");
+
+        NormalizeResult validResult = new NormalizeResult();
+        validResult.setId("1");
+        validResult.setNormalizedAddress(validAddress);
+
+        NormalizeResult invalidResult = new NormalizeResult();
+        invalidResult.setId("2");
+        invalidResult.setNormalizedAddress(invalidAddress);
+
+        List<NormalizeResult> results = List.of(validResult, invalidResult);
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertFalse(addressUtils.verifyRequiredFields(results));
     }
 }
 
