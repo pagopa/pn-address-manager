@@ -242,6 +242,7 @@ class NormalizzatoreBatchServiceTest {
 
         NormalizedAddress address = createNormalizedAddress(CORRELATION_ID + "#" + createdAt + "#0", "Via Roma 1");
         address.setSCap("");
+        address.setSViaCompletaSpedizione("");
         List<NormalizedAddress> addressList = Collections.singletonList(address);
 
         PnRequest request = createPnRequest(CORRELATION_ID, BatchStatus.WORKING.name(), createdAt);
@@ -272,7 +273,7 @@ class NormalizzatoreBatchServiceTest {
         assertThat(updatedRequests).hasSize(1);
         PnRequest updatedRequest = updatedRequests.get(0);
         assertThat(updatedRequest.getStatus()).isEqualTo(BatchStatus.ERROR.name());
-        assertThat(updatedRequest.getMessage()).isEqualTo(PNADDR003_MESSAGE);
+        assertThat(updatedRequest.getMessage()).isEqualTo(String.format(PNADDR003_MESSAGE,"addressRow,cap"));
         verifyNoInteractions(capRepo);
     }
 
@@ -317,7 +318,7 @@ class NormalizzatoreBatchServiceTest {
         assertThat(updatedRequests).hasSize(1);
         PnRequest updatedRequest = updatedRequests.get(0);
         assertThat(updatedRequest.getStatus()).isEqualTo(BatchStatus.ERROR.name());
-        assertThat(updatedRequest.getMessage()).isEqualTo(PNADDR003_MESSAGE);
+        assertThat(updatedRequest.getMessage()).isEqualTo(String.format(PNADDR003_MESSAGE, "city"));
         verifyNoInteractions(countryRepo);
     }
 

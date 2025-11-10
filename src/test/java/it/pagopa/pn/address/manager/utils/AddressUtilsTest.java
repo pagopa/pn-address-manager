@@ -1007,7 +1007,7 @@ class AddressUtilsTest {
         List<NormalizeResult> results = List.of(result);
 
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertTrue(addressUtils.verifyRequiredFields(results));
+        assertTrue(addressUtils.verifyRequiredFields(results).isEmpty());
     }
 
     @Test
@@ -1033,7 +1033,7 @@ class AddressUtilsTest {
         List<NormalizeResult> results = List.of(validResult, invalidResult);
 
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertFalse(addressUtils.verifyRequiredFields(results));
+        assertFalse(addressUtils.verifyRequiredFields(results).isEmpty());
     }
 
     @Test
@@ -1059,7 +1059,7 @@ class AddressUtilsTest {
         List<NormalizeResult> results = List.of(validResult, invalidResult);
 
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertFalse(addressUtils.verifyRequiredFields(results));
+        assertFalse(addressUtils.verifyRequiredFields(results).isEmpty());
     }
 }
 
