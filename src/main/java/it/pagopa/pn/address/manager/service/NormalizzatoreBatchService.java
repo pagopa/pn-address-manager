@@ -139,9 +139,10 @@ public class NormalizzatoreBatchService {
             if (Objects.nonNull(normalizedAddresses) && normalizedAddresses.size() == addressUtils.getNormalizeRequestFromBatchRequest(pnRequest).size()) {
                 log.info("Postel response for request with correlationId: [{}] and createdAt: [{}] is complete", pnRequest.getCorrelationId(), pnRequest.getCreatedAt());
                 List<NormalizeResult> normalizedResults = addressUtils.toResultItem(normalizedAddresses, pnRequest);
-                if(!addressUtils.verifyRequiredFields(normalizedResults)){
+                List<String> missedRequiredFields = addressUtils.verifyRequiredFields(normalizedResults);
+                if(!CollectionUtils.isEmpty(missedRequiredFields)){
                     pnRequest.setStatus(BatchStatus.ERROR.name());
-                    pnRequest.setMessage(PNADDR003_MESSAGE);
+                    pnRequest.setMessage(String.format(PNADDR003_MESSAGE, String.join(",", missedRequiredFields)));
                 }else {
                     pnRequest.setStatus(BatchStatus.WORKED.name());
                     pnRequest.setMessage(verifyPostelAddressResponseAndRetrieveMessage(normalizedResults, pnRequest));

@@ -20,6 +20,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Mono;
 
 import java.security.MessageDigest;
@@ -393,29 +394,30 @@ public class AddressUtils {
     }
 
     public DeduplicatesResponse verifyRequiredFields(DeduplicatesResponse deduplicatesResponse) {
-        if(Objects.nonNull(deduplicatesResponse.getNormalizedAddress()) && !checkAnalogFieldsNotBlank(deduplicatesResponse.getNormalizedAddress())){
+        if(Objects.nonNull(deduplicatesResponse.getNormalizedAddress())
+                && !CollectionUtils.isEmpty(getMissingFields(deduplicatesResponse.getNormalizedAddress()))){
             deduplicatesResponse.setError(DeduplicatesError.PNADDR003.name());
             deduplicatesResponse.setNormalizedAddress(null);
         }
         return deduplicatesResponse;
     }
 
-    public boolean verifyRequiredFields(List<NormalizeResult> normalizedResults) {
-        return normalizedResults.stream().allMatch(normalizedAddress -> {
-            boolean validAddress = checkAnalogFieldsNotBlank(normalizedAddress.getNormalizedAddress());
-            if (!validAddress) {
-                log.error("Address with id: {} has missing required fields", normalizedAddress.getId());
-            }
-            return validAddress;
-        });
+    public List<String> verifyRequiredFields(List<NormalizeResult> normalizedResults) {
+        List<String> missedFields = new ArrayList<>();
+        normalizedResults.forEach(normalizeResult -> {
+                    if(Objects.nonNull(normalizeResult.getNormalizedAddress())){
+                        missedFields.addAll(getMissingFields(normalizeResult.getNormalizedAddress()));
+                    }
+                });
+        return missedFields;
     }
 
-
-    private boolean checkAnalogFieldsNotBlank(AnalogAddress analogAddress) {
-        if (StringUtils.isBlank(analogAddress.getCountry()) || analogAddress.getCountry().toUpperCase().trim().startsWith("ITA")) {
-            return StringUtils.isNotBlank(analogAddress.getAddressRow()) && StringUtils.isNotBlank(analogAddress.getCity()) && StringUtils.isNotBlank(analogAddress.getCap());
-        } else {
-            return StringUtils.isNotBlank(analogAddress.getAddressRow()) && StringUtils.isNotBlank(analogAddress.getCity());
-        }
+    private List<String> getMissingFields(AnalogAddress analogAddress) {
+        List<String> missing = new ArrayList<>();
+        boolean isItalian = StringUtils.isBlank(analogAddress.getCountry()) || analogAddress.getCountry().toUpperCase().trim().startsWith("ITA");
+        if (StringUtils.isBlank(analogAddress.getAddressRow())) missing.add("addressRow");
+        if (StringUtils.isBlank(analogAddress.getCity())) missing.add("city");
+        if (isItalian && StringUtils.isBlank(analogAddress.getCap())) missing.add("cap");
+        return missing;
     }
 }
