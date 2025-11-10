@@ -6,7 +6,7 @@ import it.pagopa.pn.address.manager.entity.PnRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -33,17 +33,17 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 class AddressPnRequestRepositoryImplTest {
 
-    @MockBean
+    @MockitoBean
     private DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
 
-    @MockBean
+    @MockitoBean
     private DynamoDbAsyncTable<Object> dynamoDbAsyncTable;
 
     private AddressBatchRequestRepositoryImpl addressBatchRequestRepository;
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         PnAddressManagerConfig.Dao dao = new PnAddressManagerConfig.Dao();
         dao.setBatchRequestTableName("table");
         PnAddressManagerConfig addressManagerConfig = new PnAddressManagerConfig();

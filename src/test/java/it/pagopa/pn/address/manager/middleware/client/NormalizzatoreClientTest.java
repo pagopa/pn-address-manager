@@ -6,7 +6,7 @@ import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.api.NormalizzatoreApi;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 
@@ -14,7 +14,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(SpringExtension.class)
 class NormalizzatoreClientTest {
-    @MockBean
+    @MockitoBean
     NormalizzatoreApi defaultApi;
 
     @Test

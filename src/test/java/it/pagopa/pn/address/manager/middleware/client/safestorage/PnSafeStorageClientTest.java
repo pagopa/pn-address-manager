@@ -3,13 +3,14 @@ package it.pagopa.pn.address.manager.middleware.client.safestorage;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.api.FileDownloadApi;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.api.FileUploadApi;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationRequestDto;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -20,10 +21,10 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration (classes = {PnSafeStorageClient.class})
 @ExtendWith (SpringExtension.class)
 class PnSafeStorageClientTest {
-	@MockBean
+    @MockitoBean
 	private FileDownloadApi fileDownloadApi;
 
-	@MockBean
+    @MockitoBean
 	private FileUploadApi fileUploadApi;
 
 	@Autowired
@@ -36,7 +37,7 @@ class PnSafeStorageClientTest {
 	void testGetFile () throws WebClientResponseException {
 		// Arrange
 		when(fileDownloadApi.getFile(Mockito.<String>any(), Mockito.<String>any(), Mockito.<Boolean>any()))
-				.thenThrow(new WebClientResponseException(2, "Req params : {}", new HttpHeaders(),
+				.thenThrow(new WebClientResponseException(400, "Req params : {}", new HttpHeaders(),
 						new byte[]{'A', 2, 'A', 2, 'A', 2, 'A', 2}, null));
 
 		// Act and Assert
@@ -50,8 +51,10 @@ class PnSafeStorageClientTest {
 	@Test
 	void testCreateFile () throws WebClientResponseException {
 		// Arrange
-		when(fileUploadApi.createFile(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any(),
-				Mockito.<FileCreationRequestDto>any())).thenReturn(mock(Mono.class));
+        Mono<FileCreationResponseDto> response = Mono
+                .just(new FileCreationResponseDto());
+        when(fileUploadApi.createFile(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any(),
+				Mockito.<FileCreationRequestDto>any())).thenReturn(response);
 
 		FileCreationRequestDto fileCreationRequest = new FileCreationRequestDto();
 		fileCreationRequest.contentType("Not all who wander are lost");
@@ -70,8 +73,10 @@ class PnSafeStorageClientTest {
 	@Test
 	void testCreateFile2 () throws WebClientResponseException {
 		// Arrange
+        Mono<FileCreationResponseDto> response = Mono
+                .just(new FileCreationResponseDto());
 		when(fileUploadApi.createFile(Mockito.<String>any(), Mockito.<String>any(), Mockito.<String>any(),
-				Mockito.<FileCreationRequestDto>any())).thenReturn(mock(Mono.class));
+				Mockito.<FileCreationRequestDto>any())).thenReturn(response);
 		FileCreationRequestDto fileCreationRequest = mock(FileCreationRequestDto.class);
 		when(fileCreationRequest.contentType(Mockito.<String>any())).thenReturn(new FileCreationRequestDto());
 		fileCreationRequest.contentType("Not all who wander are lost");

@@ -12,8 +12,8 @@ import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -30,16 +30,16 @@ class CapAndCountryServiceTest {
     @Autowired
     private CapAndCountryService capAndCountryService;
 
-    @MockBean
+    @MockitoBean
     private CapRepository capRepository;
 
-    @MockBean
+    @MockitoBean
     private AddressUtils addressUtils;
 
-    @MockBean
+    @MockitoBean
     private CountryRepository countryRepository;
 
-    @MockBean
+    @MockitoBean
     private PnAddressManagerConfig pnAddressManagerConfig;
 
     @Test

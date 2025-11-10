@@ -6,15 +6,14 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
-import java.util.function.Consumer;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -22,22 +21,21 @@ import static org.mockito.Mockito.*;
 @ContextConfiguration(classes = {NormalizerCallbackHandler.class})
 @ExtendWith(SpringExtension.class)
 class NormalizerCallbackHandlerTest {
-    @MockBean
+    @MockitoBean
     private NormalizeAddressService normalizeAddressService;
 
     @Autowired
     private NormalizerCallbackHandler normalizerCallbackHandler;
 
     /**
-     * Method under test: {@link NormalizerCallbackHandler#pnAddressManagerPostelCallbackConsumer()}
+     * Method under test: {@link NormalizerCallbackHandler#pnAddressManagerPostelCallbackConsumer(Message)}
      */
     @Test
     void testNormalizerCallbackConsumer() {
         Message<PnPostelCallbackEvent.Payload> message = getPostelCallbackMessage();
         when(normalizeAddressService.handlePostelCallback(any())).thenReturn(Mono.just("").then());
         //WHEN
-        Consumer<Message<PnPostelCallbackEvent.Payload>> consumer = normalizerCallbackHandler.pnAddressManagerPostelCallbackConsumer();
-        consumer.accept(message);
+        normalizerCallbackHandler.pnAddressManagerPostelCallbackConsumer(message);
         verify(normalizeAddressService, times(1)).handlePostelCallback(any());
 
     }

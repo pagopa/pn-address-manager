@@ -5,7 +5,7 @@ import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.test.StepVerifier;
 import software.amazon.awssdk.services.eventbridge.EventBridgeAsyncClient;
@@ -20,16 +20,16 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 class EventServiceTest {
 
-    @MockBean
+    @MockitoBean
     EventBridgeAsyncClient eventBridgeAsyncClient;
-    @MockBean
+    @MockitoBean
     PnAddressManagerConfig pnAddressManagerConfig;
 
     EventService eventService;
 
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         pnAddressManagerConfig = new PnAddressManagerConfig();
         PnAddressManagerConfig.EventBus eventBus = new PnAddressManagerConfig.EventBus();
         eventBus.setName("name");

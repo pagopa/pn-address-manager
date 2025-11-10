@@ -11,13 +11,12 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnNormalizeRequestEvent;
 import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCallbackEvent;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
-import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -37,28 +36,28 @@ import static org.mockito.Mockito.when;
 class NormalizeAddressServiceTest {
 
     private NormalizeAddressService normalizeAddressService;
-    @MockBean
+    @MockitoBean
     private AddressUtils addressUtils;
 
-    @MockBean
+    @MockitoBean
     private ObjectMapper objectMapper;
 
-    @MockBean
+    @MockitoBean
     private SqsService sqsService;
 
-    @MockBean
+    @MockitoBean
     private AddressBatchRequestRepository addressBatchRequestRepository;
 
-    @MockBean
+    @MockitoBean
     private EventService eventService;
 
-    @MockBean
+    @MockitoBean
     private ApiKeyUtils apiKeyUtils;
 
-    @MockBean
+    @MockitoBean
     private PnAddressManagerConfig pnAddressManagerConfig;
 
-    @MockBean
+    @MockitoBean
     private NormalizzatoreBatchService normalizzatoreBatchService;
 
     @Test

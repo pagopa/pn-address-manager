@@ -20,7 +20,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Base64Utils;
 import reactor.core.publisher.Mono;
 
 import java.security.MessageDigest;
@@ -225,7 +224,7 @@ public class AddressUtils {
     }
 
     private static String bytesToBase64(byte[] hash) {
-        return Base64Utils.encodeToString(hash);
+        return Base64.getEncoder().encodeToString(hash);
     }
 
     public String toJson(Object obj) {

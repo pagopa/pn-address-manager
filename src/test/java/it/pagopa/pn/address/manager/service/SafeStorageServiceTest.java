@@ -12,7 +12,7 @@ import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1.dto.FileDownloadResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
@@ -28,14 +28,14 @@ class SafeStorageServiceTest {
 
     SafeStorageService safeStorageService;
 
-    @MockBean CsvService csvService;
-    @MockBean PnSafeStorageClient pnSafeStorageClient;
-    @MockBean UploadDownloadClient uploadDownloadClient;
+    @MockitoBean CsvService csvService;
+    @MockitoBean PnSafeStorageClient pnSafeStorageClient;
+    @MockitoBean UploadDownloadClient uploadDownloadClient;
 
-    @MockBean AddressUtils addressUtils;
+    @MockitoBean AddressUtils addressUtils;
 
-    @MockBean PnAddressManagerConfig pnAddressManagerConfig;
-    @MockBean NormalizzatoreConverter normalizzatoreConverter;
+    @MockitoBean PnAddressManagerConfig pnAddressManagerConfig;
+    @MockitoBean NormalizzatoreConverter normalizzatoreConverter;
 
     @Test
     void callSelfStorageCreateFileAndUpload(){

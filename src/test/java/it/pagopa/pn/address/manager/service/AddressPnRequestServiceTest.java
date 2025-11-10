@@ -4,6 +4,7 @@ import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizz
 import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import org.mockito.ArgumentCaptor;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
@@ -18,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -35,36 +35,36 @@ import static org.mockito.Mockito.when;
 @ExtendWith(SpringExtension.class)
 class AddressBatchRequestTest {
 
-    @MockBean
+    @MockitoBean
     AddressBatchRequestRepository addressPnRequestRepository;
 
-    @MockBean
+    @MockitoBean
     PostelBatchRepository postelBatchRepository;
 
-    @MockBean
+    @MockitoBean
     AddressConverter addressConverter;
 
-    @MockBean
+    @MockitoBean
     SqsService sqsService;
 
-    @MockBean
+    @MockitoBean
     NormalizzatoreClient postelClient;
 
-    @MockBean
+    @MockitoBean
     SafeStorageService safeStorageService;
 
-    @MockBean
+    @MockitoBean
     PnAddressManagerConfig pnAddressManagerConfig;
 
-    @MockBean
+    @MockitoBean
     EventService eventService;
 
-    @MockBean
+    @MockitoBean
     CsvService csvService;
 
-    @MockBean
+    @MockitoBean
     AddressUtils addressUtils;
-    @MockBean
+    @MockitoBean
     Clock clock;
 
     private PnRequestService addressPnRequestService;

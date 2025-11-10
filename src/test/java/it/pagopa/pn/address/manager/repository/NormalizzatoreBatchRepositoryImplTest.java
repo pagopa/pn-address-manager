@@ -1,14 +1,13 @@
 package it.pagopa.pn.address.manager.repository;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.constant.BatchStatus;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
@@ -18,11 +17,7 @@ import software.amazon.awssdk.enhanced.dynamodb.DynamoDbAsyncTable;
 import software.amazon.awssdk.enhanced.dynamodb.DynamoDbEnhancedAsyncClient;
 import software.amazon.awssdk.enhanced.dynamodb.Key;
 import software.amazon.awssdk.enhanced.dynamodb.model.*;
-import software.amazon.awssdk.services.dynamodb.model.AttributeValue;
 
-import java.time.Clock;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
@@ -34,17 +29,17 @@ import static org.mockito.Mockito.*;
 @ExtendWith (SpringExtension.class)
 class NormalizzatoreBatchRepositoryImplTest {
 
-	@MockBean
+    @MockitoBean
 	private DynamoDbEnhancedAsyncClient dynamoDbEnhancedAsyncClient;
 
-	@MockBean
+    @MockitoBean
 	private DynamoDbAsyncTable<Object> dynamoDbAsyncTable;
 
 	private PostelBatchRepositoryImpl postelBatchRepository;
 
 
 	@BeforeEach
-	public void setUp () {
+	void setUp () {
 		PnAddressManagerConfig.Dao dao = new PnAddressManagerConfig.Dao();
 		dao.setBatchRequestTableName("table");
 		PnAddressManagerConfig addressManagerConfig = new PnAddressManagerConfig();

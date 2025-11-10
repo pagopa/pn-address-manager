@@ -1,6 +1,7 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.entity.PnRequest;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import software.amazon.awssdk.services.eventbridge.model.PutEventsResponse;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.BatchStatus;
@@ -12,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import reactor.core.publisher.Mono;
 import software.amazon.awssdk.enhanced.dynamodb.model.Page;
@@ -32,18 +32,17 @@ class RecoveryServiceTest {
     RecoveryService recoveryService;
     PendingRequestService pendingRequestService;
 
-    @MockBean AddressBatchRequestRepository addressBatchRequestRepository;
-    @MockBean
-    PnRequestService pnRequestService;
-    @MockBean SqsService sqsService;
-    @MockBean EventService eventService;
-    @MockBean PnAddressManagerConfig pnAddressManagerConfig;
+    @MockitoBean AddressBatchRequestRepository addressBatchRequestRepository;
+    @MockitoBean PnRequestService pnRequestService;
+    @MockitoBean SqsService sqsService;
+    @MockitoBean EventService eventService;
+    @MockitoBean PnAddressManagerConfig pnAddressManagerConfig;
 
-    @MockBean PostelBatchRepository postelBatchRepository;
-    @MockBean Clock clock;
+    @MockitoBean PostelBatchRepository postelBatchRepository;
+    @MockitoBean Clock clock;
 
 
-    @MockBean
+    @MockitoBean
     AddressUtils addressUtils;
 
     @Test
