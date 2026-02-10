@@ -43,6 +43,7 @@
     "PostelCsvIncludeEscape": "true",
     "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
-    "MountEfs": "false"
+    "MountEfs": "false",
+    "AddressManagerTracingPipeDesiredState": "STOPPED"
   }
 }
