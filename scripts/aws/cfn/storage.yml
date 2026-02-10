@@ -265,6 +265,9 @@ Outputs:
     Value: !Sub '${CountryTable.Arn}'
   PostelBatchTableArn:
     Value: !Sub '${PostelBatchTable.Arn}'
+  PostelBatchTableStreamArn:
+    Description: ARN of dynamodb table stream containing postel batch
+    Value: !GetAtt PostelBatchTable.StreamArn
   BatchRequestTableArn:
     Value: !Sub '${BatchRequestTable.Arn}'
   ApiKeyTableName:
