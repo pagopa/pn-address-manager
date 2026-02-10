@@ -261,6 +261,18 @@ Parameters:
     Type: String
     Description: 'DLQ ARN for PnAddressManagerCallback'
 
+  PnAddressManagerTracingInputQueueName:
+    Type: String
+    Description: Name of address manager tracing input queue
+
+  PnAddressManagerTracingInputQueueARN:
+    Type: String
+    Description: 'ARN of address manager tracing input queue'
+
+  PnAddressManagerTracingInputQueueURL:
+    Type: String
+    Description: URL of address manager tracing input
+
   BatchRequestTableArn:
     Type: String
     Description: 'ARN of DynamoDB table BatchRequest'
@@ -530,6 +542,7 @@ Resources:
         ContainerEnvEntry50: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_ERRORNORM901EVALUATIONMODE=${PostelErrorNorm901EvaluationMode}'
         ContainerEnvEntry51: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry52: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
+        ContainerEnvEntry53: !Sub 'PN_ADDRESSMANAGER_SQS_TRACINGINPUTQUEUENAME=${PnAddressManagerTracingInputQueueName}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets
@@ -591,6 +604,7 @@ Resources:
               - !Ref PnAddressManagerInputsQueueARN
               - !Ref PnAddressManagerCallbackDLQARN
               - !Ref PnAddressManagerCallbackQueueARN
+              - !Ref PnAddressManagerTracingInputQueueARN
           - Effect: Allow
             Action:
               - dynamodb:GetItem
