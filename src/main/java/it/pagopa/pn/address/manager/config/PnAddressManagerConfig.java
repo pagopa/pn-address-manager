@@ -90,6 +90,7 @@ public class PnAddressManagerConfig {
         private String inputDlqQueueName;
         private String callbackQueueName;
         private String callbackDlqQueueName;
+        private String tracingInputQueueName;
     }
 
     @Data
