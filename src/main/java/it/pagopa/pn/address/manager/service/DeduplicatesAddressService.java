@@ -53,13 +53,15 @@ public class DeduplicatesAddressService {
 
     private Mono<DeduplicatesResponse> callPostel(DeduplicatesRequest request) {
         return Mono.just(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
-                .doOnNext(deduplicaRequest -> sqsSender.pushDeduplicaRequestEvent(deduplicaRequest, request.getCorrelationId()))
+                .flatMap(deduplicaRequest -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaRequestEvent(deduplicaRequest, request.getCorrelationId()))
+                        .thenReturn(deduplicaRequest))
                 .flatMap(postelClient::deduplica)
-                .doOnNext(deduplicaResponse -> sqsSender.pushDeduplicaResponseEvent(deduplicaResponse, request.getCorrelationId()))
+                .flatMap(deduplicaResponse -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaResponseEvent(deduplicaResponse, request.getCorrelationId()))
+                        .thenReturn(deduplicaResponse))
                 .map(deduplicaResponse -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(deduplicaResponse, request.getCorrelationId()))
                 .map(addressUtils::verifyRequiredFields)
                 .flatMap(capAndCountryService::verifyCapAndCountry)
-                .doOnError(Mono::error);
+                .doOnError(error -> log.error("Error during deduplica call for request: [{}]", request.getCorrelationId(), error));
     }
 
     private DeduplicatesResponse createDeduplicatesResponseByDeduplicatesRequest(DeduplicatesRequest request) {

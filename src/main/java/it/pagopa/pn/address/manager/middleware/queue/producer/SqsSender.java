@@ -46,6 +46,5 @@ public class SqsSender {
 
     public void pushDeduplicaResponseEvent(DeduplicaResponse response, String correlationId){
         pushEvent(response, DEDUPLICATE_RESPONSE, correlationId);
-
     }
 }

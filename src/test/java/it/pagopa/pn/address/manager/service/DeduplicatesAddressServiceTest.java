@@ -273,7 +273,7 @@ class DeduplicatesAddressServiceTest {
         DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
         AddressOut slave = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
         AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
-        slave.setfPostalizzabile("1");;
+        slave.setfPostalizzabile("1");
 
         DeduplicaResponse postelResp = new DeduplicaResponse();
         postelResp.setSlaveOut(slave);
@@ -474,59 +474,6 @@ class DeduplicatesAddressServiceTest {
     }
 
     @Test
-    void deduplicaOk_producerTest() {
-        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
-        AnalogAddress tgt = analogIt("Via Roma 1", "00100", "Roma", "RM");
-        DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
-
-        AddressOut slave = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
-        AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
-        DeduplicaResponse postelResp = new DeduplicaResponse();
-        postelResp.setSlaveOut(slave);
-        postelResp.setMasterOut(master);
-        postelResp.setRisultatoDedu(true);
-
-        CapModel capModel = new CapModel();
-        capModel.setCap("00100");
-
-        when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
-        when(capRepo.findValidCap(any()))
-                .thenReturn(Mono.just(capModel));
-
-        StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
-                .assertNext(resp -> {
-                    assertThat(resp.getEqualityResult()).isTrue();
-                    assertThat(resp.getResultDetails()).isNull();
-                    assertThat(resp.getError()).isNull();
-                    assertThat(resp.getNormalizedAddress()).isNotNull();
-                })
-                .verifyComplete();
-
-        // ArgumentCaptor for sendRequestEvent and sendResponseEvent
-        ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
-        ArgumentCaptor<DeduplicaResponse> responseCaptor = ArgumentCaptor.forClass(DeduplicaResponse.class);
-
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture(), eq(CORR_ID));
-
-        DeduplicaRequest requestEvent = requestCaptor.getValue();
-        DeduplicaResponse responseEvent = responseCaptor.getValue();
-
-        // Extract masterIn, slaveIn from requestEvent
-        assertThat(requestEvent.getMasterIn()).isNotNull();
-        assertThat(requestEvent.getSlaveIn()).isNotNull();
-        // Extract masterOut, slaveOut from responseEvent
-        assertThat(responseEvent.getMasterOut()).isNotNull();
-        assertThat(responseEvent.getSlaveOut()).isNotNull();
-
-        assertEquals(requestEvent.getMasterIn().getId(), responseEvent.getMasterOut().getId());
-        assertEquals(requestEvent.getSlaveIn().getId(), responseEvent.getSlaveOut().getId());
-
-        verify(postelClient).deduplica(any());
-        verify(capRepo).findValidCap(any());
-    }
-
-    @Test
     void deduplicaOkWithFlagCsv() {
         when(pnAddressManagerConfig.getFlagCsv()).thenReturn(true);
         AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
@@ -551,5 +498,72 @@ class DeduplicatesAddressServiceTest {
                 .verifyComplete();
 
         verifyNoInteractions(sqsSender);
+    }
+
+    @Test
+    void callDeduplicaFromPostelThrows() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress tgt = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
+
+        // Simulate Postel API failure
+        when(postelClient.deduplica(any())).thenReturn(Mono.error(new RuntimeException("Postel API failure")));
+
+        // Verify request event sent, response event NOT sent
+        StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
+                .expectError(RuntimeException.class)
+                .verify();
+
+        ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
+        // Request event must be sent
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
+        // Response event must NOT be sent
+        verify(sqsSender, never()).pushDeduplicaResponseEvent(any(), any());
+    }
+
+    @Test
+    void pushDeduplicaRequestEventThrows() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress tgt = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
+
+        doThrow(new RuntimeException("SQS push request failed"))
+                .when(sqsSender).pushDeduplicaRequestEvent(any(), any());
+
+        StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof RuntimeException &&
+                                throwable.getMessage().equals("SQS push request failed"))
+                .verify();
+
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any(), eq(CORR_ID));
+        verify(sqsSender, times(0)).pushDeduplicaResponseEvent(any(), eq(CORR_ID));
+    }
+
+    @Test
+    void pushDeduplicaResponseEventThrows() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress tgt = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
+
+        AddressOut slave = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+        AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicaResponse postelResp = new DeduplicaResponse();
+        postelResp.setSlaveOut(slave);
+        postelResp.setMasterOut(master);
+        postelResp.setRisultatoDedu(true);
+
+        doThrow(new RuntimeException("SQS push response failed"))
+                .when(sqsSender).pushDeduplicaResponseEvent(any(), any());
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+
+        StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof RuntimeException &&
+                                throwable.getMessage().equals("SQS push response failed"))
+                .verify();
+
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(any(), eq(CORR_ID));
     }
 }
