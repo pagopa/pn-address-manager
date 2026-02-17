@@ -740,6 +740,8 @@ Resources:
           REGION: !Sub ${AWS::Region}
           PN_SAFESTORAGE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080
           PN_SAFESTORAGE_CXID: !Ref PnAddressManagerCxId
+          BATCH_SIZE: "500"
+          DELIVERY_STREAM_NAME: "DELIVERY_STREAM_NAME"
       TracingConfig:
         Mode: Active
       Layers:
