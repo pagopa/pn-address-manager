@@ -1,17 +1,15 @@
+// Setup env vars BEFORE requiring any module
+process.env.AWS_REGION = "eu-south-1";
+process.env.DELIVERY_STREAM_NAME = "test-delivery-stream";
+process.env.BATCH_SIZE = "500";
+
 const { handleEvent } = require("../app/eventHandler.js");
 const { FirehoseClient, PutRecordBatchCommand } = require('@aws-sdk/client-firehose');
-const { expect } = require('chai');
-const proxyquire = require('proxyquire');
 const deduplicaRequestItem = require('./deduplicaRequestItem.json');
 const deduplicaResponseItem = require('./deduplicaResponseItem.json');
 const { buildDeduplicaRequestItem, buildDeduplicaResponseItem } = require("../app/lib/utils");
 const { mockClient } = require("aws-sdk-client-mock");
 const assert = require("assert");
-
-// Setup env vars BEFORE requiring any module
-process.env.AWS_REGION = "eu-south-1";
-process.env.DELIVERY_STREAM_NAME = "test-delivery-stream";
-process.env.BATCH_SIZE = "500";
 
 const firehoseMock = mockClient(FirehoseClient);
 

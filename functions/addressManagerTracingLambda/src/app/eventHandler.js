@@ -23,17 +23,17 @@ exports.handleEvent = async (event) => {
             case DEDUPLICATE_REQUEST:
                 itemsList.push(buildDeduplicaRequestItem(event.data));
                 await putRecordBatch(itemsList);
-                console.log("Successfully sent DEDUPLICATE_REQUEST to Firehose: ", itemsList);
+                console.log("Successfully sent DEDUPLICATE_REQUEST to Firehose", { recordCount: itemsList.length });
                 break;
 
             case DEDUPLICATE_RESPONSE:
                 itemsList.push(buildDeduplicaResponseItem(event.data));
                 await putRecordBatch(itemsList);
-                console.log("Successfully sent DEDUPLICATE_RESPONSE to Firehose", itemsList);
+                console.log("Successfully sent DEDUPLICATE_RESPONSE to Firehose", { recordCount: itemsList.length });
                 break;
 
             default:
-                console.warn("Unknown eventType:", event.data);
+                console.warn("Unknown eventType:", event.eventType);
                 return { success: false, error: `Unknown eventType: ${event.eventType}` };
         }
 

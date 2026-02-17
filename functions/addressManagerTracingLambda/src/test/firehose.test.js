@@ -1,13 +1,13 @@
-const { putRecordBatch } = require('../app/lib/firehose.js');
-const { FirehoseClient, PutRecordBatchCommand } = require("@aws-sdk/client-firehose");
-const { mockClient } = require("aws-sdk-client-mock");
-const assert = require("assert");
-
 // Setup env vars before requiring the module
 process.env.AWS_REGION = "eu-south-1";
 process.env.DELIVERY_STREAM_NAME = "test-delivery-stream";
 process.env.BATCH_SIZE = "500";
-const MAX_RETRIES = 3;
+
+const { putRecordBatch, sleep } = require('../app/lib/firehose.js');
+const { FirehoseClient, PutRecordBatchCommand } = require("@aws-sdk/client-firehose");
+const { mockClient } = require("aws-sdk-client-mock");
+const assert = require("assert");
+
 
 const firehoseMock = mockClient(FirehoseClient);
 
@@ -121,6 +121,9 @@ describe("putRecordBatch", () => {
   // default 5 s timeout when MAX_RETRIES=3. We increase the timeout to 15 s
   // for retry tests.
 
+  // Helper: no-op sleep for fast tests
+  const noOpSleep = async () => {};
+
   it("retries failed records and stops after a successful retry", async function () {
     this.timeout(15000);
 
@@ -133,7 +136,7 @@ describe("putRecordBatch", () => {
       .resolvesOnce(buildPartialFailureResponse(2, [0]))
       .resolvesOnce(buildSuccessResponse(1));
 
-    await putRecordBatch(items);
+    await putRecordBatch(items, noOpSleep);
 
     // 1 initial call + 1 successful retry = 2 total
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 2);
@@ -144,16 +147,16 @@ describe("putRecordBatch", () => {
 
     const items = [{ id: 1 }, { id: 2 }];
 
-        // Always fail the last record → exhausts all 3 retries
-        firehoseMock.on(PutRecordBatchCommand).callsFake((cmd) => {
-          const count = cmd.Records.length;
-          return Promise.resolve(buildPartialFailureResponse(count, [count - 1]));
-        });
+    // Always fail the last record → exhausts all 3 retries
+    firehoseMock.on(PutRecordBatchCommand).callsFake((cmd) => {
+      const count = cmd.Records.length;
+      return Promise.resolve(buildPartialFailureResponse(count, [count - 1]));
+    });
 
-        await putRecordBatch(items);
+    await putRecordBatch(items, noOpSleep);
 
-        // 1 initial + 3 retries = 4 total calls
-        assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 4);
+    // 1 initial + 3 retries = 4 total calls
+    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 4);
   });
 
   // Error propagation
