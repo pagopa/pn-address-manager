@@ -139,7 +139,7 @@ describe("handleEvent", () => {
     const result = await handleEvent(null);
 
     assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "Invalid event structure");
+    assert.strictEqual(result.error, "EventType is required");
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
@@ -147,7 +147,7 @@ describe("handleEvent", () => {
     const result = await handleEvent({ data: deduplicaRequestItem.deduplicateRequest });
 
     assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "Invalid event structure");
+    assert.strictEqual(result.error, "EventType is required");
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
