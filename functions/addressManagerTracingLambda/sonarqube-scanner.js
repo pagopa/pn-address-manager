@@ -1,6 +1,6 @@
 let options = {
     "sonar.organization": "pagopa",
-    "sonar.projectKey": "pagopa_pn-address-manager-tracingLambdaName"
+    "sonar.projectKey": "pagopa_pn-address-manager-tracingLambda"
 }
 
 if (process.env.PR_NUM) {

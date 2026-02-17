@@ -1,83 +1,74 @@
 const { FirehoseClient, PutRecordBatchCommand } = require("@aws-sdk/client-firehose");
-
 const firehoseClient = new FirehoseClient({
     region: process.env.AWS_REGION
 });
-
 const MAX_RETRIES = 3;
+const DEFAULT_BATCH_SIZE = 500;
 
-/**
- * Sending records batch to Firehose with failed items
- * @param {Array} itemsList
- * @param {Function} [sleepFn] - Optional sleep/delay function for retries
- */
-async function putRecordBatch(itemsList, sleepFn) {
-    try {
-        if (!Array.isArray(itemsList) || itemsList.length === 0) {
-            console.warn("Empty or invalid items list");
-            return;
+async function putRecordBatch(itemsList) {
+
+    if (!Array.isArray(itemsList) || itemsList.length === 0) {
+        console.warn("Empty or invalid items list");
+        return;
+    }
+
+    const batchSize = Number(process.env.BATCH_SIZE) || DEFAULT_BATCH_SIZE;
+    const streamName = process.env.DELIVERY_STREAM_NAME;
+    const records = itemsList.map(item => ({
+        Data: Buffer.from(JSON.stringify(item) + '\n')
+    }));
+    const results = [];
+
+    for (let i = 0; i < records.length; i += batchSize) {
+        const chunk = records.slice(i, i + batchSize);
+        const resp = await putBatchWithRetry(chunk, streamName, MAX_RETRIES);
+        results.push(resp);
+    }
+
+    return results;
+}
+
+async function putBatchWithRetry(records, streamName, maxRetries = 3) {
+
+    let unprocessed = records;
+    let attempt = 0;
+    let lastResponse;
+
+    while (unprocessed && unprocessed.length > 0) {
+
+        const resp = await firehoseClient.send(
+            new PutRecordBatchCommand({
+                DeliveryStreamName: streamName,
+                Records: unprocessed
+            })
+        );
+
+        lastResponse = resp;
+        unprocessed = extractUnprocessed(resp, unprocessed);
+        if (!unprocessed || unprocessed.length === 0) {
+            break;
         }
 
-        const records = itemsList.map(item => ({
-            Data: Buffer.from(JSON.stringify(item) + '\n', 'utf-8')
-        }));
-
-        // Firehose batch size is 500 record for batch
-        const BATCH_SIZE = Number(process.env.BATCH_SIZE) || 500;
-        const results = [];
-        const DELIVERY_STREAM_NAME = process.env.DELIVERY_STREAM_NAME;
-
-        for (let i = 0; i < records.length; i += BATCH_SIZE) {
-            const chunk = records.slice(i, i + BATCH_SIZE);
-            const response = await sendBatchWithRetry(chunk, MAX_RETRIES, DELIVERY_STREAM_NAME, sleepFn);
-            results.push(response);
+        if (attempt >= maxRetries) {
+            const err = new Error("Exceeded maxRetries while sending to Firehose");
+            err.unprocessedRecords = unprocessed;
+            throw err;
         }
 
-        return results;
-
-    } catch (error) {
-        console.error("Error in putRecordBatch:", error);
-        throw error;
-    }
-}
-
-/**
- * Sending batch with unprocessed items retries
- * @param {Array} records
- * @param {Number} retriesLeft
- * @param {String} deliveryStreamName
- * @param {Function} [sleepFn] - Optional sleep/delay function for retries
- */
-async function sendBatchWithRetry(records, retriesLeft, deliveryStreamName, sleepFn = sleep) {
-    const command = new PutRecordBatchCommand({
-        DeliveryStreamName: deliveryStreamName,
-        Records: records
-    });
-
-    const response = await firehoseClient.send(command);
-    console.log(`PutRecordBatch - Failed: ${response.FailedPutCount}/${records.length}`);
-
-    const failed = records.filter((_, i) => response.RequestResponses[i]?.ErrorCode);
-
-    if (failed.length > 0 && retriesLeft > 0) {
-        console.warn(`Retrying ${failed.length} failed records, ${retriesLeft} retries left`);
-        await sleepFn(3000);
-        return sendBatchWithRetry(failed, retriesLeft - 1, deliveryStreamName, sleepFn);
+        const delay = Math.floor(Math.pow(2, attempt) * 100 + Math.random() * 100);
+        await new Promise(r => setTimeout(r, delay));
+        attempt++;
     }
 
-    if (failed.length > 0) {
-        console.error(`Failed to send ${failed.length} records after ${MAX_RETRIES} attempts`);
+    return lastResponse;
+}
+
+function extractUnprocessed(response, sentRecords) {
+    const responses = response?.RequestResponses;
+    if (!Array.isArray(responses) || responses.length < sentRecords.length) {
+        return response?.FailedPutCount > 0 ? sentRecords : [];
     }
-
-    return response;
+    return sentRecords.filter((_, i) => responses[i]?.ErrorCode);
 }
 
-/**
- * Delay utility function
- */
-function sleep(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-
-module.exports = { putRecordBatch, sleep };
+module.exports = { putRecordBatch };

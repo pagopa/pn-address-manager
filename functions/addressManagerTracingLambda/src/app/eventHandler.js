@@ -6,8 +6,8 @@ exports.handleEvent = async (event) => {
     const DEDUPLICATE_RESPONSE = "DEDUPLICATE_RESPONSE";
 
     if (!event || !event.eventType) {
-        console.error("Invalid event structure", event);
-        return { success: false, error: "Invalid event structure" };
+        console.error("EventType is required");
+        return { success: false, error: "EventType is required" };
     }
 
     console.log("Received eventType:", event.eventType);
@@ -22,13 +22,11 @@ exports.handleEvent = async (event) => {
         switch (event.eventType) {
             case DEDUPLICATE_REQUEST:
                 itemsList.push(buildDeduplicaRequestItem(event.data));
-                await putRecordBatch(itemsList);
                 console.log("Successfully sent DEDUPLICATE_REQUEST to Firehose", { recordCount: itemsList.length });
                 break;
 
             case DEDUPLICATE_RESPONSE:
                 itemsList.push(buildDeduplicaResponseItem(event.data));
-                await putRecordBatch(itemsList);
                 console.log("Successfully sent DEDUPLICATE_RESPONSE to Firehose", { recordCount: itemsList.length });
                 break;
 
@@ -36,7 +34,7 @@ exports.handleEvent = async (event) => {
                 console.warn("Unknown eventType:", event.eventType);
                 return { success: false, error: `Unknown eventType: ${event.eventType}` };
         }
-
+        await putRecordBatch(itemsList);
         return { success: true };
 
     } catch (error) {
