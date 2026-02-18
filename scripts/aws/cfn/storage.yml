@@ -88,6 +88,21 @@ Resources:
         MaxReceiveCount: 10
         DelaySeconds: 1
 
+  # Coda target della Pipe per flusso di normalizzazione e ricevente eventi di deduplica provenienti da pn-address-manager
+  # NB: usati i valori di default per: DelaySeconds, DeadLetterQueueName, MessageRetentionPeriod, MaxReceiveCount, DeadLetterMessageRetentionPeriod,
+  PnAddressManagerTracingInputQueue:
+    Type: AWS::CloudFormation::Stack
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/sqs-queue.yaml"
+      Parameters:
+        QueueName: !Sub '${ProjectName}-address_manager_tracing_input'
+        AlarmSNSTopicName: !Ref AlarmSNSTopicName
+        VisibilityTimeout: 300
+        MaxReceiveCount: 10
+        DelaySeconds: 1
+
   BatchRequestTable:
     Type: AWS::DynamoDB::Table
     UpdateReplacePolicy: Retain
@@ -179,6 +194,8 @@ Resources:
       BillingMode: "PAY_PER_REQUEST"
       PointInTimeRecoverySpecification:
         PointInTimeRecoveryEnabled: true
+      StreamSpecification:
+        StreamViewType: NEW_AND_OLD_IMAGES
 
   CountryTable:
     Type: AWS::DynamoDB::Table
@@ -274,6 +291,9 @@ Outputs:
     Value: !Sub '${CountryTable.Arn}'
   PostelBatchTableArn:
     Value: !Sub '${PostelBatchTable.Arn}'
+  PostelBatchTableStreamArn:
+    Description: ARN of dynamodb table stream containing postel batch
+    Value: !GetAtt PostelBatchTable.StreamArn
   BatchRequestTableArn:
     Value: !Sub '${BatchRequestTable.Arn}'
   ApiKeyTableName:
@@ -323,6 +343,13 @@ Outputs:
   PnAddressManagerCallbackDLQARN:
     Value: !GetAtt PnAddressManagerCallbackQueue.Outputs.DeadLetterQueueARN
 
+  # PnAddressManagerTracingInput Queue
+  PnAddressManagerTracingInputQueueName:
+    Value: !GetAtt PnAddressManagerTracingInputQueue.Outputs.QueueName
+  PnAddressManagerTracingInputQueueARN:
+    Value: !GetAtt PnAddressManagerTracingInputQueue.Outputs.QueueARN
+  PnAddressManagerTracingInputQueueURL:
+    Value: !GetAtt PnAddressManagerTracingInputQueue.Outputs.QueueURL
 
   ShedLockTableName:
     Value: !Ref ShedLockTable

@@ -44,6 +44,7 @@
     "PnCronAnalyzer": "-",
     "WireTapLogActivation": "false",
     "MountEfs": "false",
-    "LambdaRuntime": "nodejs24.x"
+    "LambdaRuntime": "nodejs24.x",
+    "AddressManagerTracingPipeDesiredState": "STOPPED"
   }
 }
