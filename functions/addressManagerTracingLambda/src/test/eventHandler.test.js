@@ -10,6 +10,8 @@ const deduplicaResponseItem = require('./deduplicaResponseItem.json');
 const { buildDeduplicaRequestItem, buildDeduplicaResponseItem } = require("../app/lib/utils");
 const { mockClient } = require("aws-sdk-client-mock");
 const assert = require("assert");
+const utils = require("../app/lib/utils.js");
+const safeStorage = require("../app/lib/safeStorage");
 
 const firehoseMock = mockClient(FirehoseClient);
 
@@ -291,10 +293,17 @@ describe("handleEvent", () => {
 
 // NORMALIZER
 describe("handleEvent - NORMALIZER Integration", () => {
-  const utils = require("../app/lib/utils.js");
-  const safeStorage = require("../app/lib/safeStorage");
+  let originalCheckNormalizerItem;
+  let originalDownloadJson;
+
+  beforeEach(() => {
+    originalCheckNormalizerItem = utils.checkNormalizerItem;
+    originalDownloadJson = safeStorage.downloadJson;
+  });
 
   afterEach(() => {
+    utils.checkNormalizerItem = originalCheckNormalizerItem;
+    safeStorage.downloadJson = originalDownloadJson;
     firehoseMock.reset();
   });
 

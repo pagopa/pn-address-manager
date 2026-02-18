@@ -99,9 +99,13 @@ function checkNormalizerItem({normalizer}) {
     return null;
 }
 
-function processNormalizerRequest(data, csvPayload) {}
+function processNormalizerRequest(data, csvPayload) {
+    return [];
+}
 
-function processNormalizerResponse(data, csvPayload) {}
+function processNormalizerResponse(data, csvPayload) {
+    return [];
+}
 
 module.exports = {
     buildDeduplicaRequestItem,

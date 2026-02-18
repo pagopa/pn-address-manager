@@ -1,11 +1,5 @@
 const { checkNormalizerItem } = require("../app/lib/utils");
-const safeStorage = require("../app/lib/safeStorage");
-const { handleEvent } = require("../app/eventHandler");
-const originalDownload = safeStorage.downloadJson;
 const assert = require("assert");
-const { FirehoseClient, PutRecordBatchCommand } = require('@aws-sdk/client-firehose');
-const { mockClient } = require("aws-sdk-client-mock");
-const firehoseMock = mockClient(FirehoseClient);
 
 describe("checkNormalizerItem", () => {
   const batchId = "test-batch-123";
@@ -51,27 +45,17 @@ describe("checkNormalizerItem", () => {
     const result = checkNormalizerItem(event);
     assert.deepStrictEqual(result, { type: 'NORMALIZER_RESPONSE', fileKey: 'new_out.json' });
   });
-});
 
-describe("handleEvent - NORMALIZER Integration", () => {
-  beforeEach(() => {
-    firehoseMock.reset();
-    safeStorage.downloadJson = async () => ({ mockData: "from_csv" });
-  });
-
-  afterEach(() => {
-    safeStorage.downloadJson = originalDownload;
-  });
-
-  it("should skip processing if checkNormalizerItem returns null", async () => {
-    const event = {
-      eventType: "NORMALIZER",
-      data: {
-        normalizer: { batchId: "B1", oldFileKey: "same.json", newFileKey: "same.json", oldOutputFileKey: null, newOutputFileKey: null }
-      }
-    };
-    const result = await handleEvent(event);
-    assert.strictEqual(result.success, false);
-    assert.ok(result.error.length > 0);
-  });
+  it("should skip processing if checkNormalizerItem returns null", () => {
+      const event = {
+        normalizer: {
+          batchId,
+          oldFileKey: "same.json",
+          newFileKey: "same.json",
+          oldOutputFileKey: null,
+          newOutputFileKey: null
+        }
+      };
+      assert.strictEqual(checkNormalizerItem(event), null);
+    });
 });
