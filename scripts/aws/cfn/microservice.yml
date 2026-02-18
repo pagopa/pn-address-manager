@@ -269,6 +269,10 @@ Parameters:
     Type: String
     Description: 'ARN of DynamoDB table PostelBatch'
 
+  PostelBatchTableStreamArn:
+    Type: String
+    Description: 'ARN of DynamoDB Stream table PostelBatch'
+
   CountryTableArn:
     Type: String
     Description: 'ARN of DynamoDB table addressManagerCountry'
