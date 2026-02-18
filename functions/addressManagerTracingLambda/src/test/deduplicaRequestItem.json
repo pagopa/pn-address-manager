@@ -1,0 +1,29 @@
+{
+  "eventType": "DEDUPLICATE_REQUEST",
+  "deduplicateRequest":{
+    "configIn": {
+      "configurazioneDeduplica": null,
+      "configurazioneNorm": null
+    },
+    "masterIn": {
+      "id": "NRG_ADDRESS_PREPARE_ANALOG_DOMICILE.IUN_ZZZZ-ZZZZ-ZZZZ-202500-G-1.RECINDEX_0.ATTEMPT_1",
+      "provincia": "PI",
+      "cap": "56022",
+      "localita": "CASTELFRANCO DI SOTTO",
+      "localitaAggiuntiva": null,
+      "indirizzo": "VIA ULIVI 85",
+      "indirizzoAggiuntivo": null,
+      "stato": "ITALIA"
+    },
+    "slaveIn": {
+      "id": "NRG_ADDRESS_PREPARE_ANALOG_DOMICILE.IUN_ZZZZ-ZZZZ-ZZZZ-202500-G-1.RECINDEX_0.ATTEMPT_1",
+      "provincia": "PI",
+      "cap": "56022",
+      "localita": "CASTELFRANCO DI SOTTO",
+      "localitaAggiuntiva": "LOCALITA'  VILLA CAMPANILE",
+      "indirizzo": "VIA ULIVI 85A",
+      "indirizzoAggiuntivo": null,
+      "stato": null
+    }
+  }
+}
