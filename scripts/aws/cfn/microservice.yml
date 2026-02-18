@@ -466,6 +466,14 @@ Parameters:
     Description: 'Flag to include escape character in CSV parsing'
     Default: true
 
+  AddressManagerTracingPipeDesiredState:
+    Type: String
+    Default: 'STOPPED'
+    Description: 'Desired state of the AddressManagerTracingPipe'
+    AllowedValues:
+      - 'RUNNING'
+      - 'STOPPED'
+
 Resources:
 
   # PN-address-manager microservice
@@ -711,3 +719,78 @@ Resources:
           RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
           DeadLetterConfig:
             Arn: !Ref AddressManagerEventBusDLQArn
+
+  AddressManagerTracingPipe:
+    Type: AWS::Pipes::Pipe
+    Properties:
+      Name: !Sub '${ProjectName}-addressManagerTracingPipe'
+      RoleArn: !GetAtt AddressManagerTracingPipeExecutionRole.Arn
+      Source: !Ref PostelBatchTableStreamArn
+      DesiredState: !Ref AddressManagerTracingPipeDesiredState
+      SourceParameters:
+        DynamoDBStreamParameters:
+          StartingPosition: LATEST
+        FilterCriteria:
+          Filters:
+            - Pattern: >
+                {
+                  "eventName": ["MODIFY"],
+                  "dynamodb": {
+                    "$or": [
+                      {
+                        "NewImage": {
+                          "fileKey": { "S": [{ "exists": true }] }
+                        }
+                      },
+                      {
+                        "NewImage": {
+                          "outputFileKey": { "S": [{ "exists": true }] }
+                        }
+                      }
+                    ]
+                  }
+                }
+      Target: !Ref PnAddressManagerTracingInputQueueARN
+      TargetParameters:
+        InputTemplate: >
+          {
+            "eventType": "NORMALIZER",
+            "normalizer": {
+              "batchId": <$.dynamodb.NewImage.batchId.S>,
+              "oldFileKey": <$.dynamodb.OldImage.fileKey.S>,
+              "oldOutputFileKey": <$.dynamodb.OldImage.outputFileKey.S>,
+              "newFileKey": <$.dynamodb.NewImage.fileKey.S>,
+              "newOutputFileKey": <$.dynamodb.NewImage.outputFileKey.S>
+            }
+          }
+  
+
+  AddressManagerTracingPipeExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-AddressManagerTracingPipeExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: pipes.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: PipeDynamoDBToSqsPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeStream
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:ListStreams
+                Resource:
+                  - !Sub "${PostelBatchTableStreamArn}"
+                  - !Sub "${PostelBatchTableStreamArn}/*"
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !Ref PnAddressManagerTracingInputQueueARN
