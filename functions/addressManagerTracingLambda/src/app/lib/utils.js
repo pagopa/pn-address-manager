@@ -105,13 +105,20 @@ async function processNormalizerRequest(data, csvPayload) {
     const rows = await parseCsv(csvPayload);
     return rows.map((col) => {
         const [correlationId, requestCreatedAt, addressIdx] = (col[0] ?? '').split('#');
+        let parsedAddressIdx = null;
+        if (addressIdx !== undefined && addressIdx !== '') {
+            const numericAddressIdx = Number(addressIdx);
+            if (Number.isFinite(numericAddressIdx)) {
+                parsedAddressIdx = numericAddressIdx;
+            }
+        }
 
         return {
             correlationId:       correlationId || null,
             service:             'NORMALIZER',
             type:                'REQUEST',
-            batchId:             data.batchId ?? null,
-            addressIdx:          addressIdx !== undefined ? Number(addressIdx) : null,
+            batchId:             data.batchId ?? data.normalizer?.batchId ?? null,
+            addressIdx:          parsedAddressIdx,
             requestCreatedAt:    requestCreatedAt || null,
             requestTimestamp:    new Date().toISOString() || null,
 

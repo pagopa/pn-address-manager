@@ -15,13 +15,17 @@ exports.handleEvent = async (event) => {
         return { success: false, error: "EventType is required" };
     }
 
-    if (!event?.data) {
+    let { eventType } = event;
+    let data = event.data;
+    if (!data && event.normalizer) {
+        data = { normalizer: event.normalizer };
+    }
+    if (!data) {
         console.error("Missing data in event body");
         return { success: false, error: "Missing data in event body" };
     }
 
     let csvPayload;
-    let { eventType, data } = event;
 
     try {
         if (eventType === "NORMALIZER") {
@@ -31,23 +35,23 @@ exports.handleEvent = async (event) => {
                 return { success: true, message: "Normalizer skipped" };
             }
 
-            csvPayload = await safeStorage.downloadJson(result.fileKey);
+            csvPayload = await safeStorage.downloadText(result.fileKey);
             eventType = result.type;
         }
 
         const handlers = {
-            [EVENT_TYPES.DEDUPLICATE_REQUEST]: () => [
+            [EVENT_TYPES.DEDUPLICATE_REQUEST]: async () => [
                 utils.buildDeduplicaRequestItem(data)
             ],
 
-            [EVENT_TYPES.DEDUPLICATE_RESPONSE]: () => [
+            [EVENT_TYPES.DEDUPLICATE_RESPONSE]: async () => [
                 utils.buildDeduplicaResponseItem(data)
             ],
 
-            [EVENT_TYPES.NORMALIZER_REQUEST]: () =>
+            [EVENT_TYPES.NORMALIZER_REQUEST]: async () =>
                 utils.processNormalizerRequest(data, csvPayload),
 
-            [EVENT_TYPES.NORMALIZER_RESPONSE]: () =>
+            [EVENT_TYPES.NORMALIZER_RESPONSE]: async () =>
                 utils.processNormalizerResponse(data, csvPayload)
         };
 
@@ -58,7 +62,7 @@ exports.handleEvent = async (event) => {
             return { success: false, error: `Unknown eventType: ${eventType}` };
         }
 
-        const itemsList = handler();
+        const itemsList = await handler();
 
         if (itemsList?.length) {
             await putRecordBatch(itemsList);

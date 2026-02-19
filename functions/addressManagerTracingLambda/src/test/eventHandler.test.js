@@ -12,8 +12,12 @@ const { mockClient } = require("aws-sdk-client-mock");
 const assert = require("assert");
 const utils = require("../app/lib/utils.js");
 const safeStorage = require("../app/lib/safeStorage");
+const fs = require('fs');
+const path = require('path');
 
 const firehoseMock = mockClient(FirehoseClient);
+
+const REQUEST_CSV  = fs.readFileSync(path.join(__dirname, 'data', 'PN_ADDRESSES_RAW.csv'),  'utf-8');
 
 function buildSuccessResponse(count) {
   return {
@@ -294,16 +298,16 @@ describe("handleEvent", () => {
 // NORMALIZER
 describe("handleEvent - NORMALIZER Integration", () => {
   let originalCheckNormalizerItem;
-  let originalDownloadJson;
+  let originalDownloadText;
 
   beforeEach(() => {
     originalCheckNormalizerItem = utils.checkNormalizerItem;
-    originalDownloadJson = safeStorage.downloadJson;
+    originalDownloadText = safeStorage.downloadText;
   });
 
   afterEach(() => {
     utils.checkNormalizerItem = originalCheckNormalizerItem;
-    safeStorage.downloadJson = originalDownloadJson;
+    safeStorage.downloadText = originalDownloadText;
     firehoseMock.reset();
   });
 
@@ -319,7 +323,7 @@ describe("handleEvent - NORMALIZER Integration", () => {
 
   it("should process NORMALIZER_REQUEST if checkNormalizerItem returns type NORMALIZER_REQUEST", async () => {
     utils.checkNormalizerItem = () => ({ type: "NORMALIZER_REQUEST", fileKey: "file.json" });
-    safeStorage.downloadJson = async () => [{ some: "data" }];
+    safeStorage.downloadText = async () => REQUEST_CSV;
     firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
 
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
@@ -330,7 +334,7 @@ describe("handleEvent - NORMALIZER Integration", () => {
 
   it("should process NORMALIZER_RESPONSE if checkNormalizerItem returns type NORMALIZER_RESPONSE", async () => {
     utils.checkNormalizerItem = () => ({ type: "NORMALIZER_RESPONSE", fileKey: "file.json" });
-    safeStorage.downloadJson = async () => [{ some: "data" }];
+    safeStorage.downloadText = async () => REQUEST_CSV;
     firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
 
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
@@ -339,9 +343,9 @@ describe("handleEvent - NORMALIZER Integration", () => {
     assert.strictEqual(result.success, true);
   });
 
-  it("should return error if downloadJson throws", async () => {
+  it("should return error if downloadText throws", async () => {
     utils.checkNormalizerItem = () => ({ type: "NORMALIZER_REQUEST", fileKey: "file.json" });
-    safeStorage.downloadJson = async () => { throw new Error("Download failed"); };
+    safeStorage.downloadText = async () => { throw new Error("Download failed"); };
 
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
     const result = await handleEvent(event);
@@ -352,12 +356,70 @@ describe("handleEvent - NORMALIZER Integration", () => {
 
   it("should return error for unknown NORMALIZER subtype", async () => {
     utils.checkNormalizerItem = () => ({ type: "UNKNOWN_TYPE", fileKey: "file.json" });
-    safeStorage.downloadJson = async () => [{ some: "data" }];
+    safeStorage.downloadText = async () => REQUEST_CSV;
 
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
     const result = await handleEvent(event);
 
     assert.strictEqual(result.success, false);
     assert.strictEqual(result.error, "Unknown eventType: UNKNOWN_TYPE");
+  });
+
+  it("should call PutRecordBatch with real NORMALIZER_REQUEST records parsed from CSV", async () => {
+      // CSV reale con una riga
+      const csvText =
+          "VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1#2024-03-11T15:08:14.075913927#0;" +
+          "CS;87100;Cosenza;Cosenza;via @FAIL-Irreperibile_AR 16;scala b;ITALIA\n";
+
+      // Evento shaped come produzione
+      const event = {
+          eventType: "NORMALIZER",
+          normalizer: {
+              batchId:          "batch-001",
+              oldFileKey:       null,
+              oldOutputFileKey: null,
+              newFileKey:       "s3://bucket/request.csv",
+              newOutputFileKey: null
+          }
+      };
+
+      // Mock safeStorage con CSV reale testuale
+      safeStorage.downloadText = async () => csvText;
+      firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
+
+      // checkNormalizerItem REALE (non mockato)
+      const result = await handleEvent(event);
+
+      // Verifica successo
+      assert.strictEqual(result.success, true);
+
+      // Verifica che Firehose sia stato effettivamente chiamato
+      const calls = firehoseMock.commandCalls(PutRecordBatchCommand);
+      assert.strictEqual(calls.length, 1, "PutRecordBatchCommand dovrebbe essere chiamato una volta");
+
+      // Verifica il payload inviato a Firehose
+      const input   = calls[0].args[0].input;
+      assert.strictEqual(input.DeliveryStreamName, "test-delivery-stream");
+      assert.strictEqual(input.Records.length, 1);
+
+      const decoded = input.Records[0].Data.toString("utf-8");
+      const parsed  = JSON.parse(decoded.trim());
+
+      // Verifica campi estratti dallo split di idCodiceCliente
+      assert.strictEqual(parsed.correlationId,    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1');
+      assert.strictEqual(parsed.requestCreatedAt, '2024-03-11T15:08:14.075913927');
+      assert.strictEqual(parsed.addressIdx,       0);
+      assert.strictEqual(parsed.batchId,          'batch-001');
+      assert.strictEqual(parsed.service,          'NORMALIZER');
+      assert.strictEqual(parsed.type,             'REQUEST');
+
+      // Verifica campi CSV
+      assert.strictEqual(parsed.idCodiceCliente,  'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1#2024-03-11T15:08:14.075913927#0');
+      assert.strictEqual(parsed.provincia,        'CS');
+      assert.strictEqual(parsed.cap,              '87100');
+      assert.strictEqual(parsed.localita,         'Cosenza');
+      assert.strictEqual(parsed.indirizzo,        'via @FAIL-Irreperibile_AR 16');
+      assert.strictEqual(parsed.stato,            'ITALIA');
+      assert.ok(!isNaN(Date.parse(parsed.requestTimestamp)), "requestTimestamp deve essere una data ISO valida");
   });
 });

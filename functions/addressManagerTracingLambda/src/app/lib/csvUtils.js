@@ -7,7 +7,7 @@ const { Readable } = require('stream');
 function parseCsv(csvPayload) {
     return new Promise((resolve, reject) => {
         const records = [];
-        const stream = Readable.from(csvPayload);
+        const stream = Readable.from([csvPayload]);
 
         stream
             .pipe(csv({
