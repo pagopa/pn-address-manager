@@ -1,0 +1,19 @@
+{
+  "correlationId": "VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1",
+  "addressIdx": 0,
+  "responseCreatedAt": "2026-01-22T11:51:17.488420128",
+  "service": "NORMALIZER",
+  "type": "RESPONSE",
+  "batchId": "",
+  "responseTimestamp": "2024-03-11T15:08:14.075Z",
+  "id": "VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1#2026-01-22T11:51:17.488420128#0",
+  "nRisultatoNorm": 1,
+  "sSiglaProv": "CS",
+  "fPostalizzabile": 1,
+  "sStatoSpedizione": "ITALIA",
+  "sComuneSpedizione": "COSENZA",
+  "sFrazioneSpedizione": "COSENZA",
+  "sCivicoAltro": "SCALA B",
+  "sCap": "87100",
+  "sViaCompletaSpedizione": "VIA SENZA NOME"
+}
