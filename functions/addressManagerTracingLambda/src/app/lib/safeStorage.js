@@ -10,12 +10,16 @@ if (!PN_SAFESTORAGE_URL || !PN_SAFESTORAGE_CXID) {
 }
 
 /**
- * Retrieves JSON file content from Safe Storage given its fileKey.
+ * Retrieves Text file content from Safe Storage given its fileKey.
  * @param {string} fileKey
- * @returns {Promise<object>}
+ * @returns {Promise<string>}
  */
-async function downloadJson(fileKey) {
-  const metaUrl = `${PN_SAFESTORAGE_URL}safe-storage/v1/files/${encodeURIComponent(fileKey)}`;
+async function downloadText(fileKey) {
+  const metaUrl = new URL(
+      `safe-storage/v1/files/${encodeURIComponent(fileKey)}`,
+      PN_SAFESTORAGE_URL.endsWith('/') ? PN_SAFESTORAGE_URL : `${PN_SAFESTORAGE_URL}/`
+  ).toString();
+
   console.info(`[SAFE] ▶︎ Fetching metadata for fileKey="${fileKey}" – ${metaUrl}`);
   const metaResp = await axios.get(metaUrl, {
     headers: { 'x-pagopa-safestorage-cx-id': PN_SAFESTORAGE_CXID }
@@ -26,9 +30,9 @@ async function downloadJson(fileKey) {
     throw new Error('File metadata retrieved but download URL not present (file may be cold).');
   }
 
-  console.debug('[SAFE] Presigned URL obtained – downloading JSON…');
-  const fileResp = await axios.get(presignedUrl, { responseType: 'json' });
+  console.debug('[SAFE] Presigned URL obtained – downloading Text…');
+  const fileResp = await axios.get(presignedUrl, { responseType: 'text' });
   return fileResp.data;
 }
 
-module.exports = { downloadJson };
+module.exports = { downloadText };

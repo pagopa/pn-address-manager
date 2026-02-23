@@ -1,3 +1,5 @@
+const { parseCsv } = require('./csvUtils');
+
 function buildDeduplicaRequestItem(req) {
 
     return {
@@ -99,8 +101,37 @@ function checkNormalizerItem({normalizer}) {
     return null;
 }
 
-function processNormalizerRequest(data, csvPayload) {
-    return [];
+async function processNormalizerRequest(data, csvPayload) {
+    const rows = await parseCsv(csvPayload);
+    return rows.map((col) => {
+        const [correlationId, requestCreatedAt, addressIdx] = (col[0] ?? '').split('#');
+        let parsedAddressIdx = null;
+        if (addressIdx !== undefined && addressIdx !== '') {
+            const numericAddressIdx = Number(addressIdx);
+            if (Number.isFinite(numericAddressIdx)) {
+                parsedAddressIdx = numericAddressIdx;
+            }
+        }
+
+        return {
+            correlationId:       correlationId || null,
+            service:             'NORMALIZER',
+            type:                'REQUEST',
+            batchId:             data.batchId ?? data.normalizer?.batchId ?? null,
+            addressIdx:          parsedAddressIdx,
+            requestCreatedAt:    requestCreatedAt || null,
+            requestTimestamp:    new Date().toISOString() || null,
+
+            idCodiceCliente:     col[0] ?? null,
+            provincia:           col[1] ?? null,
+            cap:                 col[2] ?? null,
+            localita:            col[3] ?? null,
+            localitaAggiuntiva:  col[4] || null,
+            indirizzo:           col[5] ?? null,
+            indirizzoAggiuntivo: col[6] || null,
+            stato:               col[7] ?? null,
+        };
+    });
 }
 
 function processNormalizerResponse(data, csvPayload) {

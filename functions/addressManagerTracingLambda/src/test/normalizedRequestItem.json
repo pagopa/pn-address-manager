@@ -1,0 +1,17 @@
+{
+  "correlationId": "VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1",
+  "addressIdx": 0,
+  "requestCreatedAt": "2024-03-11T15:08:14.075913927",
+  "service": "NORMALIZER",
+  "type": "REQUEST",
+  "batchId": "",
+  "requestTimestamp": "2024-03-11T15:08:14.075Z",
+  "idCodiceCliente": "VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1#2024-03-11T15:08:14.075913927#0",
+  "provincia": "CS",
+  "cap": "87100",
+  "localita": "Cosenza",
+  "localitaAggiuntiva": "Cosenza",
+  "indirizzo": "via @FAIL-Irreperibile_AR 16",
+  "indirizzoAggiuntivo": "scala b",
+  "stato": "ITALIA"
+}
