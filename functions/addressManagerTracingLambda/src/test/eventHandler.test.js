@@ -10,9 +10,10 @@ const deduplicaResponseItem = require('./deduplicaResponseItem.json');
 const { buildDeduplicaRequestItem, buildDeduplicaResponseItem } = require("../app/lib/utils");
 const { mockClient } = require("aws-sdk-client-mock");
 const assert = require("assert");
+const utils = require("../app/lib/utils.js");
+const safeStorage = require("../app/lib/safeStorage");
 
 const firehoseMock = mockClient(FirehoseClient);
-
 
 function buildSuccessResponse(count) {
   return {
@@ -287,5 +288,76 @@ describe("handleEvent", () => {
 
     assert.strictEqual(result.success, false);
     assert.strictEqual(result.error, "Firehose unavailable");
+  });
+});
+
+// NORMALIZER
+describe("handleEvent - NORMALIZER Integration", () => {
+  let originalCheckNormalizerItem;
+  let originalDownloadJson;
+
+  beforeEach(() => {
+    originalCheckNormalizerItem = utils.checkNormalizerItem;
+    originalDownloadJson = safeStorage.downloadJson;
+  });
+
+  afterEach(() => {
+    utils.checkNormalizerItem = originalCheckNormalizerItem;
+    safeStorage.downloadJson = originalDownloadJson;
+    firehoseMock.reset();
+  });
+
+  it("should skip processing if checkNormalizerItem returns null", async () => {
+    utils.checkNormalizerItem = () => null;
+
+    const event = { eventType: "NORMALIZER", data: { normalizer: { batchId: "B1" } } };
+    const result = await handleEvent(event);
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.message, "Normalizer skipped");
+  });
+
+  it("should process NORMALIZER_REQUEST if checkNormalizerItem returns type NORMALIZER_REQUEST", async () => {
+    utils.checkNormalizerItem = () => ({ type: "NORMALIZER_REQUEST", fileKey: "file.json" });
+    safeStorage.downloadJson = async () => [{ some: "data" }];
+    firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
+
+    const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
+    const result = await handleEvent(event);
+
+    assert.strictEqual(result.success, true);
+  });
+
+  it("should process NORMALIZER_RESPONSE if checkNormalizerItem returns type NORMALIZER_RESPONSE", async () => {
+    utils.checkNormalizerItem = () => ({ type: "NORMALIZER_RESPONSE", fileKey: "file.json" });
+    safeStorage.downloadJson = async () => [{ some: "data" }];
+    firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
+
+    const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
+    const result = await handleEvent(event);
+
+    assert.strictEqual(result.success, true);
+  });
+
+  it("should return error if downloadJson throws", async () => {
+    utils.checkNormalizerItem = () => ({ type: "NORMALIZER_REQUEST", fileKey: "file.json" });
+    safeStorage.downloadJson = async () => { throw new Error("Download failed"); };
+
+    const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
+    const result = await handleEvent(event);
+
+    assert.strictEqual(result.success, false);
+    assert.strictEqual(result.error, "Download failed");
+  });
+
+  it("should return error for unknown NORMALIZER subtype", async () => {
+    utils.checkNormalizerItem = () => ({ type: "UNKNOWN_TYPE", fileKey: "file.json" });
+    safeStorage.downloadJson = async () => [{ some: "data" }];
+
+    const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
+    const result = await handleEvent(event);
+
+    assert.strictEqual(result.success, false);
+    assert.strictEqual(result.error, "Unknown eventType: UNKNOWN_TYPE");
   });
 });

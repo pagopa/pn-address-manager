@@ -10,8 +10,6 @@ const assert = require("assert");
 
 const firehoseMock = mockClient(FirehoseClient);
 
-const noOpSleep = async () => {};
-
 function buildSuccessResponse(count) {
   return {
     FailedPutCount: 0,
@@ -39,14 +37,14 @@ describe("putRecordBatch", () => {
   });
 
   it("returns early when itemsList is empty", async () => {
-    const result = await putRecordBatch([], noOpSleep);
+    const result = await putRecordBatch([]);
 
     assert.strictEqual(result, undefined);
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
   it("returns early when itemsList is not an array", async () => {
-    const result = await putRecordBatch(null, noOpSleep);
+    const result = await putRecordBatch(null);
 
     assert.strictEqual(result, undefined);
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
@@ -58,7 +56,7 @@ describe("putRecordBatch", () => {
     firehoseMock.on(PutRecordBatchCommand)
       .resolves(buildSuccessResponse(items.length));
 
-    const results = await putRecordBatch(items, noOpSleep);
+    const results = await putRecordBatch(items);
 
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 1);
     assert.strictEqual(results.length, 1);
@@ -73,7 +71,7 @@ describe("putRecordBatch", () => {
       Promise.resolve(buildSuccessResponse(cmd.Records.length))
     );
 
-    const results = await putRecordBatch(items, noOpSleep);
+    const results = await putRecordBatch(items);
 
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 3);
     assert.strictEqual(results.length, 3);
@@ -85,7 +83,7 @@ describe("putRecordBatch", () => {
     firehoseMock.on(PutRecordBatchCommand)
       .resolves(buildSuccessResponse(1));
 
-    await putRecordBatch(items, noOpSleep);
+    await putRecordBatch(items);
 
     const call = firehoseMock.commandCalls(PutRecordBatchCommand)[0];
     const sentInput = call.args[0].input;
@@ -99,7 +97,7 @@ describe("putRecordBatch", () => {
     firehoseMock.on(PutRecordBatchCommand)
       .resolves(buildSuccessResponse(1));
 
-    await putRecordBatch([item], noOpSleep);
+    await putRecordBatch([item]);
 
     const call = firehoseMock.commandCalls(PutRecordBatchCommand)[0];
     const buffer = call.args[0].input.Records[0].Data;
@@ -117,7 +115,7 @@ describe("putRecordBatch", () => {
       .resolvesOnce(buildPartialFailureResponse(2, [0])) // first call fails 1 record
       .resolvesOnce(buildSuccessResponse(1));            // retry succeeds
 
-    await putRecordBatch(items, noOpSleep);
+    await putRecordBatch(items);
 
     // 1 initial + 1 retry
     assert.strictEqual(
@@ -136,7 +134,7 @@ describe("putRecordBatch", () => {
       });
 
       await assert.rejects(
-        () => putRecordBatch(items, noOpSleep),
+        () => putRecordBatch(items),
         (err) => {
           assert.strictEqual(
             err.message,
@@ -162,7 +160,7 @@ describe("putRecordBatch", () => {
       .rejects(new Error("Network failure"));
 
     await assert.rejects(
-      () => putRecordBatch([{ id: 1 }], noOpSleep),
+      () => putRecordBatch([{ id: 1 }]),
       (err) => {
         assert.strictEqual(err.message, "Network failure");
         return true;

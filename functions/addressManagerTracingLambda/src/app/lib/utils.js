@@ -71,7 +71,48 @@ function buildDeduplicaResponseItem(res) {
     };
 }
 
+function checkNormalizerItem({normalizer}) {
+    const { batchId, oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey } = normalizer;
+
+    if ([oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey].every(v => v === null)) {
+      console.log(`[${batchId}] Fase di inizializzazione del batch.`);
+      return null;
+    }
+
+    const inputChanged = oldFileKey !== newFileKey;
+    const outputChanged = oldOutputFileKey !== newOutputFileKey;
+
+    if (!inputChanged && !outputChanged) {
+      console.log(`[${batchId}] No changes detected`);
+      return null;
+    }
+
+    if (inputChanged && newFileKey) {
+      console.log(`[${batchId}] Input changed → "${newFileKey}"`);
+      return { type: 'NORMALIZER_REQUEST', fileKey: newFileKey };
+    }
+
+    if (outputChanged && newOutputFileKey) {
+      console.log(`[${batchId}] Output changed → "${newOutputFileKey}"`);
+      return { type: 'NORMALIZER_RESPONSE', fileKey: newOutputFileKey };
+    }
+    return null;
+}
+
+function processNormalizerRequest(data, csvPayload) {
+    return [];
+}
+
+function processNormalizerResponse(data, csvPayload) {
+    return [];
+}
+
 module.exports = {
     buildDeduplicaRequestItem,
-    buildDeduplicaResponseItem
+    buildDeduplicaResponseItem,
+    checkNormalizerItem,
+    processNormalizerRequest,
+    processNormalizerResponse
 };
+
+

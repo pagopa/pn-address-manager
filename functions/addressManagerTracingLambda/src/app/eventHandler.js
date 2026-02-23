@@ -1,40 +1,72 @@
 const { putRecordBatch } = require('./lib/firehose.js');
-const { buildDeduplicaRequestItem, buildDeduplicaResponseItem } = require('./lib/utils.js');
+const utils = require('./lib/utils.js');
+const safeStorage = require('./lib/safeStorage');
+
+const EVENT_TYPES = {
+    DEDUPLICATE_REQUEST: "DEDUPLICATE_REQUEST",
+    DEDUPLICATE_RESPONSE: "DEDUPLICATE_RESPONSE",
+    NORMALIZER_REQUEST: "NORMALIZER_REQUEST",
+    NORMALIZER_RESPONSE: "NORMALIZER_RESPONSE"
+};
 
 exports.handleEvent = async (event) => {
-    const DEDUPLICATE_REQUEST = "DEDUPLICATE_REQUEST";
-    const DEDUPLICATE_RESPONSE = "DEDUPLICATE_RESPONSE";
-
-    if (!event || !event.eventType) {
+    if (!event?.eventType) {
         console.error("EventType is required");
         return { success: false, error: "EventType is required" };
     }
 
-    console.log("Received eventType:", event.eventType);
-
-    if (!event.data) {
-        console.error("Missing data in event body", event.data);
+    if (!event?.data) {
+        console.error("Missing data in event body");
         return { success: false, error: "Missing data in event body" };
     }
 
-    let itemsList = [];
+    let csvPayload;
+    let { eventType, data } = event;
+
     try {
-        switch (event.eventType) {
-            case DEDUPLICATE_REQUEST:
-                itemsList.push(buildDeduplicaRequestItem(event.data));
-                console.log("Successfully sent DEDUPLICATE_REQUEST to Firehose", { recordCount: itemsList.length });
-                break;
+        if (eventType === "NORMALIZER") {
+            const result = utils.checkNormalizerItem(event);
+            if (!result) {
+                console.log("Normalizer event skipped (no changes or init phase)");
+                return { success: true, message: "Normalizer skipped" };
+            }
 
-            case DEDUPLICATE_RESPONSE:
-                itemsList.push(buildDeduplicaResponseItem(event.data));
-                console.log("Successfully sent DEDUPLICATE_RESPONSE to Firehose", { recordCount: itemsList.length });
-                break;
-
-            default:
-                console.warn("Unknown eventType:", event.eventType);
-                return { success: false, error: `Unknown eventType: ${event.eventType}` };
+            csvPayload = await safeStorage.downloadJson(result.fileKey);
+            eventType = result.type;
         }
-        await putRecordBatch(itemsList);
+
+        const handlers = {
+            [EVENT_TYPES.DEDUPLICATE_REQUEST]: () => [
+                utils.buildDeduplicaRequestItem(data)
+            ],
+
+            [EVENT_TYPES.DEDUPLICATE_RESPONSE]: () => [
+                utils.buildDeduplicaResponseItem(data)
+            ],
+
+            [EVENT_TYPES.NORMALIZER_REQUEST]: () =>
+                utils.processNormalizerRequest(data, csvPayload),
+
+            [EVENT_TYPES.NORMALIZER_RESPONSE]: () =>
+                utils.processNormalizerResponse(data, csvPayload)
+        };
+
+        const handler = handlers[eventType];
+
+        if (!handler) {
+            console.warn("Unknown eventType:", eventType);
+            return { success: false, error: `Unknown eventType: ${eventType}` };
+        }
+
+        const itemsList = handler();
+
+        if (itemsList?.length) {
+            await putRecordBatch(itemsList);
+        }
+
+        console.log(`Successfully processed ${eventType}`, {
+            recordCount: itemsList?.length || 0
+        });
         return { success: true };
 
     } catch (error) {
