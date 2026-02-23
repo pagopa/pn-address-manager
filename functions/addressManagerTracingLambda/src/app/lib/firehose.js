@@ -49,6 +49,7 @@ async function putBatchWithRetry(records, streamName, maxRetries = 3) {
             break;
         }
 
+        attempt++;
         if (attempt >= maxRetries) {
             const err = new Error("Exceeded maxRetries while sending to Firehose");
             err.unprocessedRecords = unprocessed;
@@ -57,7 +58,6 @@ async function putBatchWithRetry(records, streamName, maxRetries = 3) {
 
         const delay = Math.floor(Math.pow(2, attempt) * 100 + Math.random() * 100);
         await new Promise(r => setTimeout(r, delay));
-        attempt++;
     }
 
     return lastResponse;

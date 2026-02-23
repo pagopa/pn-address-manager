@@ -3,9 +3,11 @@ const fs = require('fs');
 const path = require('path');
 const utils = require('../app/lib/utils');
 const REQUEST_NORMALIZED_DATA = require('./normalizedRequestItem.json');
+const RESPONSE_NORMALIZED_DATA = require('./normalizedResponseItem.json');
 
 // Caricamento CSV
 const REQUEST_CSV  = fs.readFileSync(path.join(__dirname, 'data', 'PN_ADDRESSES_RAW.csv'),  'utf-8');
+const RESPONSE_CSV  = fs.readFileSync(path.join(__dirname, 'data', 'PN_ADDRESSES_NORMALIZED.csv'),  'utf-8');
 
 // checkNormalizerItem
 
@@ -101,4 +103,74 @@ describe("processNormalizerRequest", () => {
   });
 });
 
+
+// processNormalizerResponse
+
+describe("processNormalizerResponse", () => {
+
+  it("should return at least one record", async () => {
+    const records = await utils.processNormalizerResponse(RESPONSE_NORMALIZED_DATA, RESPONSE_CSV);
+    assert.ok(records.length > 0, "Nessun record prodotto");
+  });
+
+  it("should set service=NORMALIZER and type=RESPONSE on all records", async () => {
+    const records = await utils.processNormalizerResponse(RESPONSE_NORMALIZED_DATA, RESPONSE_CSV);
+    for (const r of records) {
+      assert.strictEqual(r.service, 'NORMALIZER');
+      assert.strictEqual(r.type,    'RESPONSE');
+    }
+  });
+
+  describe("exact values from CSV first row", () => {
+    let record;
+
+    before(async () => {
+      const records = await utils.processNormalizerResponse(RESPONSE_NORMALIZED_DATA, RESPONSE_CSV);
+      record = records[0];
+    });
+
+    it("should find a record", () => {
+      assert.ok(record, "Nessun record trovato");
+    });
+
+    // campi estratti dallo split di id col[0]
+    it("correlationId",     () => assert.strictEqual(record.correlationId,    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1'));
+    it("responseCreatedAt", () => assert.strictEqual(record.responseCreatedAt, '2026-01-22T11:51:17.488420128'));
+    it("addressIdx",        () => assert.strictEqual(record.addressIdx,        0));
+
+    // metadati da data
+    it("batchId",           () => assert.strictEqual(record.batchId,           RESPONSE_NORMALIZED_DATA.batchId));
+    it("service",           () => assert.strictEqual(record.service,           'NORMALIZER'));
+    it("type",              () => assert.strictEqual(record.type,              'RESPONSE'));
+
+    // responseTimestamp è new Date().toISOString() → verifico solo che sia una stringa ISO valida
+    it("responseTimestamp è una stringa ISO", () => {
+      assert.strictEqual(typeof record.responseTimestamp, 'string');
+      assert.ok(!isNaN(Date.parse(record.responseTimestamp)), "Non è una data ISO valida");
+    });
+
+    // campi dal CSV
+    it("id                     col[0]",  () => assert.strictEqual(record.id,                     'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1#2026-01-22T11:51:17.488420128#0'));
+    it("nRisultatoNorm          col[1]",  () => assert.strictEqual(record.nRisultatoNorm,          1));
+    it("fPostalizzabile         col[2]",  () => assert.strictEqual(record.fPostalizzabile,         1));
+    it("nErroreNorm             col[3]",  () => assert.strictEqual(record.nErroreNorm,             null));
+    it("nErroreNormDescription  col[3]",  () => assert.strictEqual(record.nErroreNormDescription,  null));
+    it("sSiglaProv              col[4]",  () => assert.strictEqual(record.sSiglaProv,              'CS'));
+    it("sStatoUff               col[5]",  () => assert.strictEqual(record.sStatoUff,               null));
+    it("sStatoAbb               col[6]",  () => assert.strictEqual(record.sStatoAbb,               null));
+    it("sStatoSpedizione        col[7]",  () => assert.strictEqual(record.sStatoSpedizione,        'ITALIA'));
+    it("sComuneUff              col[8]",  () => assert.strictEqual(record.sComuneUff,              null));
+    it("sComuneAbb              col[9]",  () => assert.strictEqual(record.sComuneAbb,              null));
+    it("sComuneSpedizione       col[10]", () => assert.strictEqual(record.sComuneSpedizione,       'COSENZA'));
+    it("sFrazioneUff            col[11]", () => assert.strictEqual(record.sFrazioneUff,            null));
+    it("sFrazioneAbb            col[12]", () => assert.strictEqual(record.sFrazioneAbb,            null));
+    it("sFrazioneSpedizione     col[13]", () => assert.strictEqual(record.sFrazioneSpedizione,     'COSENZA'));
+    it("sCivicoAltro            col[14]", () => assert.strictEqual(record.sCivicoAltro,            'SCALA B'));
+    it("sCap                    col[15]", () => assert.strictEqual(record.sCap,                    '87100'));
+    it("sPresso                 col[16]", () => assert.strictEqual(record.sPresso,                 null));
+    it("sViaCompletaUff         col[17]", () => assert.strictEqual(record.sViaCompletaUff,         null));
+    it("sViaCompletaAbb         col[18]", () => assert.strictEqual(record.sViaCompletaAbb,         null));
+    it("sViaCompletaSpedizione  col[19]", () => assert.strictEqual(record.sViaCompletaSpedizione,  'VIA SENZA NOME'));
+  });
+});
 

@@ -17,7 +17,9 @@ const path = require('path');
 
 const firehoseMock = mockClient(FirehoseClient);
 
+// Caricamento CSV
 const REQUEST_CSV  = fs.readFileSync(path.join(__dirname, 'data', 'PN_ADDRESSES_RAW.csv'),  'utf-8');
+const RESPONSE_CSV  = fs.readFileSync(path.join(__dirname, 'data', 'PN_ADDRESSES_NORMALIZED.csv'),  'utf-8');
 
 function buildSuccessResponse(count) {
   return {
@@ -323,7 +325,7 @@ describe("handleEvent - NORMALIZER Integration", () => {
 
   it("should process NORMALIZER_REQUEST if checkNormalizerItem returns type NORMALIZER_REQUEST", async () => {
     utils.checkNormalizerItem = () => ({ type: "NORMALIZER_REQUEST", fileKey: "file.json" });
-    safeStorage.downloadText = async () => REQUEST_CSV;
+    safeStorage.downloadText = async () => [{ some: "data" }];
     firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
 
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
@@ -334,7 +336,7 @@ describe("handleEvent - NORMALIZER Integration", () => {
 
   it("should process NORMALIZER_RESPONSE if checkNormalizerItem returns type NORMALIZER_RESPONSE", async () => {
     utils.checkNormalizerItem = () => ({ type: "NORMALIZER_RESPONSE", fileKey: "file.json" });
-    safeStorage.downloadText = async () => REQUEST_CSV;
+    safeStorage.downloadText = async () => [{ some: "data" }];
     firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
 
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
@@ -356,7 +358,7 @@ describe("handleEvent - NORMALIZER Integration", () => {
 
   it("should return error for unknown NORMALIZER subtype", async () => {
     utils.checkNormalizerItem = () => ({ type: "UNKNOWN_TYPE", fileKey: "file.json" });
-    safeStorage.downloadText = async () => REQUEST_CSV;
+    safeStorage.downloadText = async () => [{ some: "data" }];
 
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
     const result = await handleEvent(event);
@@ -366,12 +368,8 @@ describe("handleEvent - NORMALIZER Integration", () => {
   });
 
   it("should call PutRecordBatch with real NORMALIZER_REQUEST records parsed from CSV", async () => {
-      // CSV reale con una riga
-      const csvText =
-          "VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1#2024-03-11T15:08:14.075913927#0;" +
-          "CS;87100;Cosenza;Cosenza;via @FAIL-Irreperibile_AR 16;scala b;ITALIA\n";
+      const csvText = REQUEST_CSV;
 
-      // Evento shaped come produzione
       const event = {
           eventType: "NORMALIZER",
           normalizer: {
@@ -383,24 +381,19 @@ describe("handleEvent - NORMALIZER Integration", () => {
           }
       };
 
-      // Mock safeStorage con CSV reale testuale
       safeStorage.downloadText = async () => csvText;
       firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
 
-      // checkNormalizerItem REALE (non mockato)
       const result = await handleEvent(event);
 
-      // Verifica successo
       assert.strictEqual(result.success, true);
 
-      // Verifica che Firehose sia stato effettivamente chiamato
       const calls = firehoseMock.commandCalls(PutRecordBatchCommand);
       assert.strictEqual(calls.length, 1, "PutRecordBatchCommand dovrebbe essere chiamato una volta");
 
-      // Verifica il payload inviato a Firehose
       const input   = calls[0].args[0].input;
       assert.strictEqual(input.DeliveryStreamName, "test-delivery-stream");
-      assert.strictEqual(input.Records.length, 1);
+      assert.ok(input.Records.length >= 1, "Dovrebbe esserci almeno un record");
 
       const decoded = input.Records[0].Data.toString("utf-8");
       const parsed  = JSON.parse(decoded.trim());
@@ -421,5 +414,68 @@ describe("handleEvent - NORMALIZER Integration", () => {
       assert.strictEqual(parsed.indirizzo,        'via @FAIL-Irreperibile_AR 16');
       assert.strictEqual(parsed.stato,            'ITALIA');
       assert.ok(!isNaN(Date.parse(parsed.requestTimestamp)), "requestTimestamp deve essere una data ISO valida");
+  });
+
+  it("should call PutRecordBatch with real NORMALIZER_RESPONSE records parsed from CSV", async () => {
+      const csvText = RESPONSE_CSV;
+
+      const event = {
+          eventType: "NORMALIZER",
+          normalizer: {
+              batchId:          "batch-001",
+              oldFileKey:       null,
+              oldOutputFileKey: null,
+              newFileKey:       null,
+              newOutputFileKey: "s3://bucket/response.csv"
+          }
+      };
+
+      safeStorage.downloadText = async () => csvText;
+      firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
+
+      const result = await handleEvent(event);
+      assert.strictEqual(result.success, true);
+
+      const calls = firehoseMock.commandCalls(PutRecordBatchCommand);
+      assert.strictEqual(calls.length, 1, "PutRecordBatchCommand dovrebbe essere chiamato una volta");
+
+      const input  = calls[0].args[0].input;
+      assert.strictEqual(input.DeliveryStreamName, "test-delivery-stream");
+      assert.ok(input.Records.length >= 1, "Dovrebbe esserci almeno un record");
+
+      const decoded = input.Records[0].Data.toString("utf-8");
+      const parsed  = JSON.parse(decoded.trim());
+
+      // campi estratti dallo split di id col[0]
+      assert.strictEqual(parsed.correlationId,     'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1');
+      assert.strictEqual(parsed.responseCreatedAt, '2026-01-22T11:51:17.488420128');
+      assert.strictEqual(parsed.addressIdx,        0);
+      assert.strictEqual(parsed.batchId,           'batch-001');
+      assert.strictEqual(parsed.service,           'NORMALIZER');
+      assert.strictEqual(parsed.type,              'RESPONSE');
+      assert.ok(!isNaN(Date.parse(parsed.responseTimestamp)), "responseTimestamp deve essere una data ISO valida");
+
+      // campi CSV
+      assert.strictEqual(parsed.id,                    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1#2026-01-22T11:51:17.488420128#0');
+      assert.strictEqual(parsed.nRisultatoNorm,         1);
+      assert.strictEqual(parsed.fPostalizzabile,        1);
+      assert.strictEqual(parsed.nErroreNorm,            null);
+      assert.strictEqual(parsed.nErroreNormDescription, null);
+      assert.strictEqual(parsed.sSiglaProv,             'CS');
+      assert.strictEqual(parsed.sStatoUff,              null);
+      assert.strictEqual(parsed.sStatoAbb,              null);
+      assert.strictEqual(parsed.sStatoSpedizione,       'ITALIA');
+      assert.strictEqual(parsed.sComuneUff,             null);
+      assert.strictEqual(parsed.sComuneAbb,             null);
+      assert.strictEqual(parsed.sComuneSpedizione,      'COSENZA');
+      assert.strictEqual(parsed.sFrazioneUff,           null);
+      assert.strictEqual(parsed.sFrazioneAbb,           null);
+      assert.strictEqual(parsed.sFrazioneSpedizione,    'COSENZA');
+      assert.strictEqual(parsed.sCivicoAltro,           'SCALA B');
+      assert.strictEqual(parsed.sCap,                   '87100');
+      assert.strictEqual(parsed.sPresso,                null);
+      assert.strictEqual(parsed.sViaCompletaUff,        null);
+      assert.strictEqual(parsed.sViaCompletaAbb,        null);
+      assert.strictEqual(parsed.sViaCompletaSpedizione, 'VIA SENZA NOME');
   });
 });

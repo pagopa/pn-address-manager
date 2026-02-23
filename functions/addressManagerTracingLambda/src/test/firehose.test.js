@@ -150,7 +150,7 @@ describe("putRecordBatch", () => {
 
       assert.strictEqual(
         firehoseMock.commandCalls(PutRecordBatchCommand).length,
-        4
+        3
       );
     });
 

@@ -1,11 +1,17 @@
 const { parseCsv } = require('./csvUtils');
+const { postelNErrorNormFromCode } = require('./postelNErrorNorm');
+
+const DEDUPLICATE_SERVICE = 'DEDUPLICATE';
+const NORMALIZER_SERVICE = 'NORMALIZER';
+const REQUEST = 'REQUEST';
+const RESPONSE = 'RESPONSE';
 
 function buildDeduplicaRequestItem(req) {
 
     return {
         correlationId: req.masterIn.id,
-        service: "DEDUPLICATE",
-        type: "REQUEST",
+        service: DEDUPLICATE_SERVICE,
+        type: REQUEST,
         requestTimestamp: new Date().toISOString(),
 
         // SLAVE IN
@@ -34,8 +40,8 @@ function buildDeduplicaResponseItem(res) {
 
     return {
         correlationId: res.masterOut.id,
-        service: "DEDUPLICATE",
-        type: "RESPONSE",
+        service: DEDUPLICATE_SERVICE,
+        type: RESPONSE,
         responseTimestamp: new Date().toISOString(),
 
         risultatoDedu: res.risultatoDedu,
@@ -115,12 +121,12 @@ async function processNormalizerRequest(data, csvPayload) {
 
         return {
             correlationId:       correlationId || null,
-            service:             'NORMALIZER',
-            type:                'REQUEST',
+            service:             NORMALIZER_SERVICE,
+            type:                REQUEST,
             batchId:             data.batchId ?? data.normalizer?.batchId ?? null,
             addressIdx:          parsedAddressIdx,
             requestCreatedAt:    requestCreatedAt || null,
-            requestTimestamp:    new Date().toISOString() || null,
+            requestTimestamp:    new Date().toISOString(),
 
             idCodiceCliente:     col[0] ?? null,
             provincia:           col[1] ?? null,
@@ -134,8 +140,51 @@ async function processNormalizerRequest(data, csvPayload) {
     });
 }
 
-function processNormalizerResponse(data, csvPayload) {
-    return [];
+async function processNormalizerResponse(data, csvPayload) {
+    const rows = await parseCsv(csvPayload);
+
+    return rows.map((col) => {
+        const [correlationId, responseCreatedAt, addressIdx] = (col[0] ?? '').split('#');
+        let parsedAddressIdx = null;
+        if (addressIdx !== undefined && addressIdx !== '') {
+            const numericAddressIdx = Number(addressIdx);
+            if (Number.isFinite(numericAddressIdx)) {
+                parsedAddressIdx = numericAddressIdx;
+            }
+        }
+
+        return {
+            correlationId:           correlationId || null,
+            service:                 NORMALIZER_SERVICE,
+            type:                    RESPONSE,
+            batchId:                 data.batchId ?? data.normalizer?.batchId ?? null,
+            addressIdx:              parsedAddressIdx,
+            responseCreatedAt:       responseCreatedAt || null,
+            responseTimestamp:       new Date().toISOString(),
+            nErroreNormDescription:  col[3] !== '' ? postelNErrorNormFromCode(col[3]) : null,
+
+            id:                      col[0]  ?? null,
+            nRisultatoNorm:          col[1]  !== '' ? Number(col[1]) : null,
+            fPostalizzabile:         col[2]  !== '' ? Number(col[2]) : null,
+            nErroreNorm:             col[3]  !== '' ? Number(col[3]) : null,
+            sSiglaProv:              col[4]  || null,
+            sStatoUff:               col[5]  || null,
+            sStatoAbb:               col[6]  || null,
+            sStatoSpedizione:        col[7]  || null,
+            sComuneUff:              col[8]  || null,
+            sComuneAbb:              col[9]  || null,
+            sComuneSpedizione:       col[10] || null,
+            sFrazioneUff:            col[11] || null,
+            sFrazioneAbb:            col[12] || null,
+            sFrazioneSpedizione:     col[13] || null,
+            sCivicoAltro:            col[14] || null,
+            sCap:                    col[15] || null,
+            sPresso:                 col[16] || null,
+            sViaCompletaUff:         col[17] || null,
+            sViaCompletaAbb:         col[18] || null,
+            sViaCompletaSpedizione:  col[19] || null,
+        };
+    });
 }
 
 module.exports = {
@@ -145,5 +194,3 @@ module.exports = {
     processNormalizerRequest,
     processNormalizerResponse
 };
-
-
