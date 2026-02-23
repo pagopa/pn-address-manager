@@ -261,6 +261,18 @@ Parameters:
     Type: String
     Description: 'DLQ ARN for PnAddressManagerCallback'
 
+  PnAddressManagerTracingInputQueueName:
+    Type: String
+    Description: Name of address manager tracing input queue
+
+  PnAddressManagerTracingInputQueueARN:
+    Type: String
+    Description: 'ARN of address manager tracing input queue'
+
+  PnAddressManagerTracingInputQueueURL:
+    Type: String
+    Description: URL of address manager tracing input
+
   BatchRequestTableArn:
     Type: String
     Description: 'ARN of DynamoDB table BatchRequest'
@@ -268,6 +280,10 @@ Parameters:
   PostelBatchTableArn:
     Type: String
     Description: 'ARN of DynamoDB table PostelBatch'
+
+  PostelBatchTableStreamArn:
+    Type: String
+    Description: 'ARN of DynamoDB Stream table PostelBatch'
 
   CountryTableArn:
     Type: String
@@ -450,6 +466,31 @@ Parameters:
     Description: 'Flag to include escape character in CSV parsing'
     Default: true
 
+  MicroserviceBucketName:
+    Type: String
+    Description: "Name of the bucket where the microservice files are copied during deploy"
+
+  MicroserviceBucketBaseKey:
+    Type: String
+    Description: 'Base key of the microservice in the s3 bucket'
+
+  AddressManagerTracingLambdaName:
+    Type: String
+    Description: 'AddressManagerTracingLambda function name'
+
+  LambdaRuntime:
+    Type: String
+    Default: nodejs24.x
+    Description: Runtime for Lambdas. 
+    
+  AddressManagerTracingPipeDesiredState:
+    Type: String
+    Default: 'STOPPED'
+    Description: 'Desired state of the AddressManagerTracingPipe'
+    AllowedValues:
+      - 'RUNNING'
+      - 'STOPPED'
+
 Resources:
 
   # PN-address-manager microservice
@@ -530,6 +571,7 @@ Resources:
         ContainerEnvEntry50: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTEL_ERRORNORM901EVALUATIONMODE=${PostelErrorNorm901EvaluationMode}'
         ContainerEnvEntry51: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry52: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
+        ContainerEnvEntry53: !Sub 'PN_ADDRESSMANAGER_SQS_TRACINGINPUTQUEUENAME=${PnAddressManagerTracingInputQueueName}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets
@@ -591,6 +633,7 @@ Resources:
               - !Ref PnAddressManagerInputsQueueARN
               - !Ref PnAddressManagerCallbackDLQARN
               - !Ref PnAddressManagerCallbackQueueARN
+              - !Ref PnAddressManagerTracingInputQueueARN
           - Effect: Allow
             Action:
               - dynamodb:GetItem
@@ -693,3 +736,182 @@ Resources:
           RoleArn: !GetAtt AddressManagerEventBusTargetRole.Arn
           DeadLetterConfig:
             Arn: !Ref AddressManagerEventBusDLQArn
+
+  AddressManagerTracingLambdaSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${AddressManagerTracingLambdaName}-sec-group'
+      VpcId: !Ref VpcId
+
+  AddressManagerTracingLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref AddressManagerTracingLambdaName
+      Runtime: !Ref LambdaRuntime
+      Handler: "index.handler"
+      Code:
+        S3Bucket: !Ref MicroserviceBucketName
+        S3Key: !Sub "${MicroserviceBucketBaseKey}/functions_zip/addressManagerTracingLambda.zip"
+      Role: !GetAtt AddressManagerTracingLambdaRole.Arn
+      Environment:
+        Variables:
+          REGION: !Sub ${AWS::Region}
+          PN_SAFESTORAGE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080
+          PN_SAFESTORAGE_CXID: !Ref PnAddressManagerCxId
+          BATCH_SIZE: "500"
+          DELIVERY_STREAM_NAME: "DELIVERY_STREAM_NAME"
+      TracingConfig:
+        Mode: Active
+      Layers:
+        - !Sub "arn:aws:lambda:${AWS::Region}:339249233099:layer:LambdaInsightsExtension:13"
+      Timeout: 300 #5 min
+      VpcConfig:
+        SubnetIds: !Split [ ",", !Ref SubnetsIds ]
+        SecurityGroupIds:
+          - !GetAtt AddressManagerTracingLambdaSecGroup.GroupId
+
+  # Lambda function role
+    AddressManagerTracingLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${ProjectName}-AddressManagerTracingLambdaRole
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+
+  # Lambda function IAM policy
+  AddressManagerTracingLambdaPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub ${ProjectName}-AddressManagerTracingLambdaPolicy
+      Roles:
+        - !Ref AddressManagerTracingLambdaRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+              - sqs:ChangeMessageVisibility
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:ReceiveMessage
+            Resource:
+              - !Ref PnAddressManagerTracingInputQueueARN
+
+  AddressManagerTracingLambdaAlarms:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
+      Parameters:
+        FunctionName: !Ref AddressManagerTracingLambda
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+
+  AddressManagerTracingLambdaSQSSource:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 1
+      EventSourceArn: !Ref PnAddressManagerTracingInputQueueARN
+      FunctionName: !Ref AddressManagerTracingLambda
+      Enabled: true
+      MaximumBatchingWindowInSeconds: 0
+
+  PnAddressManagerTracingInputQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      Queues:
+        - !Ref PnAddressManagerTracingInputQueueURL
+      PolicyDocument:
+        Statement:
+          - Sid: "SendEventsToDLQ"
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "events.amazonaws.com"
+            Action:
+              - "SQS:SendMessage"
+            Resource:
+              - !Ref PnAddressManagerTracingInputQueueARN
+      
+  AddressManagerTracingPipe:
+    Type: AWS::Pipes::Pipe
+    Properties:
+      Name: !Sub '${ProjectName}-addressManagerTracingPipe'
+      RoleArn: !GetAtt AddressManagerTracingPipeExecutionRole.Arn
+      Source: !Ref PostelBatchTableStreamArn
+      DesiredState: !Ref AddressManagerTracingPipeDesiredState
+      SourceParameters:
+        DynamoDBStreamParameters:
+          StartingPosition: LATEST
+        FilterCriteria:
+          Filters:
+            - Pattern: >
+                {
+                  "eventName": ["MODIFY"],
+                  "dynamodb": {
+                    "$or": [
+                      {
+                        "NewImage": {
+                          "fileKey": { "S": [{ "exists": true }] }
+                        }
+                      },
+                      {
+                        "NewImage": {
+                          "outputFileKey": { "S": [{ "exists": true }] }
+                        }
+                      }
+                    ]
+                  }
+                }
+      Target: !Ref PnAddressManagerTracingInputQueueARN
+      TargetParameters:
+        InputTemplate: >
+          {
+            "eventType": "NORMALIZER",
+            "normalizer": {
+              "batchId": <$.dynamodb.NewImage.batchId.S>,
+              "oldFileKey": <$.dynamodb.OldImage.fileKey.S>,
+              "oldOutputFileKey": <$.dynamodb.OldImage.outputFileKey.S>,
+              "newFileKey": <$.dynamodb.NewImage.fileKey.S>,
+              "newOutputFileKey": <$.dynamodb.NewImage.outputFileKey.S>
+            }
+          }
+  
+
+  AddressManagerTracingPipeExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-AddressManagerTracingPipeExecutionRole'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: pipes.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: PipeDynamoDBToSqsPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeStream
+                  - dynamodb:GetRecords
+                  - dynamodb:GetShardIterator
+                  - dynamodb:ListStreams
+                Resource:
+                  - !Sub "${PostelBatchTableStreamArn}"
+                  - !Sub "${PostelBatchTableStreamArn}/*"
+              - Effect: Allow
+                Action:
+                  - sqs:SendMessage
+                Resource: !Ref PnAddressManagerTracingInputQueueARN

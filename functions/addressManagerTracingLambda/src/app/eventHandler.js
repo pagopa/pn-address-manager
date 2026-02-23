@@ -67,11 +67,11 @@ exports.handleEvent = async (event) => {
         console.log(`Successfully processed ${eventType}`, {
             recordCount: itemsList?.length || 0
         });
-
         return { success: true };
 
     } catch (error) {
         console.error("Error processing event:", error);
         return { success: false, error: error.message };
     }
+
 };
