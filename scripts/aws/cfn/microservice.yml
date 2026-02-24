@@ -771,7 +771,7 @@ Resources:
           - !GetAtt AddressManagerTracingLambdaSecGroup.GroupId
 
   # Lambda function role
-    AddressManagerTracingLambdaRole:
+  AddressManagerTracingLambdaRole:
     Type: AWS::IAM::Role
     Properties:
       RoleName: !Sub ${ProjectName}-AddressManagerTracingLambdaRole
