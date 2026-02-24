@@ -58,6 +58,26 @@ Parameters:
   EcsLogGroup:
     Type: String
 
+  PostelTracingFirehoseLogGroupName:
+    Type: String
+    Description: CloudWatch LogGroup name used by Firehose tracing delivery stream
+
+  PostelTracingTableBucketArn:
+    Type: String
+    Description: ARN of S3 Tables bucket for Postel tracing
+
+  PostelTracingTableBucketName:
+    Type: String
+    Description: Name of S3 Tables bucket for Postel tracing
+
+  PostelTracingTableNamespace:
+    Type: String
+    Description: Namespace for Postel tracing table
+
+  PostelTracingTableName:
+    Type: String
+    Description: Name of Postel tracing table
+
   # Logging parameters
   WireTapLogActivation:
     Type: String
@@ -79,7 +99,7 @@ Parameters:
 
   MountEfs:
     Type: String
-    Default: false
+    Default: "false"
     AllowedValues:
       - "true"
       - "false"
@@ -589,6 +609,20 @@ Resources:
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
   # CloudWatch dashboard
+  AddressManagerPostelTracingFirehose:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/firehose-to-iceberg-table.yaml"
+      Parameters:
+        ProjectName: !Ref ProjectName
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        TableBucketARN: !Ref PostelTracingTableBucketArn
+        TableBucketName: !Ref PostelTracingTableBucketName
+        DestinationNamespace: !Ref PostelTracingTableNamespace
+        DestinationTableName: !Ref PostelTracingTableName
+        ExistingFirehoseLogGroupName: !Ref PostelTracingFirehoseLogGroupName
+
+  # CloudWatch dashboard
   AddressManagerMicroserviceCloudWatchDashboard:
     Type: AWS::CloudFormation::Stack
     Properties:
@@ -599,6 +633,7 @@ Resources:
           - ','
           - - !GetAtt AddressManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
             - !GetAtt DLQHasMessagesAlarm.Arn
+            - !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamErrorAlarmArn
         LogGroupsNames: !Join
           - ','
           - - !Ref EcsLogGroup
@@ -915,3 +950,19 @@ Resources:
                 Action:
                   - sqs:SendMessage
                 Resource: !Ref PnAddressManagerTracingInputQueueARN
+
+Outputs:
+  PostelTracingDeliveryStreamName:
+    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamName
+
+  PostelTracingDeliveryStreamArn:
+    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamArn
+
+  PostelTracingDeliveryStreamErrorAlarmArn:
+    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamErrorAlarmArn
+
+  PostelTracingOncallDeliveryStreamErrorAlarmArn:
+    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.OncallDeliveryStreamErrorAlarmArn
+
+  PostelTracingFirehoseEffectiveLogGroupName:
+    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.EffectiveFirehoseLogGroupName
