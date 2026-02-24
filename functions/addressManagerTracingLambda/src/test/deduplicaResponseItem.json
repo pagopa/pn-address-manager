@@ -1,0 +1,37 @@
+{
+  "eventType": "DEDUPLICATE_RESPONSE",
+  "deduplicateResponse":{
+    "masterOut": {
+      "id": "NRG_ADDRESS_PREPARE_ANALOG_DOMICILE.IUN_ZZZZ-ZZZZ-ZZZZ-202500-G-1.RECINDEX_0.ATTEMPT_1",
+      "nRisultatoNorm": 1,
+      "nErroreNorm": 0,
+      "nErroreNormDescription": "",
+      "sSiglaProv": "PI",
+      "fPostalizzabile": 1,
+      "sStatoSpedizione": "ITALIA",
+      "sComuneSpedizione": "CASTELFRANCO DI SOTTO",
+      "sFrazioneSpedizione": "",
+      "sCivicoAltro": "",
+      "sCap": "56022",
+      "sPresso": "",
+      "sViaCompletaSpedizione": "VIA ULIVI 85"
+    },
+    "slaveOut": {
+      "id": "NRG_ADDRESS_PREPARE_ANALOG_DOMICILE.IUN_ZZZZ-ZZZZ-ZZZZ-202500-G-1.RECINDEX_0.ATTEMPT_1",
+      "nRisultatoNorm": 1,
+      "nErroreNorm": 0,
+      "nErroreNormDescription": "",
+      "sSiglaProv": "PI",
+      "fPostalizzabile": 1,
+      "sStatoSpedizione": "ITALIA",
+      "sComuneSpedizione": "CASTELFRANCO DI SOTTO",
+      "sFrazioneSpedizione": "VILLA CAMPANILE",
+      "sCivicoAltro": "",
+      "sCap": "56022",
+      "sPresso": "",
+      "sViaCompletaSpedizione": "VIA ULIVI 85 A"
+    },
+    "risultatoDedu": true,
+    "errore": null
+  }
+}
