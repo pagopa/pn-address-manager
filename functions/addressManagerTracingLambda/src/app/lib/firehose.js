@@ -12,8 +12,8 @@ async function putRecordBatch(itemsList) {
         return;
     }
 
-    const batchSize = Number(process.env.BATCH_SIZE) || DEFAULT_BATCH_SIZE;
-    const streamName = process.env.DELIVERY_STREAM_NAME;
+    const batchSize = Number(process.env.FIREHOSE_BATCH_SIZE) || DEFAULT_BATCH_SIZE;
+    const streamName = process.env.FIREHOSE_DELIVERY_STREAM_NAME;
     const records = itemsList.map(item => ({
         Data: Buffer.from(JSON.stringify(item) + '\n')
     }));

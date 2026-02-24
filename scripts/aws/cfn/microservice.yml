@@ -491,6 +491,15 @@ Parameters:
       - 'RUNNING'
       - 'STOPPED'
 
+  FirehoseDeliveryStreamName:
+    Type: String
+    Description: 'Firehose stream name for Address Manager tracing'
+    Default: "pn-poc-tracing-dev"
+
+  FirehoseBatchSize:
+    Type: Number
+    Description: 'Batch size for Firehose stream processing'
+
 Resources:
 
   # PN-address-manager microservice
@@ -758,8 +767,8 @@ Resources:
           REGION: !Sub ${AWS::Region}
           PN_SAFESTORAGE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080
           PN_SAFESTORAGE_CXID: !Ref PnAddressManagerCxId
-          BATCH_SIZE: "500"
-          DELIVERY_STREAM_NAME: "DELIVERY_STREAM_NAME"
+          FIREHOSE_BATCH_SIZE: !Ref FirehoseBatchSize
+          FIREHOSE_DELIVERY_STREAM_NAME: !Ref FirehoseDeliveryStreamName
       TracingConfig:
         Mode: Active
       Layers:

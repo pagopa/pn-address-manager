@@ -1,7 +1,7 @@
 // Setup env vars BEFORE requiring any module
 process.env.AWS_REGION = "eu-south-1";
-process.env.DELIVERY_STREAM_NAME = "test-delivery-stream";
-process.env.BATCH_SIZE = "500";
+process.env.FIREHOSE_DELIVERY_STREAM_NAME = "test-delivery-stream";
+process.env.FIREHOSE_BATCH_SIZE = "500";
 
 const { handleEvent } = require("../app/eventHandler.js");
 const { FirehoseClient, PutRecordBatchCommand } = require('@aws-sdk/client-firehose');
