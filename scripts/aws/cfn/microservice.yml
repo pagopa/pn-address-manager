@@ -794,7 +794,7 @@ Resources:
           PN_SAFESTORAGE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080
           PN_SAFESTORAGE_CXID: !Ref PnAddressManagerCxId
           BATCH_SIZE: "500"
-          DELIVERY_STREAM_NAME: "DELIVERY_STREAM_NAME"
+          DELIVERY_STREAM_NAME: !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamName
       TracingConfig:
         Mode: Active
       Layers:
@@ -950,19 +950,3 @@ Resources:
                 Action:
                   - sqs:SendMessage
                 Resource: !Ref PnAddressManagerTracingInputQueueARN
-
-Outputs:
-  PostelTracingDeliveryStreamName:
-    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamName
-
-  PostelTracingDeliveryStreamArn:
-    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamArn
-
-  PostelTracingDeliveryStreamErrorAlarmArn:
-    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamErrorAlarmArn
-
-  PostelTracingOncallDeliveryStreamErrorAlarmArn:
-    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.OncallDeliveryStreamErrorAlarmArn
-
-  PostelTracingFirehoseEffectiveLogGroupName:
-    Value: !GetAtt AddressManagerPostelTracingFirehose.Outputs.EffectiveFirehoseLogGroupName

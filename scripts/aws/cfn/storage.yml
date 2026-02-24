@@ -327,30 +327,24 @@ Resources:
       IcebergMetadata:
         IcebergSchema:
           SchemaFieldList:
-            - Name: event_id
+            - Name: correlationId
               Type: string
             - Name: service
               Type: string
-            - Name: event_type
+            - Name: type
               Type: string
-            - Name: correlation_id
+            - Name: requestTimestamp
               Type: string
-            - Name: batch_id
+            - Name: responseTimestamp
               Type: string
-            - Name: address_idx
+            - Name: batchId
+              Type: string
+            - Name: addressIdx
               Type: int
-            - Name: event_ts
-              Type: timestamp
-            - Name: request_ts
-              Type: timestamp
-            - Name: response_ts
-              Type: timestamp
-            - Name: request_created_at
-              Type: timestamp
-            - Name: response_created_at
-              Type: timestamp
-            - Name: ingestion_ts
-              Type: timestamp
+            - Name: requestCreatedAt
+              Type: string
+            - Name: responseCreatedAt
+              Type: string
             - Name: slave_in_id
               Type: string
             - Name: slave_in_provincia
@@ -359,11 +353,11 @@ Resources:
               Type: string
             - Name: slave_in_localita
               Type: string
-            - Name: slave_in_localita_aggiuntiva
+            - Name: slave_in_localitaAggiuntiva
               Type: string
             - Name: slave_in_indirizzo
               Type: string
-            - Name: slave_in_indirizzo_aggiuntivo
+            - Name: slave_in_indirizzoAggiuntivo
               Type: string
             - Name: slave_in_stato
               Type: string
@@ -375,71 +369,71 @@ Resources:
               Type: string
             - Name: master_in_localita
               Type: string
-            - Name: master_in_localita_aggiuntiva
+            - Name: master_in_localitaAggiuntiva
               Type: string
             - Name: master_in_indirizzo
               Type: string
-            - Name: master_in_indirizzo_aggiuntivo
+            - Name: master_in_indirizzoAggiuntivo
               Type: string
             - Name: master_in_stato
               Type: string
-            - Name: risultato_dedu
+            - Name: risultatoDedu
               Type: boolean
             - Name: errore
               Type: string
             - Name: slave_out_id
               Type: string
-            - Name: slave_out_n_risultato_norm
+            - Name: slave_out_nRisultatoNorm
               Type: int
-            - Name: slave_out_n_errore_norm
+            - Name: slave_out_nErroreNorm
               Type: int
-            - Name: slave_out_n_errore_norm_description
+            - Name: slave_out_nErroreNormDescription
               Type: string
-            - Name: slave_out_sigla_prov
+            - Name: slave_out_sSiglaProv
               Type: string
-            - Name: slave_out_postalizzabile
+            - Name: slave_out_fPostalizzabile
               Type: int
-            - Name: slave_out_stato_spedizione
+            - Name: slave_out_sStatoSpedizione
               Type: string
-            - Name: slave_out_comune_spedizione
+            - Name: slave_out_sComuneSpedizione
               Type: string
-            - Name: slave_out_frazione_spedizione
+            - Name: slave_out_sFrazioneSpedizione
               Type: string
-            - Name: slave_out_civico_altro
+            - Name: slave_out_sCivicoAltro
               Type: string
-            - Name: slave_out_cap
+            - Name: slave_out_sCap
               Type: string
-            - Name: slave_out_presso
+            - Name: slave_out_sPresso
               Type: string
-            - Name: slave_out_via_completa_spedizione
+            - Name: slave_out_sViaCompletaSpedizione
               Type: string
             - Name: master_out_id
               Type: string
-            - Name: master_out_n_risultato_norm
+            - Name: master_out_nRisultatoNorm
               Type: int
-            - Name: master_out_n_errore_norm
+            - Name: master_out_nErroreNorm
               Type: int
-            - Name: master_out_n_errore_norm_description
+            - Name: master_out_nErroreNormDescription
               Type: string
-            - Name: master_out_sigla_prov
+            - Name: master_out_sSiglaProv
               Type: string
-            - Name: master_out_postalizzabile
+            - Name: master_out_fPostalizzabile
               Type: int
-            - Name: master_out_stato_spedizione
+            - Name: master_out_sStatoSpedizione
               Type: string
-            - Name: master_out_comune_spedizione
+            - Name: master_out_sComuneSpedizione
               Type: string
-            - Name: master_out_frazione_spedizione
+            - Name: master_out_sFrazioneSpedizione
               Type: string
-            - Name: master_out_civico_altro
+            - Name: master_out_sCivicoAltro
               Type: string
-            - Name: master_out_cap
+            - Name: master_out_sCap
               Type: string
-            - Name: master_out_presso
+            - Name: master_out_sPresso
               Type: string
-            - Name: master_out_via_completa_spedizione
+            - Name: master_out_sViaCompletaSpedizione
               Type: string
-            - Name: id_codice_cliente
+            - Name: idCodiceCliente
               Type: string
             - Name: provincia
               Type: string
@@ -447,53 +441,55 @@ Resources:
               Type: string
             - Name: localita
               Type: string
-            - Name: localita_aggiuntiva
+            - Name: localitaAggiuntiva
               Type: string
             - Name: indirizzo
               Type: string
-            - Name: indirizzo_aggiuntivo
+            - Name: indirizzoAggiuntivo
               Type: string
             - Name: stato
               Type: string
-            - Name: n_risultato_norm
+            - Name: id
+              Type: string
+            - Name: nRisultatoNorm
               Type: int
-            - Name: f_postalizzabile
+            - Name: fPostalizzabile
               Type: int
-            - Name: n_errore_norm
+            - Name: nErroreNorm
               Type: int
-            - Name: n_errore_norm_description
+            - Name: nErroreNormDescription
               Type: string
-            - Name: sigla_prov
+            - Name: sSiglaProv
               Type: string
-            - Name: stato_uff
+            - Name: sStatoUff
               Type: string
-            - Name: stato_abb
+            - Name: sStatoAbb
               Type: string
-            - Name: stato_spedizione
+            - Name: sStatoSpedizione
               Type: string
-            - Name: comune_uff
+            - Name: sComuneUff
               Type: string
-            - Name: comune_abb
+            - Name: sComuneAbb
               Type: string
-            - Name: comune_spedizione
+            - Name: sComuneSpedizione
               Type: string
-            - Name: frazione_uff
+            - Name: sFrazioneUff
               Type: string
-            - Name: frazione_abb
+            - Name: sFrazioneAbb
               Type: string
-            - Name: frazione_spedizione
+            - Name: sFrazioneSpedizione
               Type: string
-            - Name: civico_altro
+            - Name: sCivicoAltro
               Type: string
-            - Name: cap_out
+            - Name: sCap
               Type: string
-            - Name: presso
+            - Name: sPresso
               Type: string
-            - Name: via_completa_uff
+            - Name: sViaCompletaUff
               Type: string
-            - Name: via_completa_abb
+            - Name: sViaCompletaAbb
               Type: string
-            - Name: via_completa_spedizione
+            - Name: sViaCompletaSpedizione
               Type: string
 
 Outputs:
