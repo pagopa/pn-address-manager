@@ -1,6 +1,8 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
+import it.pagopa.pn.address.manager.constant.DeduplicatesError;
+import it.pagopa.pn.address.manager.constant.DeduplicatesResultDetails;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
@@ -13,6 +15,7 @@ import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_SYNC;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_CHECKING_APIKEY;
@@ -52,6 +55,10 @@ public class DeduplicatesAddressService {
     }
 
     private Mono<DeduplicatesResponse> callPostel(DeduplicatesRequest request) {
+        if (areRequiredFieldsMissing(request)) {
+            log.info("{} Required fields are missing for request: [{}]", ADDRESS_NORMALIZER_SYNC, request.getCorrelationId());
+            return Mono.just(getDeduplicatesResponse(request));
+        }
         return Mono.just(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
                 .flatMap(deduplicaRequest -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaRequestEvent(deduplicaRequest, request.getCorrelationId()))
                         .thenReturn(deduplicaRequest))
@@ -62,6 +69,20 @@ public class DeduplicatesAddressService {
                 .map(addressUtils::verifyRequiredFields)
                 .flatMap(capAndCountryService::verifyCapAndCountry)
                 .doOnError(error -> log.error("Error during deduplica call for request: [{}]", request.getCorrelationId(), error));
+    }
+
+    private static boolean areRequiredFieldsMissing(DeduplicatesRequest request) {
+        return !StringUtils.hasText(request.getTargetAddress().getCity()) ||
+                !StringUtils.hasText(request.getTargetAddress().getAddressRow());
+    }
+
+    private static DeduplicatesResponse getDeduplicatesResponse(DeduplicatesRequest request) {
+        DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
+        deduplicatesResponse.setCorrelationId(request.getCorrelationId());
+        deduplicatesResponse.setEqualityResult(false);
+        deduplicatesResponse.setError(DeduplicatesError.PNADDR001.name());
+        deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD01.name());
+        return deduplicatesResponse;
     }
 
     private DeduplicatesResponse createDeduplicatesResponseByDeduplicatesRequest(DeduplicatesRequest request) {
