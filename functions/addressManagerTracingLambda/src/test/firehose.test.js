@@ -1,7 +1,7 @@
 // Setup env vars before requiring the module
 process.env.AWS_REGION = "eu-south-1";
-process.env.DELIVERY_STREAM_NAME = "test-delivery-stream";
-process.env.BATCH_SIZE = "500";
+process.env.FIREHOSE_DELIVERY_STREAM_NAME = "test-delivery-stream";
+process.env.FIREHOSE_BATCH_SIZE = "500";
 
 const { putRecordBatch } = require('../app/lib/firehose.js');
 const { FirehoseClient, PutRecordBatchCommand } = require("@aws-sdk/client-firehose");
@@ -33,7 +33,7 @@ function buildPartialFailureResponse(count, failedIndexes) {
 describe("putRecordBatch", () => {
   beforeEach(() => {
     firehoseMock.reset();
-    process.env.BATCH_SIZE = "500";
+    process.env.FIREHOSE_BATCH_SIZE = "500";
   });
 
   it("returns early when itemsList is empty", async () => {
@@ -50,7 +50,7 @@ describe("putRecordBatch", () => {
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
-  it("sends a single batch when items fit within BATCH_SIZE", async () => {
+  it("sends a single batch when items fit within FIREHOSE_BATCH_SIZE", async () => {
     const items = [{ id: 1 }, { id: 2 }, { id: 3 }];
 
     firehoseMock.on(PutRecordBatchCommand)
@@ -62,8 +62,8 @@ describe("putRecordBatch", () => {
     assert.strictEqual(results.length, 1);
   });
 
-  it("sends multiple batches when items exceed BATCH_SIZE", async () => {
-    process.env.BATCH_SIZE = "2";
+  it("sends multiple batches when items exceed FIREHOSE_BATCH_SIZE", async () => {
+    process.env.FIREHOSE_BATCH_SIZE = "2";
 
     const items = [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }];
 
