@@ -58,25 +58,25 @@ Parameters:
   EcsLogGroup:
     Type: String
 
-  PostelTracingFirehoseLogGroupName:
+  AddressManagerTracingFirehoseLogGroupName:
     Type: String
     Description: CloudWatch LogGroup name used by Firehose tracing delivery stream
 
-  PostelTracingTableBucketArn:
+  AddressManagerTracingTableBucketArn:
     Type: String
-    Description: ARN of S3 Tables bucket for Postel tracing
+    Description: ARN of S3 Tables bucket for Address Manager tracing
 
-  PostelTracingTableBucketName:
+  AddressManagerTracingTableBucketName:
     Type: String
-    Description: Name of S3 Tables bucket for Postel tracing
+    Description: Name of S3 Tables bucket for Address Manager tracing
 
-  PostelTracingTableNamespace:
+  AddressManagerTracingTableNamespace:
     Type: String
-    Description: Namespace for Postel tracing table
+    Description: Namespace for Address Manager tracing table
 
-  PostelTracingTableName:
+  AddressManagerTracingTableName:
     Type: String
-    Description: Name of Postel tracing table
+    Description: Name of Address Manager tracing table
 
   # Logging parameters
   WireTapLogActivation:
@@ -617,19 +617,19 @@ Resources:
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
-  # CloudWatch dashboard
-  AddressManagerPostelTracingFirehose:
+  # Firehose to Iceberg table for Address Manager tracing
+  AddressManagerTracingFirehose:
     Type: AWS::CloudFormation::Stack
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/firehose-to-iceberg-table.yaml"
       Parameters:
         ProjectName: !Ref ProjectName
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-        TableBucketARN: !Ref PostelTracingTableBucketArn
-        TableBucketName: !Ref PostelTracingTableBucketName
-        DestinationNamespace: !Ref PostelTracingTableNamespace
-        DestinationTableName: !Ref PostelTracingTableName
-        ExistingFirehoseLogGroupName: !Ref PostelTracingFirehoseLogGroupName
+        TableBucketARN: !Ref AddressManagerTracingTableBucketArn
+        TableBucketName: !Ref AddressManagerTracingTableBucketName
+        DestinationNamespace: !Ref AddressManagerTracingTableNamespace
+        DestinationTableName: !Ref AddressManagerTracingTableName
+        ExistingFirehoseLogGroupName: !Ref AddressManagerTracingFirehoseLogGroupName
 
   # CloudWatch dashboard
   AddressManagerMicroserviceCloudWatchDashboard:
@@ -642,7 +642,7 @@ Resources:
           - ','
           - - !GetAtt AddressManagerMicroservice.Outputs.FatalLogsMetricAlarmArn
             - !GetAtt DLQHasMessagesAlarm.Arn
-            - !GetAtt AddressManagerPostelTracingFirehose.Outputs.DeliveryStreamErrorAlarmArn
+            - !GetAtt AddressManagerTracingFirehose.Outputs.DeliveryStreamErrorAlarmArn
         LogGroupsNames: !Join
           - ','
           - - !Ref EcsLogGroup

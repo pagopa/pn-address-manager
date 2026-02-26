@@ -282,47 +282,42 @@ Resources:
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/lambda'
 
-  PostelTracingFirehoseLogGroup:
+  AddressManagerTracingFirehoseLogGroup:
     Type: AWS::Logs::LogGroup
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      LogGroupName: !Sub '/aws/kinesisfirehose/${ProjectName}-postel-tracing'
+      LogGroupName: !Sub '/aws/kinesisfirehose/${ProjectName}-address-manager-tracing-delivery-errors'
       RetentionInDays: !Ref LogRetention
 
-  PostelTracingTableBucket:
+  AddressManagerTracingTableBucket:
     Type: AWS::S3Tables::TableBucket
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableBucketName: !Sub '${ProjectName}-postel-tracing'
+      TableBucketName: !Sub '${ProjectName}-address-manager-tracing'
       UnreferencedFileRemoval:
         Status: Enabled
         NoncurrentDays: 7
 
-  PostelTracingNamespace:
+  AddressManagerTracingNamespace:
     Type: AWS::S3Tables::Namespace
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableBucketARN: !GetAtt PostelTracingTableBucket.TableBucketARN
-      Namespace: postel_tracing
+      TableBucketARN: !GetAtt AddressManagerTracingTableBucket.TableBucketARN
+      Namespace: address_manager_tracing
 
-  PostelTracingTable:
+  AddressManagerTracingTable:
     Type: AWS::S3Tables::Table
-    Metadata:
-      cfn-lint:
-        config:
-          ignore_checks:
-            - E3006
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     DependsOn:
-      - PostelTracingNamespace
+      - AddressManagerTracingNamespace
     Properties:
-      TableBucketARN: !GetAtt PostelTracingTableBucket.TableBucketARN
-      Namespace: postel_tracing
-      TableName: postel_tracing_events
+      TableBucketARN: !GetAtt AddressManagerTracingTableBucket.TableBucketARN
+      Namespace: address_manager_tracing
+      TableName: address_manager_tracing_events
       OpenTableFormat: ICEBERG
       IcebergMetadata:
         IcebergSchema:
@@ -518,16 +513,16 @@ Outputs:
     Value: !Ref BatchRequestTable
   EcsLogGroup:
     Value: !GetAtt PnAddressManagerLogGroup.Outputs.LogGroupName
-  PostelTracingFirehoseLogGroupName:
-    Value: !Ref PostelTracingFirehoseLogGroup
-  PostelTracingTableBucketArn:
-    Value: !GetAtt PostelTracingTableBucket.TableBucketARN
-  PostelTracingTableBucketName:
-    Value: !Ref PostelTracingTableBucket
-  PostelTracingTableNamespace:
-    Value: postel_tracing
-  PostelTracingTableName:
-    Value: postel_tracing_events
+  AddressManagerTracingFirehoseLogGroupName:
+    Value: !Ref AddressManagerTracingFirehoseLogGroup
+  AddressManagerTracingTableBucketArn:
+    Value: !GetAtt AddressManagerTracingTableBucket.TableBucketARN
+  AddressManagerTracingTableBucketName:
+    Value: !Ref AddressManagerTracingTableBucket
+  AddressManagerTracingTableNamespace:
+    Value: address_manager_tracing
+  AddressManagerTracingTableName:
+    Value: address_manager_tracing_events
   AddressManagerEventBusArn:
     Value: !GetAtt AddressManagerEventBus.Arn
   AddressManagerEventBusName:
