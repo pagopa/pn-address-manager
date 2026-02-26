@@ -26,6 +26,7 @@ public class SqsSender {
 
         GenericEventHeader header = GenericEventHeader.builder()
                 .eventId(correlationId)
+                .eventType(eventType.name())
                 .publisher(PUBLISHER)
                 .createdAt(Instant.now())
                 .build();
