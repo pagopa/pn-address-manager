@@ -73,6 +73,7 @@ public class AddressConverter {
                     case DED001 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD01.name());
                     case DED002 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD02.name());
                     case DED003 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD03.name());
+                    case DED004 -> deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD04.name());
                     default -> deduplicatesResponse.setResultDetails(null);
                 }
             }
