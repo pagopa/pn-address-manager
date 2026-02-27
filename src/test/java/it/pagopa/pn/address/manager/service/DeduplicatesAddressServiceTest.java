@@ -582,7 +582,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(response.getCorrelationId()).isEqualTo(CORR_ID);
                     assertThat(response.getEqualityResult()).isFalse();
                     assertThat(response.getError()).isEqualTo("PNADDR001");
-                    assertThat(response.getResultDetails()).isEqualTo("RD01");
+                    assertThat(response.getResultDetails()).isEqualTo("RD04");
                 })
                 .verifyComplete();
 
@@ -604,7 +604,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(response.getCorrelationId()).isEqualTo(CORR_ID);
                     assertThat(response.getEqualityResult()).isFalse();
                     assertThat(response.getError()).isEqualTo("PNADDR001");
-                    assertThat(response.getResultDetails()).isEqualTo("RD01");
+                    assertThat(response.getResultDetails()).isEqualTo("RD04");
                 })
                 .verifyComplete();
 
@@ -626,7 +626,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(response.getCorrelationId()).isEqualTo(CORR_ID);
                     assertThat(response.getEqualityResult()).isFalse();
                     assertThat(response.getError()).isEqualTo("PNADDR001");
-                    assertThat(response.getResultDetails()).isEqualTo("RD01");
+                    assertThat(response.getResultDetails()).isEqualTo("RD04");
                 })
                 .verifyComplete();
 

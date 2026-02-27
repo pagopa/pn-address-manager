@@ -81,7 +81,7 @@ public class DeduplicatesAddressService {
         deduplicatesResponse.setCorrelationId(request.getCorrelationId());
         deduplicatesResponse.setEqualityResult(false);
         deduplicatesResponse.setError(DeduplicatesError.PNADDR001.name());
-        deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD01.name());
+        deduplicatesResponse.setResultDetails(DeduplicatesResultDetails.RD04.name());
         return deduplicatesResponse;
     }
 
