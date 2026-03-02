@@ -10,9 +10,30 @@ const EVENT_TYPES = {
 };
 
 exports.handleEvent = async (event) => {
+    console.log(JSON.stringify(event));
+    const records = event.Records ?? [event];
+    const results = [];
+
+    for (const record of records) {
+        let parsedEvent;
+        try {
+            parsedEvent = record.body ? JSON.parse(record.body) : record;
+        } catch (err) {
+            console.error("Failed to parse record body:", err);
+            throw new Error("Failed to parse record body");
+        }
+
+        const result = await processSingleEvent(parsedEvent);
+        results.push(result);
+    }
+    return results;
+};
+
+
+const processSingleEvent = async (event) => {
     if (!event?.eventType) {
         console.error("EventType is required");
-        return { success: false, error: "EventType is required" };
+        throw new Error("EventType is required");
     }
 
     let { eventType } = event;
@@ -22,7 +43,7 @@ exports.handleEvent = async (event) => {
     }
     if (!data) {
         console.error("Missing data in event body");
-        return { success: false, error: "Missing data in event body" };
+        throw new Error("Missing data in event body");
     }
 
     let csvPayload;
@@ -59,7 +80,7 @@ exports.handleEvent = async (event) => {
 
         if (!handler) {
             console.warn("Unknown eventType:", eventType);
-            return { success: false, error: `Unknown eventType: ${eventType}` };
+            throw new Error("Unknown eventType");
         }
 
         const itemsList = await handler();
@@ -75,7 +96,7 @@ exports.handleEvent = async (event) => {
         return { success: true };
 
     } catch (error) {
-        console.error("Error processing event:", error);
-        return { success: false, error: error.message };
+        console.error("Error processing event:", event, error);
+        throw new Error("Error processing event");
     }
 };

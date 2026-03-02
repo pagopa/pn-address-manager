@@ -21,6 +21,13 @@ describe("checkNormalizerItem", () => {
     assert.strictEqual(utils.checkNormalizerItem(event), null);
   });
 
+  it("should skip processing if checkNormalizerItem returns null", () => {
+    const event = {
+      normalizer: { batchId, oldFileKey: null, oldOutputFileKey: null, newFileKey: null, newOutputFileKey: null }
+    };
+    assert.strictEqual(utils.checkNormalizerItem(event), null);
+  });
+
   it("should return null when no changes are detected", () => {
     const event = {
       normalizer: {
@@ -37,7 +44,8 @@ describe("checkNormalizerItem", () => {
       normalizer: {
         batchId,
         oldFileKey: "old.json", oldOutputFileKey: "out.json",
-        newFileKey: "new.json", newOutputFileKey: "out.json"
+        newFileKey: "new.json", newOutputFileKey: "out.json",
+        eventName: "INSERT"
       }
     };
     const result = utils.checkNormalizerItem(event);
