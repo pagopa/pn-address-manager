@@ -1,47 +1,93 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressIn;
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.ConfigIn;
 import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
 import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
-import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.api.DeduplicaApi;
+import io.netty.handler.timeout.ReadTimeoutException;
+import it.pagopa.pn.address.manager.MockServeConfig;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
-import org.springframework.web.reactive.function.client.ExchangeFunction;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.reactive.function.client.WebClientRequestException;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-class DeduplicaClientTest {
+@Slf4j
+class DeduplicaClientTest extends MockServeConfig {
 
-    @MockitoBean
-    DeduplicaApi defaultApi;
+
+    @Autowired
+    private DeduplicaClient deduplicaClient;
+
+
 
     @Test
-    void testDeduplica() {
-        when(defaultApi.deduplica(anyString(),anyString(),any())).thenReturn(Mono.just(new DeduplicaResponse()));
-        PnAddressManagerConfig pnAddressManagerConfig = new PnAddressManagerConfig();
-        PnAddressManagerConfig.Normalizer normalizer = new PnAddressManagerConfig.Normalizer();
-        pnAddressManagerConfig.setPostelCxId("postelCxId");
-        pnAddressManagerConfig.setPagoPaCxId("pagoPaCxId");
-        pnAddressManagerConfig.setNormalizer(normalizer);
-        pnAddressManagerConfig.getNormalizer().setPostelAuthKey("postelAuthKey");
-        pnAddressManagerConfig.setNormalizer(normalizer);
-        pnAddressManagerConfig.setDeduplicaBasePath("http://localhost:8080");
-        pnAddressManagerConfig.setForeignValidationMode(ForeignValidationMode.PASSTHROUGH);
-        ExchangeFilterFunction exchangeFilterFunction = mock(ExchangeFilterFunction.class);
-        when(exchangeFilterFunction.apply(Mockito.<ExchangeFunction>any())).thenReturn(mock(ExchangeFunction.class));
-        ExchangeFilterFunction exchangeFilterFunction2 = mock(ExchangeFilterFunction.class);
-        when(exchangeFilterFunction2.andThen(Mockito.<ExchangeFilterFunction>any())).thenReturn(exchangeFilterFunction);
-        DeduplicaClient postelClient = new DeduplicaClient(defaultApi, pnAddressManagerConfig);
-        postelClient.deduplica(new DeduplicaRequest());
-        verify(defaultApi, times(1)).deduplica(anyString(),anyString(),any());
+    void shouldReturn200Ok_withValidDeduplicaResponse() {
+        // --- ARRANGE ---
+        AddressIn masterIn = new AddressIn()
+                .localita("Napoli")
+                .indirizzo("Via Napoli 12")
+                .provincia("NA")
+                .cap("80124");
+        AddressIn slaveIn = new AddressIn().localita("Napoli")
+                .indirizzo("Via Napoli 12")
+                .provincia("NA")
+                .cap("80124");
+        DeduplicaRequest request = new DeduplicaRequest();
+        request.setMasterIn(masterIn);
+        request.setSlaveIn(slaveIn);
+        request.setConfigIn(new ConfigIn().configurazioneDeduplica("").configurazioneNorm(""));
+
+        // --- ACT ---
+        Mono<DeduplicaResponse> responseMono = deduplicaClient.deduplica(request);
+
+        // --- ASSERT ---
+        StepVerifier.create(responseMono)
+                .assertNext(response -> {
+                    assertNotNull(response, "La risposta non dovrebbe essere null");
+                    assertTrue(response.getRisultatoDedu(), "Il risultato deduplica dovrebbe essere true");
+
+                    // Verifica il masterOut
+                    assertNotNull(response.getMasterOut(), "masterOut non dovrebbe essere null");
+                    assertEquals("", response.getMasterOut().getId());
+                    assertEquals("80124", response.getMasterOut().getsCap());
+                    assertEquals("NA", response.getMasterOut().getsSiglaProv());
+                    assertEquals("NA", response.getMasterOut().getsSiglaProv());
+                    assertEquals("VIA NAPOLI 12", response.getMasterOut().getsViaCompletaSpedizione());
+
+                    // Verifica lo slaveOut
+                    assertNotNull(response.getSlaveOut(), "slaveOut non dovrebbe essere null");
+                    assertEquals("", response.getSlaveOut().getId());
+                    assertEquals("80124", response.getSlaveOut().getsCap());
+                    assertEquals("NA", response.getSlaveOut().getsSiglaProv());
+                    assertEquals("VIA NAPOLI 12", response.getSlaveOut().getsViaCompletaSpedizione());
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    void shouldThrowReadTimeoutException_whenServerTakesTooLong() {
+
+        // --- ARRANGE ---
+        AddressIn masterIn = new AddressIn().localita("Roma").indirizzo("Via Roma 1");
+        AddressIn slaveIn = new AddressIn().localita("Milano").indirizzo("Via Milano 1");
+        DeduplicaRequest request = new DeduplicaRequest();
+        request.setMasterIn(masterIn);
+        request.setSlaveIn(slaveIn);
+
+        // --- ACT ---
+        Mono<DeduplicaResponse> responseMono = deduplicaClient.deduplica(request);
+
+        // --- ASSERT ---
+        StepVerifier.create(responseMono)
+                .expectErrorMatches(throwable -> {
+                    // Verifica che l'eccezione lanciata sia dovuta al timeout
+                    return throwable instanceof WebClientRequestException &&
+                            throwable.getCause() instanceof ReadTimeoutException;
+                })
+                .verify();
     }
 }
-

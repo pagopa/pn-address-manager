@@ -31,7 +31,7 @@ public class NormalizzatoreClient {
 		activatePostelRequest.setUri(normalizzatoreBatch.getFileKey());
 		activatePostelRequest.setSha256(normalizzatoreBatch.getSha256());
 		return postelApi.normalizzazione(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), activatePostelRequest).
-				doOnError(throwable -> log.logInvokationResultDownstreamFailed(POSTEL, throwable.getMessage()));
+				doOnError(throwable -> log.logInvokationResultDownstreamFailed(POSTEL, throwable.getMessage(), throwable));
 
 	}
 }

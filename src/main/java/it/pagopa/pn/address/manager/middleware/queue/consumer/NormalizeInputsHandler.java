@@ -31,7 +31,7 @@ public class NormalizeInputsHandler extends AbstractConsumerMessage {
         var mono = normalizeAddressService.handleRequest(message.getPayload())
                 .doOnSuccess(unused -> log.logEndingProcess(HANDLER_REQUEST))
                 .doOnError(throwable ->  {
-                    log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage());
+                    log.logEndingProcess(HANDLER_REQUEST, false, throwable.getMessage(), throwable);
                     HandleEventUtils.handleException(message.getHeaders(), throwable);
                 });
 
