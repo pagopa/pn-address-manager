@@ -1,0 +1,48 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/send-normalizzatore-ingress/v1/deduplica",
+      "headers": {
+        "pn-address-manager-cx-id": [
+          "POSTEL"
+        ],
+        "x-api-key": [
+          "test"
+        ]
+      },
+      "body": {
+        "type": "JSON",
+        "json": "{\"configIn\":{\"configurazioneDeduplica\":\"\",\"configurazioneNorm\":\"\"},\"masterIn\":{\"cap\":\"80124\",\"indirizzo\":\"Via Napoli 12\",\"localita\":\"Napoli\",\"provincia\":\"NA\"},\"slaveIn\":{\"cap\":\"80124\",\"indirizzo\":\"Via Napoli 12\",\"localita\":\"Napoli\",\"provincia\":\"NA\"}}",
+        "matchType": "ONLY_MATCHING_FIELDS"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "body": "{\n  \"masterOut\": {\n    \"fPostalizzabile\": \"1\",\n    \"id\": \"\",\n    \"nErroreNorm\": 0,\n    \"nRisultatoNorm\": 1,\n    \"sCap\": \"80124\",\n    \"sCivicoAltro\": \"\",\n    \"sComuneAbb\": \"NAPOLI\",\n    \"sComuneSpedizione\": \"NAPOLI\",\n    \"sComuneUff\": \"NAPOLI\",\n    \"sFrazioneAbb\": \"\",\n    \"sFrazioneSpedizione\": \"\",\n    \"sFrazioneUff\": \"\",\n    \"sPresso\": \"\",\n    \"sSiglaProv\": \"NA\",\n    \"sStatoAbb\": \"ITALIA\",\n    \"sStatoSpedizione\": \"ITALIA\",\n    \"sStatoUff\": \"ITALIA\",\n    \"sViaCompletaAbb\": \"VIA NAPOLI 12\",\n    \"sViaCompletaSpedizione\": \"VIA NAPOLI 12\",\n    \"sViaCompletaUff\": \"VIA NAPOLI 12\"\n  },\n  \"risultatoDedu\": true,\n  \"slaveOut\": {\n    \"fPostalizzabile\": \"1\",\n    \"id\": \"\",\n    \"nErroreNorm\": 0,\n    \"nRisultatoNorm\": 1,\n    \"sCap\": \"80124\",\n    \"sCivicoAltro\": \"\",\n    \"sComuneAbb\": \"NAPOLI\",\n    \"sComuneSpedizione\": \"NAPOLI\",\n    \"sComuneUff\": \"NAPOLI\",\n    \"sFrazioneAbb\": \"\",\n    \"sFrazioneSpedizione\": \"\",\n    \"sFrazioneUff\": \"\",\n    \"sPresso\": \"\",\n    \"sSiglaProv\": \"NA\",\n    \"sStatoAbb\": \"ITALIA\",\n    \"sStatoSpedizione\": \"ITALIA\",\n    \"sStatoUff\": \"ITALIA\",\n    \"sViaCompletaAbb\": \"VIA NAPOLI 12\",\n    \"sViaCompletaSpedizione\": \"VIA NAPOLI 12\",\n    \"sViaCompletaUff\": \"VIA NAPOLI 12\"\n  }\n}"
+    }
+  },
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/send-normalizzatore-ingress/v1/deduplica",
+      "body": {
+        "type": "JSON",
+        "json": "{\"masterIn\":{\"indirizzo\":\"Via Roma 1\",\"localita\":\"Roma\"},\"slaveIn\":{\"indirizzo\":\"Via Milano 1\",\"localita\":\"Milano\"}}",
+        "matchType": "ONLY_MATCHING_FIELDS"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "delay": {
+        "timeUnit": "SECONDS",
+        "value": 10
+      }
+    }
+  }
+]

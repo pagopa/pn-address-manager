@@ -56,7 +56,7 @@ public class DeduplicatesAddressService {
 
     private Mono<DeduplicatesResponse> callPostel(DeduplicatesRequest request) {
         if (areRequiredFieldsMissing(request)) {
-            log.info("{} Required fields are missing for request: [{}]", ADDRESS_NORMALIZER_SYNC, request.getCorrelationId());
+            log.warn("{} Required fields are missing for request: [{}]", ADDRESS_NORMALIZER_SYNC, request.getCorrelationId());
             return Mono.just(getDeduplicatesResponse(request));
         }
         return Mono.just(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))

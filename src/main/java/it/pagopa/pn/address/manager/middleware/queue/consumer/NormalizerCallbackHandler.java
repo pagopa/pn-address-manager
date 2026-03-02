@@ -31,7 +31,7 @@ public class NormalizerCallbackHandler extends AbstractConsumerMessage  {
         var mono = normalizeAddressService.handlePostelCallback(message.getPayload())
                 .doOnSuccess(unused -> log.logEndingProcess(HANDLER_POSTEL_CALLBACK))
                 .doOnError(throwable ->  {
-                            log.logEndingProcess(HANDLER_POSTEL_CALLBACK, false, throwable.getMessage());
+                            log.logEndingProcess(HANDLER_POSTEL_CALLBACK, false, throwable.getMessage(), throwable);
                             HandleEventUtils.handleException(message.getHeaders(), throwable);
                         });
 
