@@ -80,30 +80,16 @@ function buildDeduplicaResponseItem(res) {
 }
 
 function checkNormalizerItem({normalizer}) {
-    const { batchId, oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey } = normalizer;
-
-    if ([oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey].every(v => v === null)) {
-      console.log(`[${batchId}] Fase di inizializzazione del batch.`);
-      return null;
-    }
-
-    const inputChanged = oldFileKey !== newFileKey;
+    const { eventName, batchId, oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey } = normalizer;
     const outputChanged = oldOutputFileKey !== newOutputFileKey;
-
-    if (!inputChanged && !outputChanged) {
-      console.log(`[${batchId}] No changes detected`);
-      return null;
+    if (eventName === "INSERT" && newFileKey) {
+        console.log(`[${batchId}] Input changed → "${newFileKey}"`);
+        return { type: 'NORMALIZER_REQUEST', fileKey: newFileKey };
+    }else if(eventName === "MODIFY" && outputChanged && newOutputFileKey){
+        console.log(`[${batchId}] Output changed → "${newOutputFileKey}"`);
+        return { type: 'NORMALIZER_RESPONSE', fileKey: newOutputFileKey };
     }
-
-    if (inputChanged && newFileKey) {
-      console.log(`[${batchId}] Input changed → "${newFileKey}"`);
-      return { type: 'NORMALIZER_REQUEST', fileKey: newFileKey };
-    }
-
-    if (outputChanged && newOutputFileKey) {
-      console.log(`[${batchId}] Output changed → "${newOutputFileKey}"`);
-      return { type: 'NORMALIZER_RESPONSE', fileKey: newOutputFileKey };
-    }
+    console.log(`[${batchId}] No changes detected`);
     return null;
 }
 

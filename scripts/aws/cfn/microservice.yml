@@ -860,32 +860,13 @@ Resources:
       SourceParameters:
         DynamoDBStreamParameters:
           StartingPosition: LATEST
-        FilterCriteria:
-          Filters:
-            - Pattern: >
-                {
-                  "eventName": ["MODIFY"],
-                  "dynamodb": {
-                    "$or": [
-                      {
-                        "NewImage": {
-                          "fileKey": { "S": [{ "exists": true }] }
-                        }
-                      },
-                      {
-                        "NewImage": {
-                          "outputFileKey": { "S": [{ "exists": true }] }
-                        }
-                      }
-                    ]
-                  }
-                }
       Target: !Ref PnAddressManagerTracingInputQueueARN
       TargetParameters:
         InputTemplate: >
           {
             "eventType": "NORMALIZER",
             "normalizer": {
+              "eventName": <$.eventName>,
               "batchId": <$.dynamodb.NewImage.batchId.S>,
               "oldFileKey": <$.dynamodb.OldImage.fileKey.S>,
               "oldOutputFileKey": <$.dynamodb.OldImage.outputFileKey.S>,
