@@ -10,7 +10,6 @@ const EVENT_TYPES = {
 };
 
 exports.handleEvent = async (event) => {
-    console.log(JSON.stringify(event));
     const records = event.Records ?? [event];
     const results = [];
 

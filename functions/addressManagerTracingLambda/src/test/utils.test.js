@@ -39,6 +39,20 @@ describe("checkNormalizerItem", () => {
     assert.strictEqual(utils.checkNormalizerItem(event), null);
   });
 
+  it("should return null for INSERT event with null newFileKey (init-phase)", () => {
+      const event = {
+          normalizer: {
+              batchId,
+              eventName: "INSERT",
+              oldFileKey: null,
+              oldOutputFileKey: null,
+              newFileKey: null,
+              newOutputFileKey: null
+          }
+      };
+      assert.strictEqual(utils.checkNormalizerItem(event), null);
+  });
+
   it("should return NORMALIZER_REQUEST when input file changes", () => {
     const event = {
       normalizer: {

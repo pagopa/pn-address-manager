@@ -82,7 +82,7 @@ function buildDeduplicaResponseItem(res) {
 function checkNormalizerItem({normalizer}) {
     const { eventName, batchId, oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey } = normalizer;
     const outputChanged = oldOutputFileKey !== newOutputFileKey;
-    if (eventName === "INSERT"){
+    if (eventName === "INSERT" && newFileKey) {
         console.log(`[${batchId}] Input changed → "${newFileKey}"`);
         return { type: 'NORMALIZER_REQUEST', fileKey: newFileKey };
     }else if(eventName === "MODIFY" && outputChanged && newOutputFileKey){
