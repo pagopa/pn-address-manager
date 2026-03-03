@@ -100,7 +100,7 @@ describe("processNormalizerRequest", () => {
     // campi estratti dallo split di idCodiceCliente col[0]
     it("correlationId",    () => assert.strictEqual(record.correlationId,    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1'));
     it("requestCreatedAt", () => assert.strictEqual(record.requestCreatedAt, '2024-03-11T15:08:14.075913927'));
-    it("addressIdx",       () => assert.strictEqual(record.addressIdx,       0));
+    it("addressIdx",       () => assert.strictEqual(record.addressIdx,       "0"));
 
     // metadati da data
     it("batchId",          () => assert.strictEqual(record.batchId,          REQUEST_NORMALIZED_DATA.batchId));
@@ -157,8 +157,8 @@ describe("processNormalizerResponse", () => {
 
     // campi estratti dallo split di id col[0]
     it("correlationId",     () => assert.strictEqual(record.correlationId,    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1'));
-    it("responseCreatedAt", () => assert.strictEqual(record.responseCreatedAt, '2026-01-22T11:51:17.488420128'));
-    it("addressIdx",        () => assert.strictEqual(record.addressIdx,        0));
+    it("requestCreatedAt", () => assert.strictEqual(record.requestCreatedAt, '2026-01-22T11:51:17.488420128'));
+    it("addressIdx",        () => assert.strictEqual(record.addressIdx,        "0"));
 
     // metadati da data
     it("batchId",           () => assert.strictEqual(record.batchId,           RESPONSE_NORMALIZED_DATA.batchId));
