@@ -1,6 +1,6 @@
 const { FirehoseClient, PutRecordBatchCommand } = require("@aws-sdk/client-firehose");
 const firehoseClient = new FirehoseClient({
-    region: process.env.AWS_REGION
+    region: process.env.REGION
 });
 const MAX_RETRIES = 3;
 const DEFAULT_BATCH_SIZE = 500;
@@ -25,6 +25,7 @@ async function putRecordBatch(itemsList) {
         results.push(resp);
     }
 
+    console.log("Insert records: ", records.length);
     return results;
 }
 

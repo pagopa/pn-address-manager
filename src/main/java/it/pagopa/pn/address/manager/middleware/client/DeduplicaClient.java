@@ -29,7 +29,7 @@ public class DeduplicaClient {
     public Mono<DeduplicaResponse> deduplica(DeduplicaRequest inputDeduplica) {
         log.logInvokingExternalDownstreamService(POSTEL, PROCESS_SERVICE_DEDUPLICA);
         return postelApi.deduplica(pnAddressManagerConfig.getPostelCxId(), pnAddressManagerConfig.getNormalizer().getPostelAuthKey(), inputDeduplica)
-                .doOnError(throwable -> log.logInvokationResultDownstreamFailed(POSTEL, throwable.getMessage()))
+                .doOnError(throwable -> log.logInvokationResultDownstreamFailed(POSTEL, throwable.getMessage(), throwable))
                 .onErrorMap(throwable -> {
                     if (throwable instanceof WebClientResponseException ex) {
                         throw new PnInternalAddressManagerException(ERROR_MESSAGE_POSTEL_CLIENT, ERROR_CODE_POSTEL_CLIENT

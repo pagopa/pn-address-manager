@@ -143,51 +143,61 @@ describe("handleEvent", () => {
   });
 
   it("returns error when event is null", async () => {
-    const result = await handleEvent(null);
-
-    assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "EventType is required");
-    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
+      await assert.rejects(
+          async () => await handleEvent(null),
+          (err) => {
+              assert.ok(err instanceof Error);
+              return true;
+          }
+      );
+      assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
   it("returns error when event has no eventType", async () => {
-    const result = await handleEvent({ data: deduplicaRequestItem.deduplicateRequest });
-
-    assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "EventType is required");
-    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
+      await assert.rejects(
+          async () => await handleEvent({ data: deduplicaRequestItem.deduplicateRequest }),
+          (err) => {
+              assert.strictEqual(err.message, "EventType is required");
+              return true;
+          }
+      );
+      assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
   it("returns error when event has no data", async () => {
-    const result = await handleEvent({ eventType: "DEDUPLICATE_REQUEST" });
-
-    assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "Missing data in event body");
-    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
+      await assert.rejects(
+          async () => await handleEvent({ eventType: "DEDUPLICATE_REQUEST" }),
+          (err) => {
+              assert.strictEqual(err.message, "Missing data in event body");
+              return true;
+          }
+      );
+      assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
   it("returns error for unknown eventType", async () => {
-    const result = await handleEvent({
-      eventType: "UNKNOWN_EVENT",
-      data: deduplicaRequestItem.deduplicateRequest,
-    });
-
-    assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "Unknown eventType: UNKNOWN_EVENT");
-    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
+      await assert.rejects(
+          async () => await handleEvent({
+              eventType: "UNKNOWN_EVENT",
+              data: deduplicaRequestItem.deduplicateRequest,
+          }),
+          (err) => {
+              assert.strictEqual(err.message, "Error processing event");
+              return true;
+          }
+      );
+      assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
   // DEDUPLICATE_REQUEST
 
   it("handles DEDUPLICATE_REQUEST and returns success", async () => {
     firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
-
     const result = await handleEvent({
       eventType: deduplicaRequestItem.eventType,
       data: deduplicaRequestItem.deduplicateRequest,
     });
-
-    assert.strictEqual(result.success, true);
+    assert.deepStrictEqual(result, [{ success: true }]);
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 1);
   });
 
@@ -233,7 +243,7 @@ describe("handleEvent", () => {
       data: deduplicaResponseItem.deduplicateResponse,
     });
 
-    assert.strictEqual(result.success, true);
+    assert.deepStrictEqual(result, [{ success: true }]);
     assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 1);
   });
 
@@ -273,27 +283,31 @@ describe("handleEvent", () => {
   // error propagation
 
   it("returns error when Firehose throws during DEDUPLICATE_REQUEST", async () => {
-    firehoseMock.on(PutRecordBatchCommand).rejects(new Error("Firehose unavailable"));
-
-    const result = await handleEvent({
-      eventType: deduplicaRequestItem.eventType,
-      data: deduplicaRequestItem.deduplicateRequest,
-    });
-
-    assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "Firehose unavailable");
+      firehoseMock.on(PutRecordBatchCommand).rejects(new Error("Firehose unavailable"));
+      await assert.rejects(
+          async () => await handleEvent({
+              eventType: deduplicaRequestItem.eventType,
+              data: deduplicaRequestItem.deduplicateRequest,
+          }),
+          (err) => {
+              assert.strictEqual(err.message, "Error processing event");
+              return true;
+          }
+      );
   });
 
   it("returns error when Firehose throws during DEDUPLICATE_RESPONSE", async () => {
-    firehoseMock.on(PutRecordBatchCommand).rejects(new Error("Firehose unavailable"));
-
-    const result = await handleEvent({
-      eventType: deduplicaResponseItem.eventType,
-      data: deduplicaResponseItem.deduplicateResponse,
-    });
-
-    assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "Firehose unavailable");
+      firehoseMock.on(PutRecordBatchCommand).rejects(new Error("Firehose unavailable"));
+      await assert.rejects(
+          async () => await handleEvent({
+              eventType: deduplicaResponseItem.eventType,
+              data: deduplicaResponseItem.deduplicateResponse,
+          }),
+          (err) => {
+              assert.strictEqual(err.message, "Error processing event");
+              return true;
+          }
+      );
   });
 });
 
@@ -315,167 +329,157 @@ describe("handleEvent - NORMALIZER Integration", () => {
 
   it("should skip processing if checkNormalizerItem returns null", async () => {
     utils.checkNormalizerItem = () => null;
-
     const event = { eventType: "NORMALIZER", data: { normalizer: { batchId: "B1" } } };
     const result = await handleEvent(event);
-
-    assert.strictEqual(result.success, true);
-    assert.strictEqual(result.message, "Normalizer skipped");
+    assert.deepStrictEqual(result, [{ success: true, message: "Normalizer skipped" }]);
   });
 
   it("should process NORMALIZER_REQUEST if checkNormalizerItem returns type NORMALIZER_REQUEST", async () => {
     utils.checkNormalizerItem = () => ({ type: "NORMALIZER_REQUEST", fileKey: "file.json" });
     safeStorage.downloadText = async () => [{ some: "data" }];
     firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
-
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
     const result = await handleEvent(event);
-
-    assert.strictEqual(result.success, true);
+    assert.deepStrictEqual(result, [{ success: true }]);
   });
 
   it("should process NORMALIZER_RESPONSE if checkNormalizerItem returns type NORMALIZER_RESPONSE", async () => {
     utils.checkNormalizerItem = () => ({ type: "NORMALIZER_RESPONSE", fileKey: "file.json" });
     safeStorage.downloadText = async () => [{ some: "data" }];
     firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
-
     const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
     const result = await handleEvent(event);
-
-    assert.strictEqual(result.success, true);
+    assert.deepStrictEqual(result, [{ success: true }]);
   });
 
   it("should return error if downloadText throws", async () => {
-    utils.checkNormalizerItem = () => ({ type: "NORMALIZER_REQUEST", fileKey: "file.json" });
-    safeStorage.downloadText = async () => { throw new Error("Download failed"); };
-
-    const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
-    const result = await handleEvent(event);
-
-    assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "Download failed");
+      utils.checkNormalizerItem = () => ({ type: "NORMALIZER_REQUEST", fileKey: "file.json" });
+      safeStorage.downloadText = async () => { throw new Error("Download failed"); };
+      const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
+      await assert.rejects(
+          async () => await handleEvent(event),
+          (err) => {
+              assert.strictEqual(err.message, "Error processing event");
+              return true;
+          }
+      );
   });
 
   it("should return error for unknown NORMALIZER subtype", async () => {
-    utils.checkNormalizerItem = () => ({ type: "UNKNOWN_TYPE", fileKey: "file.json" });
-    safeStorage.downloadText = async () => [{ some: "data" }];
-
-    const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
-    const result = await handleEvent(event);
-
-    assert.strictEqual(result.success, false);
-    assert.strictEqual(result.error, "Unknown eventType: UNKNOWN_TYPE");
+      utils.checkNormalizerItem = () => ({ type: "UNKNOWN_TYPE", fileKey: "file.json" });
+      safeStorage.downloadText = async () => [{ some: "data" }];
+      const event = { eventType: "NORMALIZER", data: { normalizer: {} } };
+      await assert.rejects(
+          async () => await handleEvent(event),
+          (err) => {
+              assert.strictEqual(err.message, "Error processing event");
+              return true;
+          }
+      );
   });
 
   it("should call PutRecordBatch with real NORMALIZER_REQUEST records parsed from CSV", async () => {
-      const csvText = REQUEST_CSV;
+    const csvText = REQUEST_CSV;
+    const event = {
+      eventType: "NORMALIZER",
+      normalizer: {
+        batchId: "batch-001",
+        oldFileKey: null,
+        oldOutputFileKey: null,
+        newFileKey: "s3://bucket/request.csv",
+        newOutputFileKey: null,
+        eventName: "INSERT"
+      }
+    };
+    safeStorage.downloadText = async () => csvText;
+    firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
+    const result = await handleEvent(event);
+    assert.deepStrictEqual(result, [{ success: true }]);
+    const calls = firehoseMock.commandCalls(PutRecordBatchCommand);
+    assert.strictEqual(calls.length, 1, "PutRecordBatchCommand dovrebbe essere chiamato una volta");
 
-      const event = {
-          eventType: "NORMALIZER",
-          normalizer: {
-              batchId:          "batch-001",
-              oldFileKey:       null,
-              oldOutputFileKey: null,
-              newFileKey:       "s3://bucket/request.csv",
-              newOutputFileKey: null
-          }
-      };
+    const input   = calls[0].args[0].input;
+    assert.strictEqual(input.DeliveryStreamName, "test-delivery-stream");
+    assert.ok(input.Records.length >= 1, "Dovrebbe esserci almeno un record");
 
-      safeStorage.downloadText = async () => csvText;
-      firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
+    const decoded = input.Records[0].Data.toString("utf-8");
+    const parsed  = JSON.parse(decoded.trim());
 
-      const result = await handleEvent(event);
+    // Verifica campi estratti dallo split di idCodiceCliente
+    assert.strictEqual(parsed.correlationId,    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1');
+    assert.strictEqual(parsed.requestCreatedAt, '2024-03-11T15:08:14.075913927');
+    assert.strictEqual(parsed.addressIdx,       "0");
+    assert.strictEqual(parsed.batchId,          'batch-001');
+    assert.strictEqual(parsed.service,          'NORMALIZER');
+    assert.strictEqual(parsed.type,             'REQUEST');
 
-      assert.strictEqual(result.success, true);
-
-      const calls = firehoseMock.commandCalls(PutRecordBatchCommand);
-      assert.strictEqual(calls.length, 1, "PutRecordBatchCommand dovrebbe essere chiamato una volta");
-
-      const input   = calls[0].args[0].input;
-      assert.strictEqual(input.DeliveryStreamName, "test-delivery-stream");
-      assert.ok(input.Records.length >= 1, "Dovrebbe esserci almeno un record");
-
-      const decoded = input.Records[0].Data.toString("utf-8");
-      const parsed  = JSON.parse(decoded.trim());
-
-      // Verifica campi estratti dallo split di idCodiceCliente
-      assert.strictEqual(parsed.correlationId,    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1');
-      assert.strictEqual(parsed.requestCreatedAt, '2024-03-11T15:08:14.075913927');
-      assert.strictEqual(parsed.addressIdx,       0);
-      assert.strictEqual(parsed.batchId,          'batch-001');
-      assert.strictEqual(parsed.service,          'NORMALIZER');
-      assert.strictEqual(parsed.type,             'REQUEST');
-
-      // Verifica campi CSV
-      assert.strictEqual(parsed.idCodiceCliente,  'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1#2024-03-11T15:08:14.075913927#0');
-      assert.strictEqual(parsed.provincia,        'CS');
-      assert.strictEqual(parsed.cap,              '87100');
-      assert.strictEqual(parsed.localita,         'Cosenza');
-      assert.strictEqual(parsed.indirizzo,        'via @FAIL-Irreperibile_AR 16');
-      assert.strictEqual(parsed.stato,            'ITALIA');
-      assert.ok(!isNaN(Date.parse(parsed.requestTimestamp)), "requestTimestamp deve essere una data ISO valida");
+    // Verifica campi CSV
+    assert.strictEqual(parsed.idCodiceCliente,  'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1#2024-03-11T15:08:14.075913927#0');
+    assert.strictEqual(parsed.provincia,        'CS');
+    assert.strictEqual(parsed.cap,              '87100');
+    assert.strictEqual(parsed.localita,         'Cosenza');
+    assert.strictEqual(parsed.indirizzo,        'via @FAIL-Irreperibile_AR 16');
+    assert.strictEqual(parsed.stato,            'ITALIA');
+    assert.ok(!isNaN(Date.parse(parsed.requestTimestamp)), "requestTimestamp deve essere una data ISO valida");
   });
 
   it("should call PutRecordBatch with real NORMALIZER_RESPONSE records parsed from CSV", async () => {
-      const csvText = RESPONSE_CSV;
+    const csvText = RESPONSE_CSV;
+    const event = {
+      eventType: "NORMALIZER",
+      normalizer: {
+        batchId: "batch-001",
+        oldFileKey: null,
+        oldOutputFileKey: null,
+        newFileKey: null,
+        newOutputFileKey: "s3://bucket/response.csv",
+        eventName: "MODIFY"
+      }
+    };
+    safeStorage.downloadText = async () => csvText;
+    firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
+    const result = await handleEvent(event);
+    assert.deepStrictEqual(result, [{ success: true }]);
+    const calls = firehoseMock.commandCalls(PutRecordBatchCommand);
+    assert.strictEqual(calls.length, 1, "PutRecordBatchCommand dovrebbe essere chiamato una volta");
 
-      const event = {
-          eventType: "NORMALIZER",
-          normalizer: {
-              batchId:          "batch-001",
-              oldFileKey:       null,
-              oldOutputFileKey: null,
-              newFileKey:       null,
-              newOutputFileKey: "s3://bucket/response.csv"
-          }
-      };
+    const input  = calls[0].args[0].input;
+    assert.strictEqual(input.DeliveryStreamName, "test-delivery-stream");
+    assert.ok(input.Records.length >= 1, "Dovrebbe esserci almeno un record");
 
-      safeStorage.downloadText = async () => csvText;
-      firehoseMock.on(PutRecordBatchCommand).resolves(buildSuccessResponse(1));
+    const decoded = input.Records[0].Data.toString("utf-8");
+    const parsed  = JSON.parse(decoded.trim());
 
-      const result = await handleEvent(event);
-      assert.strictEqual(result.success, true);
+    // campi estratti dallo split di id col[0]
+    assert.strictEqual(parsed.correlationId,     'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1');
+    assert.strictEqual(parsed.requestCreatedAt, '2026-01-22T11:51:17.488420128');
+    assert.strictEqual(parsed.addressIdx,        "0");
+    assert.strictEqual(parsed.batchId,           'batch-001');
+    assert.strictEqual(parsed.service,           'NORMALIZER');
+    assert.strictEqual(parsed.type,              'RESPONSE');
+    assert.ok(!isNaN(Date.parse(parsed.responseTimestamp)), "responseTimestamp deve essere una data ISO valida");
 
-      const calls = firehoseMock.commandCalls(PutRecordBatchCommand);
-      assert.strictEqual(calls.length, 1, "PutRecordBatchCommand dovrebbe essere chiamato una volta");
-
-      const input  = calls[0].args[0].input;
-      assert.strictEqual(input.DeliveryStreamName, "test-delivery-stream");
-      assert.ok(input.Records.length >= 1, "Dovrebbe esserci almeno un record");
-
-      const decoded = input.Records[0].Data.toString("utf-8");
-      const parsed  = JSON.parse(decoded.trim());
-
-      // campi estratti dallo split di id col[0]
-      assert.strictEqual(parsed.correlationId,     'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1');
-      assert.strictEqual(parsed.responseCreatedAt, '2026-01-22T11:51:17.488420128');
-      assert.strictEqual(parsed.addressIdx,        0);
-      assert.strictEqual(parsed.batchId,           'batch-001');
-      assert.strictEqual(parsed.service,           'NORMALIZER');
-      assert.strictEqual(parsed.type,              'RESPONSE');
-      assert.ok(!isNaN(Date.parse(parsed.responseTimestamp)), "responseTimestamp deve essere una data ISO valida");
-
-      // campi CSV
-      assert.strictEqual(parsed.id,                    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1#2026-01-22T11:51:17.488420128#0');
-      assert.strictEqual(parsed.nRisultatoNorm,         1);
-      assert.strictEqual(parsed.fPostalizzabile,        1);
-      assert.strictEqual(parsed.nErroreNorm,            null);
-      assert.strictEqual(parsed.nErroreNormDescription, null);
-      assert.strictEqual(parsed.sSiglaProv,             'CS');
-      assert.strictEqual(parsed.sStatoUff,              null);
-      assert.strictEqual(parsed.sStatoAbb,              null);
-      assert.strictEqual(parsed.sStatoSpedizione,       'ITALIA');
-      assert.strictEqual(parsed.sComuneUff,             null);
-      assert.strictEqual(parsed.sComuneAbb,             null);
-      assert.strictEqual(parsed.sComuneSpedizione,      'COSENZA');
-      assert.strictEqual(parsed.sFrazioneUff,           null);
-      assert.strictEqual(parsed.sFrazioneAbb,           null);
-      assert.strictEqual(parsed.sFrazioneSpedizione,    'COSENZA');
-      assert.strictEqual(parsed.sCivicoAltro,           'SCALA B');
-      assert.strictEqual(parsed.sCap,                   '87100');
-      assert.strictEqual(parsed.sPresso,                null);
-      assert.strictEqual(parsed.sViaCompletaUff,        null);
-      assert.strictEqual(parsed.sViaCompletaAbb,        null);
-      assert.strictEqual(parsed.sViaCompletaSpedizione, 'VIA SENZA NOME');
+    // campi CSV
+    assert.strictEqual(parsed.id,                    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1#2026-01-22T11:51:17.488420128#0');
+    assert.strictEqual(parsed.nRisultatoNorm,         1);
+    assert.strictEqual(parsed.fPostalizzabile,        1);
+    assert.strictEqual(parsed.nErroreNorm,            null);
+    assert.strictEqual(parsed.nErroreNormDescription, null);
+    assert.strictEqual(parsed.sSiglaProv,             'CS');
+    assert.strictEqual(parsed.sStatoUff,              null);
+    assert.strictEqual(parsed.sStatoAbb,              null);
+    assert.strictEqual(parsed.sStatoSpedizione,       'ITALIA');
+    assert.strictEqual(parsed.sComuneUff,             null);
+    assert.strictEqual(parsed.sComuneAbb,             null);
+    assert.strictEqual(parsed.sComuneSpedizione,      'COSENZA');
+    assert.strictEqual(parsed.sFrazioneUff,           null);
+    assert.strictEqual(parsed.sFrazioneAbb,           null);
+    assert.strictEqual(parsed.sFrazioneSpedizione,    'COSENZA');
+    assert.strictEqual(parsed.sCivicoAltro,           'SCALA B');
+    assert.strictEqual(parsed.sCap,                   '87100');
+    assert.strictEqual(parsed.sPresso,                null);
+    assert.strictEqual(parsed.sViaCompletaUff,        null);
+    assert.strictEqual(parsed.sViaCompletaAbb,        null);
+    assert.strictEqual(parsed.sViaCompletaSpedizione, 'VIA SENZA NOME');
   });
 });

@@ -566,4 +566,71 @@ class DeduplicatesAddressServiceTest {
         verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any(), eq(CORR_ID));
         verify(sqsSender, times(1)).pushDeduplicaResponseEvent(any(), eq(CORR_ID));
     }
+
+    @Test
+    void deduplicaWithoutCallingPostelBothEmptyStrings() {
+
+        when(pnAddressManagerConfig.getFlagCsv()).thenReturn(false);
+
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress target = analogIt("", "00100", "", "RM");
+
+        DeduplicatesRequest request = makeReq(base, target, CORR_ID);
+
+        StepVerifier.create(service.deduplicates(request, CXID, X_API_KEY))
+                .assertNext(response -> {
+                    assertThat(response.getCorrelationId()).isEqualTo(CORR_ID);
+                    assertThat(response.getEqualityResult()).isFalse();
+                    assertThat(response.getError()).isEqualTo("PNADDR001");
+                    assertThat(response.getResultDetails()).isEqualTo("RD04");
+                })
+                .verifyComplete();
+
+        verifyNoInteractions(postelClient);
+    }
+
+    @Test
+    void deduplicaWithoutCallingPostelBothNull() {
+
+        when(pnAddressManagerConfig.getFlagCsv()).thenReturn(false);
+
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress target = analogIt(null, "00100", null, "RM");
+
+        DeduplicatesRequest request = makeReq(base, target, CORR_ID);
+
+        StepVerifier.create(service.deduplicates(request, CXID, X_API_KEY))
+                .assertNext(response -> {
+                    assertThat(response.getCorrelationId()).isEqualTo(CORR_ID);
+                    assertThat(response.getEqualityResult()).isFalse();
+                    assertThat(response.getError()).isEqualTo("PNADDR001");
+                    assertThat(response.getResultDetails()).isEqualTo("RD04");
+                })
+                .verifyComplete();
+
+        verifyNoInteractions(postelClient);
+    }
+
+    @Test
+    void deduplicaWithoutCallingPostelORCondition() {
+
+        when(pnAddressManagerConfig.getFlagCsv()).thenReturn(false);
+
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress target = analogIt("Via Roma", "00100", null, "RM");
+
+        DeduplicatesRequest request = makeReq(base, target, CORR_ID);
+
+        StepVerifier.create(service.deduplicates(request, CXID, X_API_KEY))
+                .assertNext(response -> {
+                    assertThat(response.getCorrelationId()).isEqualTo(CORR_ID);
+                    assertThat(response.getEqualityResult()).isFalse();
+                    assertThat(response.getError()).isEqualTo("PNADDR001");
+                    assertThat(response.getResultDetails()).isEqualTo("RD04");
+                })
+                .verifyComplete();
+
+        verifyNoInteractions(postelClient);
+    }
+
 }

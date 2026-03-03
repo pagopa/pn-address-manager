@@ -80,30 +80,16 @@ function buildDeduplicaResponseItem(res) {
 }
 
 function checkNormalizerItem({normalizer}) {
-    const { batchId, oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey } = normalizer;
-
-    if ([oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey].every(v => v === null)) {
-      console.log(`[${batchId}] Fase di inizializzazione del batch.`);
-      return null;
-    }
-
-    const inputChanged = oldFileKey !== newFileKey;
+    const { eventName, batchId, oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey } = normalizer;
     const outputChanged = oldOutputFileKey !== newOutputFileKey;
-
-    if (!inputChanged && !outputChanged) {
-      console.log(`[${batchId}] No changes detected`);
-      return null;
+    if (eventName === "INSERT" && newFileKey) {
+        console.log(`[${batchId}] Input changed → "${newFileKey}"`);
+        return { type: 'NORMALIZER_REQUEST', fileKey: newFileKey };
+    }else if(eventName === "MODIFY" && outputChanged && newOutputFileKey){
+        console.log(`[${batchId}] Output changed → "${newOutputFileKey}"`);
+        return { type: 'NORMALIZER_RESPONSE', fileKey: newOutputFileKey };
     }
-
-    if (inputChanged && newFileKey) {
-      console.log(`[${batchId}] Input changed → "${newFileKey}"`);
-      return { type: 'NORMALIZER_REQUEST', fileKey: newFileKey };
-    }
-
-    if (outputChanged && newOutputFileKey) {
-      console.log(`[${batchId}] Output changed → "${newOutputFileKey}"`);
-      return { type: 'NORMALIZER_RESPONSE', fileKey: newOutputFileKey };
-    }
+    console.log(`[${batchId}] No changes detected`);
     return null;
 }
 
@@ -111,21 +97,14 @@ async function processNormalizerRequest(data, csvPayload) {
     const rows = await parseCsv(csvPayload);
     return rows.map((col) => {
         const [correlationId, requestCreatedAt, addressIdx] = (col[0] ?? '').split('#');
-        let parsedAddressIdx = null;
-        if (addressIdx !== undefined && addressIdx !== '') {
-            const numericAddressIdx = Number(addressIdx);
-            if (Number.isFinite(numericAddressIdx)) {
-                parsedAddressIdx = numericAddressIdx;
-            }
-        }
 
         return {
-            correlationId:       correlationId || null,
+            correlationId:       correlationId,
             service:             NORMALIZER_SERVICE,
             type:                REQUEST,
             batchId:             data.batchId ?? data.normalizer?.batchId ?? null,
-            addressIdx:          parsedAddressIdx,
-            requestCreatedAt:    requestCreatedAt || null,
+            addressIdx:          addressIdx,
+            requestCreatedAt:    requestCreatedAt,
             requestTimestamp:    new Date().toISOString(),
 
             idCodiceCliente:     col[0] ?? null,
@@ -144,22 +123,15 @@ async function processNormalizerResponse(data, csvPayload) {
     const rows = await parseCsv(csvPayload);
 
     return rows.map((col) => {
-        const [correlationId, responseCreatedAt, addressIdx] = (col[0] ?? '').split('#');
-        let parsedAddressIdx = null;
-        if (addressIdx !== undefined && addressIdx !== '') {
-            const numericAddressIdx = Number(addressIdx);
-            if (Number.isFinite(numericAddressIdx)) {
-                parsedAddressIdx = numericAddressIdx;
-            }
-        }
+        const [correlationId, requestCreatedAt, addressIdx] = (col[0] ?? '').split('#');
 
         return {
-            correlationId:           correlationId || null,
+            correlationId:           correlationId,
             service:                 NORMALIZER_SERVICE,
             type:                    RESPONSE,
             batchId:                 data.batchId ?? data.normalizer?.batchId ?? null,
-            addressIdx:              parsedAddressIdx,
-            responseCreatedAt:       responseCreatedAt || null,
+            addressIdx:              addressIdx,
+            requestCreatedAt:        requestCreatedAt,
             responseTimestamp:       new Date().toISOString(),
             nErroreNormDescription:  col[3] !== '' ? postelNErrorNormFromCode(col[3]) : null,
 
