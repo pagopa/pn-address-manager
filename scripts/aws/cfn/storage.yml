@@ -363,10 +363,8 @@ Resources:
             - Name: batchId
               Type: string
             - Name: addressIdx
-              Type: int
-            - Name: requestCreatedAt
               Type: string
-            - Name: responseCreatedAt
+            - Name: requestCreatedAt
               Type: string
             - Name: slave_in_id
               Type: string
