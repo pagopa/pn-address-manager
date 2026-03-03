@@ -1,7 +1,7 @@
 {
   "correlationId": "VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1",
   "addressIdx": 0,
-  "responseCreatedAt": "2026-01-22T11:51:17.488420128",
+  "requestCreatedAt": "2026-01-22T11:51:17.488420128",
   "service": "NORMALIZER",
   "type": "RESPONSE",
   "batchId": "",

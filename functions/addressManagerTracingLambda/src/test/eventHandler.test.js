@@ -408,7 +408,7 @@ describe("handleEvent - NORMALIZER Integration", () => {
     // Verifica campi estratti dallo split di idCodiceCliente
     assert.strictEqual(parsed.correlationId,    'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_GPRZ-QKMW-KXPV-202403-W-1');
     assert.strictEqual(parsed.requestCreatedAt, '2024-03-11T15:08:14.075913927');
-    assert.strictEqual(parsed.addressIdx,       0);
+    assert.strictEqual(parsed.addressIdx,       "0");
     assert.strictEqual(parsed.batchId,          'batch-001');
     assert.strictEqual(parsed.service,          'NORMALIZER');
     assert.strictEqual(parsed.type,             'REQUEST');
@@ -452,8 +452,8 @@ describe("handleEvent - NORMALIZER Integration", () => {
 
     // campi estratti dallo split di id col[0]
     assert.strictEqual(parsed.correlationId,     'VALIDATE_NORMALIZE_ADDRESSES_REQUEST.IUN_LUGA-ADJT-JTZP-202601-T-1');
-    assert.strictEqual(parsed.responseCreatedAt, '2026-01-22T11:51:17.488420128');
-    assert.strictEqual(parsed.addressIdx,        0);
+    assert.strictEqual(parsed.requestCreatedAt, '2026-01-22T11:51:17.488420128');
+    assert.strictEqual(parsed.addressIdx,        "0");
     assert.strictEqual(parsed.batchId,           'batch-001');
     assert.strictEqual(parsed.service,           'NORMALIZER');
     assert.strictEqual(parsed.type,              'RESPONSE');
