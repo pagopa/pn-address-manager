@@ -31,6 +31,34 @@ Parameters:
   AlarmSNSTopicName:
     Type: String
 
+  PnCoreAwsAccountId:
+    Type: String
+    Default: '-'
+    Description: AWS Account ID of pn-core account for this environment (injected by infra outputs)
+
+  EnvironmentType:
+    Type: String
+    Default: '-'
+    Description: Environment type (dev, test, uat, hotfix, prod)
+
+  TracingTableBucketNoncurrentDays:
+    Type: Number
+    Default: 365
+    Description: Number of days after which noncurrent (unreferenced) Iceberg files in the tracing table bucket are removed
+
+
+Conditions:
+  HasEnvironmentType: !And
+    - !Not [ !Equals [ !Ref EnvironmentType, '' ] ]
+    - !Not [ !Equals [ !Ref EnvironmentType, '-' ] ]
+  HasPnCoreAwsAccountId: !And
+    - !Not [ !Equals [ !Ref PnCoreAwsAccountId, '' ] ]
+    - !Not [ !Equals [ !Ref PnCoreAwsAccountId, '-' ] ]
+  HasCoreAndEnvironment: !And
+    - !Condition HasEnvironmentType
+    - !Condition HasPnCoreAwsAccountId
+  IsProdEnvironment: !Equals [ !Ref EnvironmentType, 'prod' ]
+
 
 Resources:
   # Log group
@@ -298,7 +326,7 @@ Resources:
       TableBucketName: !Sub '${ProjectName}-address-manager-tracing'
       UnreferencedFileRemoval:
         Status: Enabled
-        NoncurrentDays: 7
+        NoncurrentDays: !Ref TracingTableBucketNoncurrentDays
 
   AddressManagerTracingNamespace:
     Type: AWS::S3Tables::Namespace
@@ -486,6 +514,86 @@ Resources:
               Type: string
             - Name: sViaCompletaSpedizione
               Type: string
+
+  AddressManagerTracingLFGrantAdminConfinfo:
+    Type: AWS::LakeFormation::Permissions
+    Condition: HasEnvironmentType
+    DependsOn:
+      - AddressManagerTracingTable
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !If
+          - IsProdEnvironment
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/AdminAccess-${EnvironmentType}'
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/SendExtAdmin-confinfo-${EnvironmentType}'
+      Resource:
+        TableResource:
+          CatalogId: !Sub '${AWS::AccountId}:s3tablescatalog/${AddressManagerTracingTableBucket}'
+          DatabaseName: address_manager_tracing
+          Name: address_manager_tracing_events
+      Permissions:
+        - SELECT
+        - DESCRIBE
+
+  AddressManagerTracingLFGrantReadonlyConfinfo:
+    Type: AWS::LakeFormation::Permissions
+    Condition: HasEnvironmentType
+    DependsOn:
+      - AddressManagerTracingTable
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !If
+          - IsProdEnvironment
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/ReadOnlyAccess-${EnvironmentType}'
+          - !Sub 'arn:aws:iam::${AWS::AccountId}:role/SendExtReadOnly-confinfo-${EnvironmentType}'
+      Resource:
+        TableResource:
+          CatalogId: !Sub '${AWS::AccountId}:s3tablescatalog/${AddressManagerTracingTableBucket}'
+          DatabaseName: address_manager_tracing
+          Name: address_manager_tracing_events
+      Permissions:
+        - SELECT
+        - DESCRIBE
+
+  AddressManagerTracingLFGrantAdminCore:
+    Type: AWS::LakeFormation::Permissions
+    Condition: HasCoreAndEnvironment
+    DependsOn:
+      - AddressManagerTracingTable
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !If
+          - IsProdEnvironment
+          - !Sub 'arn:aws:iam::${PnCoreAwsAccountId}:role/AdminAccess-${EnvironmentType}'
+          - !Sub 'arn:aws:iam::${PnCoreAwsAccountId}:role/SendExtAdmin-core-${EnvironmentType}'
+      Resource:
+        TableResource:
+          CatalogId: !Sub '${AWS::AccountId}:s3tablescatalog/${AddressManagerTracingTableBucket}'
+          DatabaseName: address_manager_tracing
+          Name: address_manager_tracing_events
+      Permissions:
+        - SELECT
+        - DESCRIBE
+
+  AddressManagerTracingLFGrantReadonlyCore:
+    Type: AWS::LakeFormation::Permissions
+    Condition: HasCoreAndEnvironment
+    DependsOn:
+      - AddressManagerTracingTable
+    Properties:
+      DataLakePrincipal:
+        DataLakePrincipalIdentifier: !If
+          - IsProdEnvironment
+          - !Sub 'arn:aws:iam::${PnCoreAwsAccountId}:role/ReadOnlyAccess-${EnvironmentType}'
+          - !Sub 'arn:aws:iam::${PnCoreAwsAccountId}:role/SendExtReadOnly-core-${EnvironmentType}'
+      Resource:
+        TableResource:
+          CatalogId: !Sub '${AWS::AccountId}:s3tablescatalog/${AddressManagerTracingTableBucket}'
+          DatabaseName: address_manager_tracing
+          Name: address_manager_tracing_events
+      Permissions:
+        - SELECT
+        - DESCRIBE
 
 Outputs:
   ApiKeyTableArn:
