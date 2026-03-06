@@ -46,6 +46,11 @@ Parameters:
     Default: 365
     Description: Number of days after which noncurrent (unreferenced) Iceberg files in the tracing table bucket are removed
 
+  TracingTableBucketSuffix:
+    Type: String
+    Default: '001'
+    Description: Optional suffix for tracing S3 Table bucket name to avoid naming collisions
+
 
 Conditions:
   HasEnvironmentType: !And
@@ -323,7 +328,7 @@ Resources:
     UpdateReplacePolicy: Retain
     DeletionPolicy: Retain
     Properties:
-      TableBucketName: !Sub '${ProjectName}-address-manager-tracing'
+      TableBucketName: !Sub '${ProjectName}-address-manager-tracing-${TracingTableBucketSuffix}'
       UnreferencedFileRemoval:
         Status: Enabled
         NoncurrentDays: !Ref TracingTableBucketNoncurrentDays
