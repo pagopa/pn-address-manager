@@ -39,7 +39,6 @@ class SqsSenderTest {
         verify(deduplicateTracingProducer).push(captor.capture());
         DeduplicateTracingEvent event = captor.getValue();
 
-        assertEquals(correlationId, event.getHeader().getEventId());
         assertEquals("pn-address-manager", event.getHeader().getPublisher());
         assertNotNull(event.getHeader().getCreatedAt());
         assertEquals(DeduplicateEventType.DEDUPLICATE_REQUEST.name(), event.getPayload().getEventType());
@@ -57,7 +56,6 @@ class SqsSenderTest {
         verify(deduplicateTracingProducer).push(captor.capture());
         DeduplicateTracingEvent event = captor.getValue();
 
-        assertEquals(correlationId, event.getHeader().getEventId());
         assertEquals("pn-address-manager", event.getHeader().getPublisher());
         assertNotNull(event.getHeader().getCreatedAt());
         assertEquals(DeduplicateEventType.DEDUPLICATE_RESPONSE.name(), event.getPayload().getEventType());

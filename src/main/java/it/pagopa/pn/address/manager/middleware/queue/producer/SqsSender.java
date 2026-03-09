@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
+import java.util.UUID;
 
 import static it.pagopa.pn.address.manager.middleware.queue.model.DeduplicateEventType.DEDUPLICATE_REQUEST;
 import static it.pagopa.pn.address.manager.middleware.queue.model.DeduplicateEventType.DEDUPLICATE_RESPONSE;
@@ -22,10 +23,10 @@ public class SqsSender {
     private static final String PUBLISHER = "pn-address-manager";
     private final DeduplicateTracingProducer deduplicateTracingProducer;
 
-    private <T> void pushEvent(T data, DeduplicateEventType eventType, String correlationId) {
+    private <T> void pushEvent(T data, DeduplicateEventType eventType) {
 
         GenericEventHeader header = GenericEventHeader.builder()
-                .eventId(correlationId)
+                .eventId(UUID.randomUUID().toString())
                 .eventType(eventType.name())
                 .publisher(PUBLISHER)
                 .createdAt(Instant.now())
@@ -42,10 +43,10 @@ public class SqsSender {
     }
 
     public void pushDeduplicaRequestEvent(DeduplicaRequest request, String correlationId) {
-        pushEvent(request, DEDUPLICATE_REQUEST, correlationId);
+        pushEvent(request, DEDUPLICATE_REQUEST);
     }
 
     public void pushDeduplicaResponseEvent(DeduplicaResponse response, String correlationId){
-        pushEvent(response, DEDUPLICATE_RESPONSE, correlationId);
+        pushEvent(response, DEDUPLICATE_RESPONSE);
     }
 }
