@@ -149,8 +149,8 @@ class DeduplicatesAddressServiceTest {
         ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
         ArgumentCaptor<DeduplicaResponse> responseCaptor = ArgumentCaptor.forClass(DeduplicaResponse.class);
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture());
 
         DeduplicaRequest requestEvent = requestCaptor.getValue();
         DeduplicaResponse responseEvent = responseCaptor.getValue();
@@ -197,8 +197,8 @@ class DeduplicatesAddressServiceTest {
         ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
         ArgumentCaptor<DeduplicaResponse> responseCaptor = ArgumentCaptor.forClass(DeduplicaResponse.class);
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture());
 
         DeduplicaRequest requestEvent = requestCaptor.getValue();
         DeduplicaResponse responseEvent = responseCaptor.getValue();
@@ -246,8 +246,8 @@ class DeduplicatesAddressServiceTest {
         ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
         ArgumentCaptor<DeduplicaResponse> responseCaptor = ArgumentCaptor.forClass(DeduplicaResponse.class);
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture());
 
         DeduplicaRequest requestEvent = requestCaptor.getValue();
         DeduplicaResponse responseEvent = responseCaptor.getValue();
@@ -296,8 +296,8 @@ class DeduplicatesAddressServiceTest {
         ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
         ArgumentCaptor<DeduplicaResponse> responseCaptor = ArgumentCaptor.forClass(DeduplicaResponse.class);
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture());
 
         DeduplicaRequest requestEvent = requestCaptor.getValue();
         DeduplicaResponse responseEvent = responseCaptor.getValue();
@@ -345,8 +345,8 @@ class DeduplicatesAddressServiceTest {
         ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
         ArgumentCaptor<DeduplicaResponse> responseCaptor = ArgumentCaptor.forClass(DeduplicaResponse.class);
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture());
 
         DeduplicaRequest requestEvent = requestCaptor.getValue();
         DeduplicaResponse responseEvent = responseCaptor.getValue();
@@ -400,8 +400,8 @@ class DeduplicatesAddressServiceTest {
         ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
         ArgumentCaptor<DeduplicaResponse> responseCaptor = ArgumentCaptor.forClass(DeduplicaResponse.class);
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture());
 
         DeduplicaRequest requestEvent = requestCaptor.getValue();
         DeduplicaResponse responseEvent = responseCaptor.getValue();
@@ -453,8 +453,8 @@ class DeduplicatesAddressServiceTest {
         ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
         ArgumentCaptor<DeduplicaResponse> responseCaptor = ArgumentCaptor.forClass(DeduplicaResponse.class);
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(responseCaptor.capture());
 
         DeduplicaRequest requestEvent = requestCaptor.getValue();
         DeduplicaResponse responseEvent = responseCaptor.getValue();
@@ -516,9 +516,9 @@ class DeduplicatesAddressServiceTest {
 
         ArgumentCaptor<DeduplicaRequest> requestCaptor = ArgumentCaptor.forClass(DeduplicaRequest.class);
         // Request event must be sent
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(requestCaptor.capture());
         // Response event must NOT be sent
-        verify(sqsSender, never()).pushDeduplicaResponseEvent(any(), any());
+        verify(sqsSender, never()).pushDeduplicaResponseEvent(any());
     }
 
     @Test
@@ -528,7 +528,7 @@ class DeduplicatesAddressServiceTest {
         DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
 
         doThrow(new RuntimeException("SQS push request failed"))
-                .when(sqsSender).pushDeduplicaRequestEvent(any(), any());
+                .when(sqsSender).pushDeduplicaRequestEvent(any());
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .expectErrorMatches(throwable ->
@@ -536,8 +536,8 @@ class DeduplicatesAddressServiceTest {
                                 throwable.getMessage().equals("SQS push request failed"))
                 .verify();
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any(), eq(CORR_ID));
-        verify(sqsSender, times(0)).pushDeduplicaResponseEvent(any(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any());
+        verify(sqsSender, times(0)).pushDeduplicaResponseEvent(any());
     }
 
     @Test
@@ -554,7 +554,7 @@ class DeduplicatesAddressServiceTest {
         postelResp.setRisultatoDedu(true);
 
         doThrow(new RuntimeException("SQS push response failed"))
-                .when(sqsSender).pushDeduplicaResponseEvent(any(), any());
+                .when(sqsSender).pushDeduplicaResponseEvent(any());
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
@@ -563,8 +563,8 @@ class DeduplicatesAddressServiceTest {
                                 throwable.getMessage().equals("SQS push response failed"))
                 .verify();
 
-        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any(), eq(CORR_ID));
-        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(any(), eq(CORR_ID));
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(any());
     }
 
     @Test

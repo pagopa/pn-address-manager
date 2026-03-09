@@ -31,15 +31,13 @@ class SqsSenderTest {
     @Test
     void testPushDeduplicaRequestEvent() {
         DeduplicaRequest request = mock(DeduplicaRequest.class);
-        String correlationId = "corr-id-req";
 
-        sqsSender.pushDeduplicaRequestEvent(request, correlationId);
+        sqsSender.pushDeduplicaRequestEvent(request);
 
         ArgumentCaptor<DeduplicateTracingEvent> captor = ArgumentCaptor.forClass(DeduplicateTracingEvent.class);
         verify(deduplicateTracingProducer).push(captor.capture());
         DeduplicateTracingEvent event = captor.getValue();
 
-        assertEquals(correlationId, event.getHeader().getEventId());
         assertEquals("pn-address-manager", event.getHeader().getPublisher());
         assertNotNull(event.getHeader().getCreatedAt());
         assertEquals(DeduplicateEventType.DEDUPLICATE_REQUEST.name(), event.getPayload().getEventType());
@@ -49,15 +47,13 @@ class SqsSenderTest {
     @Test
     void testPushDeduplicaResponseEvent() {
         DeduplicaResponse response = mock(DeduplicaResponse.class);
-        String correlationId = "corr-id-res";
 
-        sqsSender.pushDeduplicaResponseEvent(response, correlationId);
+        sqsSender.pushDeduplicaResponseEvent(response);
 
         ArgumentCaptor<DeduplicateTracingEvent> captor = ArgumentCaptor.forClass(DeduplicateTracingEvent.class);
         verify(deduplicateTracingProducer).push(captor.capture());
         DeduplicateTracingEvent event = captor.getValue();
 
-        assertEquals(correlationId, event.getHeader().getEventId());
         assertEquals("pn-address-manager", event.getHeader().getPublisher());
         assertNotNull(event.getHeader().getCreatedAt());
         assertEquals(DeduplicateEventType.DEDUPLICATE_RESPONSE.name(), event.getPayload().getEventType());
