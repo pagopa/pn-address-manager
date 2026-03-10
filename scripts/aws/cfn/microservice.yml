@@ -655,9 +655,47 @@ Resources:
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
-  # Firehose to Iceberg table for Address Manager tracing
+  # Firehose delivery role created standalone so LF grants can reference it before
+  # the Firehose nested stack is deployed (LF validates that the IAM principal exists).
+  AddressManagerTracingDeliveryRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-address-manager-tracing-delivery-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: firehose.amazonaws.com
+            Action: sts:AssumeRole
+
+  # Access control: LF grants + Glue resource policy for Address Manager tracing table
+  # DependsOn role: LF validates that the IAM principal exists at grant time.
+  AddressManagerTracingAccessControl:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - AddressManagerTracingDeliveryRole
+    Properties:
+      TemplateURL: !Sub '${TemplateBucketBaseUrl}/fragments/s3tables-access-control.yaml'
+      Parameters:
+        ProjectName: !Ref ProjectName
+        TableBucketName: !Ref AddressManagerTracingTableBucketName
+        TableNamespace: !Ref AddressManagerTracingTableNamespace
+        TableName: !Ref AddressManagerTracingTableName
+        EnvironmentType: !Ref EnvironmentType
+        PnCoreAwsAccountId: !Ref PnCoreAwsAccountId
+        CoreSsoAdminRole: !Ref CoreSsoAdminRole
+        AdditionalTablePrincipals: !Ref TracingAdditionalTablePrincipals
+        FirehoseRoleName: !Ref AddressManagerTracingDeliveryRole
+        AdditionalCrossAccountPrincipals: !Ref TracingAdditionalCrossAccountPrincipals
+
+  # Firehose to Iceberg table for Address Manager tracing.
+  # DependsOn AccessControl: LF grants must exist before Firehose validates glue:GetTable.
+  # ExistingDeliveryRoleName: reuse the role created above, do not recreate it in the fragment.
   AddressManagerTracingFirehose:
     Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - AddressManagerTracingAccessControl
     Properties:
       TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/firehose-to-iceberg-table.yaml"
       Parameters:
@@ -670,25 +708,7 @@ Resources:
         ExistingFirehoseLogGroupName: !Ref AddressManagerTracingFirehoseLogGroupName
         EnableLakeFormationGrant: 'false'
         ErrorBucketNameSuffix: !Ref FirehoseErrorBucketSuffix
-
-  # Access control: LF grants + Glue resource policy for Address Manager tracing table
-  AddressManagerTracingAccessControl:
-    Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - AddressManagerTracingFirehose
-    Properties:
-      TemplateURL: !Sub '${TemplateBucketBaseUrl}/fragments/s3tables-access-control.yaml'
-      Parameters:
-        ProjectName: !Ref ProjectName
-        TableBucketName: !Ref AddressManagerTracingTableBucketName
-        TableNamespace: !Ref AddressManagerTracingTableNamespace
-        TableName: !Ref AddressManagerTracingTableName
-        EnvironmentType: !Ref EnvironmentType
-        PnCoreAwsAccountId: !Ref PnCoreAwsAccountId
-        CoreSsoAdminRole: !Ref CoreSsoAdminRole
-        AdditionalTablePrincipals: !Ref TracingAdditionalTablePrincipals
-        FirehoseRoleName: !GetAtt AddressManagerTracingFirehose.Outputs.DeliveryStreamRoleName
-        AdditionalCrossAccountPrincipals: !Ref TracingAdditionalCrossAccountPrincipals
+        ExistingDeliveryRoleName: !Ref AddressManagerTracingDeliveryRole
 
   # CloudWatch dashboard
   AddressManagerMicroserviceCloudWatchDashboard:
@@ -1005,3 +1025,4 @@ Resources:
                 Action:
                   - sqs:SendMessage
                 Resource: !Ref PnAddressManagerTracingInputQueueARN
+
