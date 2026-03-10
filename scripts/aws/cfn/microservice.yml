@@ -649,8 +649,7 @@ Resources:
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
 
-  # Firehose delivery role created standalone so LF grants can reference it before
-  # the Firehose nested stack is deployed (LF validates that the IAM principal exists).
+
   AddressManagerTracingDeliveryRole:
     Type: AWS::IAM::Role
     Properties:
@@ -683,9 +682,6 @@ Resources:
         FirehoseRoleName: !Ref AddressManagerTracingDeliveryRole
         AdditionalCrossAccountPrincipals: !Ref TracingAdditionalCrossAccountPrincipals
 
-  # Firehose to Iceberg table for Address Manager tracing.
-  # DependsOn AccessControl: LF grants must exist before Firehose validates glue:GetTable.
-  # ExistingDeliveryRoleName: reuse the role created above, do not recreate it in the fragment.
   AddressManagerTracingFirehose:
     Type: AWS::CloudFormation::Stack
     DependsOn:
