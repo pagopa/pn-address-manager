@@ -519,6 +519,12 @@ Parameters:
     Type: Number
     Description: 'Batch size for Firehose stream processing'
 
+  FirehoseErrorBucketSuffix:
+    Type: String
+    Default: '001'
+    Description: >
+      Suffix for the Firehose error/backup S3 bucket name
+
   EnvironmentType:
     Type: String
     Default: ''
@@ -663,6 +669,7 @@ Resources:
         DestinationTableName: !Ref AddressManagerTracingTableName
         ExistingFirehoseLogGroupName: !Ref AddressManagerTracingFirehoseLogGroupName
         EnableLakeFormationGrant: 'false'
+        ErrorBucketNameSuffix: !Ref FirehoseErrorBucketSuffix
 
   # Access control: LF grants + Glue resource policy for Address Manager tracing table
   AddressManagerTracingAccessControl:
