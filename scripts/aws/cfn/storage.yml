@@ -31,6 +31,16 @@ Parameters:
   AlarmSNSTopicName:
     Type: String
 
+  TracingTableBucketNoncurrentDays:
+    Type: Number
+    Default: 365
+    Description: Number of days after which noncurrent (unreferenced) Iceberg files in the tracing table bucket are removed
+
+  TracingTableBucketSuffix:
+    Type: String
+    Default: '001'
+    Description: Optional suffix for tracing S3 Table bucket name to avoid naming collisions
+
 
 Resources:
   # Log group
@@ -282,6 +292,209 @@ Resources:
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/lambda'
 
+  AddressManagerTracingFirehoseLogGroup:
+    Type: AWS::Logs::LogGroup
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      LogGroupName: !Sub '/aws/kinesisfirehose/${ProjectName}-address-manager-tracing-delivery-errors'
+      RetentionInDays: !Ref LogRetention
+
+  AddressManagerTracingTableBucket:
+    Type: AWS::S3Tables::TableBucket
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableBucketName: !Sub '${ProjectName}-address-manager-tracing-${TracingTableBucketSuffix}'
+      UnreferencedFileRemoval:
+        Status: Enabled
+        NoncurrentDays: !Ref TracingTableBucketNoncurrentDays
+
+  AddressManagerTracingNamespace:
+    Type: AWS::S3Tables::Namespace
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    Properties:
+      TableBucketARN: !GetAtt AddressManagerTracingTableBucket.TableBucketARN
+      Namespace: address_manager_tracing
+
+  AddressManagerTracingTable:
+    Type: AWS::S3Tables::Table
+    UpdateReplacePolicy: Retain
+    DeletionPolicy: Retain
+    DependsOn:
+      - AddressManagerTracingNamespace
+    Properties:
+      TableBucketARN: !GetAtt AddressManagerTracingTableBucket.TableBucketARN
+      Namespace: address_manager_tracing
+      TableName: address_manager_tracing_events
+      OpenTableFormat: ICEBERG
+      IcebergMetadata:
+        IcebergSchema:
+          SchemaFieldList:
+            - Name: correlationId
+              Type: string
+            - Name: service
+              Type: string
+            - Name: type
+              Type: string
+            - Name: requestTimestamp
+              Type: string
+            - Name: responseTimestamp
+              Type: string
+            - Name: batchId
+              Type: string
+            - Name: addressIdx
+              Type: string
+            - Name: requestCreatedAt
+              Type: string
+            - Name: slave_in_id
+              Type: string
+            - Name: slave_in_provincia
+              Type: string
+            - Name: slave_in_cap
+              Type: string
+            - Name: slave_in_localita
+              Type: string
+            - Name: slave_in_localitaAggiuntiva
+              Type: string
+            - Name: slave_in_indirizzo
+              Type: string
+            - Name: slave_in_indirizzoAggiuntivo
+              Type: string
+            - Name: slave_in_stato
+              Type: string
+            - Name: master_in_id
+              Type: string
+            - Name: master_in_provincia
+              Type: string
+            - Name: master_in_cap
+              Type: string
+            - Name: master_in_localita
+              Type: string
+            - Name: master_in_localitaAggiuntiva
+              Type: string
+            - Name: master_in_indirizzo
+              Type: string
+            - Name: master_in_indirizzoAggiuntivo
+              Type: string
+            - Name: master_in_stato
+              Type: string
+            - Name: risultatoDedu
+              Type: boolean
+            - Name: errore
+              Type: string
+            - Name: slave_out_id
+              Type: string
+            - Name: slave_out_nRisultatoNorm
+              Type: int
+            - Name: slave_out_nErroreNorm
+              Type: int
+            - Name: slave_out_nErroreNormDescription
+              Type: string
+            - Name: slave_out_sSiglaProv
+              Type: string
+            - Name: slave_out_fPostalizzabile
+              Type: int
+            - Name: slave_out_sStatoSpedizione
+              Type: string
+            - Name: slave_out_sComuneSpedizione
+              Type: string
+            - Name: slave_out_sFrazioneSpedizione
+              Type: string
+            - Name: slave_out_sCivicoAltro
+              Type: string
+            - Name: slave_out_sCap
+              Type: string
+            - Name: slave_out_sPresso
+              Type: string
+            - Name: slave_out_sViaCompletaSpedizione
+              Type: string
+            - Name: master_out_id
+              Type: string
+            - Name: master_out_nRisultatoNorm
+              Type: int
+            - Name: master_out_nErroreNorm
+              Type: int
+            - Name: master_out_nErroreNormDescription
+              Type: string
+            - Name: master_out_sSiglaProv
+              Type: string
+            - Name: master_out_fPostalizzabile
+              Type: int
+            - Name: master_out_sStatoSpedizione
+              Type: string
+            - Name: master_out_sComuneSpedizione
+              Type: string
+            - Name: master_out_sFrazioneSpedizione
+              Type: string
+            - Name: master_out_sCivicoAltro
+              Type: string
+            - Name: master_out_sCap
+              Type: string
+            - Name: master_out_sPresso
+              Type: string
+            - Name: master_out_sViaCompletaSpedizione
+              Type: string
+            - Name: idCodiceCliente
+              Type: string
+            - Name: provincia
+              Type: string
+            - Name: cap
+              Type: string
+            - Name: localita
+              Type: string
+            - Name: localitaAggiuntiva
+              Type: string
+            - Name: indirizzo
+              Type: string
+            - Name: indirizzoAggiuntivo
+              Type: string
+            - Name: stato
+              Type: string
+            - Name: id
+              Type: string
+            - Name: nRisultatoNorm
+              Type: int
+            - Name: fPostalizzabile
+              Type: int
+            - Name: nErroreNorm
+              Type: int
+            - Name: nErroreNormDescription
+              Type: string
+            - Name: sSiglaProv
+              Type: string
+            - Name: sStatoUff
+              Type: string
+            - Name: sStatoAbb
+              Type: string
+            - Name: sStatoSpedizione
+              Type: string
+            - Name: sComuneUff
+              Type: string
+            - Name: sComuneAbb
+              Type: string
+            - Name: sComuneSpedizione
+              Type: string
+            - Name: sFrazioneUff
+              Type: string
+            - Name: sFrazioneAbb
+              Type: string
+            - Name: sFrazioneSpedizione
+              Type: string
+            - Name: sCivicoAltro
+              Type: string
+            - Name: sCap
+              Type: string
+            - Name: sPresso
+              Type: string
+            - Name: sViaCompletaUff
+              Type: string
+            - Name: sViaCompletaAbb
+              Type: string
+            - Name: sViaCompletaSpedizione
+              Type: string
+
 Outputs:
   ApiKeyTableArn:
     Value: !Sub '${ApiKeyTable.Arn}'
@@ -308,6 +521,16 @@ Outputs:
     Value: !Ref BatchRequestTable
   EcsLogGroup:
     Value: !GetAtt PnAddressManagerLogGroup.Outputs.LogGroupName
+  AddressManagerTracingFirehoseLogGroupName:
+    Value: !Ref AddressManagerTracingFirehoseLogGroup
+  AddressManagerTracingTableBucketArn:
+    Value: !GetAtt AddressManagerTracingTableBucket.TableBucketARN
+  AddressManagerTracingTableBucketName:
+    Value: !Sub '${ProjectName}-address-manager-tracing-${TracingTableBucketSuffix}'
+  AddressManagerTracingTableNamespace:
+    Value: address_manager_tracing
+  AddressManagerTracingTableName:
+    Value: address_manager_tracing_events
   AddressManagerEventBusArn:
     Value: !GetAtt AddressManagerEventBus.Arn
   AddressManagerEventBusName:

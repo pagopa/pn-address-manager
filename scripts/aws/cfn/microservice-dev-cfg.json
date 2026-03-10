@@ -46,6 +46,9 @@
     "MountEfs": "false",
     "LambdaRuntime": "nodejs24.x",
     "AddressManagerTracingPipeDesiredState": "RUNNING",
-    "FirehoseBatchSize": "500"
+    "FirehoseBatchSize": "500",
+    "EnvironmentType": "dev",
+    "TracingAdditionalTablePrincipals": "ntt-dev",
+    "TracingAdditionalCrossAccountPrincipals": "ntt-dev"
   }
 }
