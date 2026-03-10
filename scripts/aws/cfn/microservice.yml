@@ -515,14 +515,41 @@ Parameters:
       - 'RUNNING'
       - 'STOPPED'
 
-  FirehoseDeliveryStreamName:
-    Type: String
-    Description: 'Firehose stream name for Address Manager tracing'
-    Default: "pn-poc-tracing-dev"
-
   FirehoseBatchSize:
     Type: Number
     Description: 'Batch size for Firehose stream processing'
+
+  EnvironmentType:
+    Type: String
+    Default: ''
+    Description: Environment type (dev, test, uat, hotfix, prod)
+
+  PnCoreAwsAccountId:
+    Type: String
+    Default: ''
+    Description: AWS Account ID of pn-core account for this environment (injected by infra outputs)
+
+  CoreSsoAdminRole:
+    Type: String
+    Default: ''
+    Description: Optional SSO admin role name in core account (for AWSReservedSSO role)
+
+  TracingAdditionalTablePrincipals:
+    Type: String
+    Default: ''
+    Description: >
+      Optional comma-separated list of role names in the same (confinfo) account to grant
+      SELECT + DESCRIBE on the tracing table. ARN is built automatically.
+      Example: ntt-dev,other-role
+
+  TracingAdditionalCrossAccountPrincipals:
+    Type: String
+    Default: ''
+    Description: >
+      Optional comma-separated list of role names in the core account to grant
+      DESCRIBE on the tracing database and SELECT + DESCRIBE on the tracing table.
+      ARN is built automatically using PnCoreAwsAccountId.
+      Example: ntt-dev,other-role
 
 Resources:
 
@@ -635,6 +662,26 @@ Resources:
         DestinationNamespace: !Ref AddressManagerTracingTableNamespace
         DestinationTableName: !Ref AddressManagerTracingTableName
         ExistingFirehoseLogGroupName: !Ref AddressManagerTracingFirehoseLogGroupName
+        EnableLakeFormationGrant: 'false'
+
+  # Access control: LF grants + Glue resource policy for Address Manager tracing table
+  AddressManagerTracingAccessControl:
+    Type: AWS::CloudFormation::Stack
+    DependsOn:
+      - AddressManagerTracingFirehose
+    Properties:
+      TemplateURL: !Sub '${TemplateBucketBaseUrl}/fragments/s3tables-access-control.yaml'
+      Parameters:
+        ProjectName: !Ref ProjectName
+        TableBucketName: !Ref AddressManagerTracingTableBucketName
+        TableNamespace: !Ref AddressManagerTracingTableNamespace
+        TableName: !Ref AddressManagerTracingTableName
+        EnvironmentType: !Ref EnvironmentType
+        PnCoreAwsAccountId: !Ref PnCoreAwsAccountId
+        CoreSsoAdminRole: !Ref CoreSsoAdminRole
+        AdditionalTablePrincipals: !Ref TracingAdditionalTablePrincipals
+        FirehoseRoleName: !GetAtt AddressManagerTracingFirehose.Outputs.DeliveryStreamRoleName
+        AdditionalCrossAccountPrincipals: !Ref TracingAdditionalCrossAccountPrincipals
 
   # CloudWatch dashboard
   AddressManagerMicroserviceCloudWatchDashboard:
@@ -808,7 +855,7 @@ Resources:
           PN_SAFESTORAGE_URL: !Sub http://${ApplicationLoadBalancerDomain}:8080
           PN_SAFESTORAGE_CXID: !Ref PnAddressManagerCxId
           FIREHOSE_BATCH_SIZE: !Ref FirehoseBatchSize
-          FIREHOSE_DELIVERY_STREAM_NAME: !Ref FirehoseDeliveryStreamName
+          FIREHOSE_DELIVERY_STREAM_NAME: !GetAtt AddressManagerTracingFirehose.Outputs.DeliveryStreamName
       TracingConfig:
         Mode: Active
       Layers:
@@ -860,7 +907,7 @@ Resources:
               - firehose:PutRecord
               - firehose:PutRecordBatch
             Resource:
-              - !Sub 'arn:aws:firehose:${AWS::Region}:${AWS::AccountId}:deliverystream/${FirehoseDeliveryStreamName}'
+              - !GetAtt AddressManagerTracingFirehose.Outputs.DeliveryStreamArn
 
   AddressManagerTracingLambdaAlarms:
     Type: AWS::CloudFormation::Stack
