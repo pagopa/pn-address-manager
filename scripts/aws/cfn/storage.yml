@@ -396,9 +396,21 @@ Resources:
               Type: string
             - Name: slave_out_fPostalizzabile
               Type: int
+            - Name: slave_out_sStatoUff
+              Type: string
+            - Name: slave_out_sStatoAbb
+              Type: string
             - Name: slave_out_sStatoSpedizione
               Type: string
+            - Name: slave_out_sComuneUff
+              Type: string
+            - Name: slave_out_sComuneAbb
+              Type: string
             - Name: slave_out_sComuneSpedizione
+              Type: string
+            - Name: slave_out_sFrazioneUff
+              Type: string
+            - Name: slave_out_sFrazioneAbb
               Type: string
             - Name: slave_out_sFrazioneSpedizione
               Type: string
@@ -407,6 +419,10 @@ Resources:
             - Name: slave_out_sCap
               Type: string
             - Name: slave_out_sPresso
+              Type: string
+            - Name: slave_out_sViaCompletaUff
+              Type: string
+            - Name: slave_out_sViaCompletaAbb
               Type: string
             - Name: slave_out_sViaCompletaSpedizione
               Type: string
@@ -422,9 +438,21 @@ Resources:
               Type: string
             - Name: master_out_fPostalizzabile
               Type: int
+            - Name: master_out_sStatoUff
+              Type: string
+            - Name: master_out_sStatoAbb
+              Type: string
             - Name: master_out_sStatoSpedizione
               Type: string
+            - Name: master_out_sComuneUff
+              Type: string
+            - Name: master_out_sComuneAbb
+              Type: string
             - Name: master_out_sComuneSpedizione
+              Type: string
+            - Name: master_out_sFrazioneUff
+              Type: string
+            - Name: master_out_sFrazioneAbb
               Type: string
             - Name: master_out_sFrazioneSpedizione
               Type: string
@@ -433,6 +461,10 @@ Resources:
             - Name: master_out_sCap
               Type: string
             - Name: master_out_sPresso
+              Type: string
+            - Name: master_out_sViaCompletaUff
+              Type: string
+            - Name: master_out_sViaCompletaAbb
               Type: string
             - Name: master_out_sViaCompletaSpedizione
               Type: string
