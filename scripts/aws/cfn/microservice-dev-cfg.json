@@ -48,7 +48,7 @@
     "AddressManagerTracingPipeDesiredState": "RUNNING",
     "FirehoseBatchSize": "500",
     "EnvironmentType": "dev",
-    "FirehoseErrorBucketSuffix": "009",
+    "FirehoseErrorBucketSuffix": "003",
     "TracingAdditionalTablePrincipals": "ntt-dev",
     "TracingAdditionalCrossAccountPrincipals": "ntt-dev"
   }
