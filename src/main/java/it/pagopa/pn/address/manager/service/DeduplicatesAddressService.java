@@ -60,10 +60,10 @@ public class DeduplicatesAddressService {
             return Mono.just(getDeduplicatesResponse(request));
         }
         return Mono.just(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
-                .flatMap(deduplicaRequest -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaRequestEvent(deduplicaRequest, request.getCorrelationId()))
+                .flatMap(deduplicaRequest -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaRequestEvent(deduplicaRequest))
                         .thenReturn(deduplicaRequest))
                 .flatMap(postelClient::deduplica)
-                .flatMap(deduplicaResponse -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaResponseEvent(deduplicaResponse, request.getCorrelationId()))
+                .flatMap(deduplicaResponse -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaResponseEvent(deduplicaResponse))
                         .thenReturn(deduplicaResponse))
                 .map(deduplicaResponse -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(deduplicaResponse, request.getCorrelationId()))
                 .map(addressUtils::verifyRequiredFields)
