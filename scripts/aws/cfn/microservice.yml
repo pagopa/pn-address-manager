@@ -519,6 +519,21 @@ Parameters:
     Type: Number
     Description: 'Batch size for Firehose stream processing'
 
+  FirehoseBufferingIntervalSec:
+    Type: Number
+    Default: 120
+    Description: Buffer interval in seconds for the tracing Firehose delivery stream
+
+  FirehoseBufferingSizeMB:
+    Type: Number
+    Default: 5
+    Description: Buffer size in MiB for the tracing Firehose delivery stream
+
+  FirehoseRetryDurationSec:
+    Type: Number
+    Default: 300
+    Description: Retry duration in seconds for the tracing Firehose delivery stream
+
   EnvironmentType:
     Type: String
     Default: ''
@@ -696,6 +711,9 @@ Resources:
         DestinationNamespace: !Ref AddressManagerTracingTableNamespace
         DestinationTableName: !Ref AddressManagerTracingTableName
         ExistingFirehoseLogGroupName: !Ref AddressManagerTracingFirehoseLogGroupName
+        BufferingIntervalSec: !Ref FirehoseBufferingIntervalSec
+        BufferingSizeMB: !Ref FirehoseBufferingSizeMB
+        RetryDurationSec: !Ref FirehoseRetryDurationSec
         EnableLakeFormationGrant: 'false'
         ExistingDeliveryRoleName: !Ref AddressManagerTracingDeliveryRole
 
@@ -1014,4 +1032,3 @@ Resources:
                 Action:
                   - sqs:SendMessage
                 Resource: !Ref PnAddressManagerTracingInputQueueARN
-
