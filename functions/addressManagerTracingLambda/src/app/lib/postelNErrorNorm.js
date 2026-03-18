@@ -60,6 +60,7 @@ const PostelNErrorNorm = {
 };
 
 function postelNErrorNormFromCode(code) {
+    if (!code || code === '0') return null;
     return PostelNErrorNorm[code] ?? PostelNErrorNorm[0];
 }
 
