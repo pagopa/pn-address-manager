@@ -13,9 +13,12 @@ describe('postelNErrorNormFromCode', () => {
         assert.strictEqual(postelNErrorNormFromCode(-1), "ERRORE GENERICO");
     });
 
-    it('should return generic error for undefined, null, or string input', () => {
-        assert.strictEqual(postelNErrorNormFromCode(undefined), "ERRORE GENERICO");
-        assert.strictEqual(postelNErrorNormFromCode(null), "ERRORE GENERICO");
+    it('should return null for undefined, null, 0, "" or generic error for string input', () => {
+        assert.strictEqual(postelNErrorNormFromCode(undefined), null);
+        assert.strictEqual(postelNErrorNormFromCode(null), null);
+        assert.strictEqual(postelNErrorNormFromCode(0), null);
+        assert.strictEqual(postelNErrorNormFromCode("0"), null);
+        assert.strictEqual(postelNErrorNormFromCode(""), null);
         assert.strictEqual(postelNErrorNormFromCode('abc'), "ERRORE GENERICO");
     });
 });
