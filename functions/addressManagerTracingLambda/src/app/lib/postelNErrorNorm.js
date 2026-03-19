@@ -60,8 +60,9 @@ const PostelNErrorNorm = {
 };
 
 function postelNErrorNormFromCode(code) {
-    if (!code || code === '0') return null;
-    return PostelNErrorNorm[code] ?? PostelNErrorNorm[0];
+    if (code == null || code === '') return null;
+    const n = parseInt(code, 10);
+    return n === 0 ? null : PostelNErrorNorm[n] ?? PostelNErrorNorm[0];
 }
 
 module.exports = {

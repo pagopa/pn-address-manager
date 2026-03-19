@@ -18,6 +18,7 @@ describe('postelNErrorNormFromCode', () => {
         assert.strictEqual(postelNErrorNormFromCode(null), null);
         assert.strictEqual(postelNErrorNormFromCode(0), null);
         assert.strictEqual(postelNErrorNormFromCode("0"), null);
+        assert.strictEqual(postelNErrorNormFromCode('000'), null);
         assert.strictEqual(postelNErrorNormFromCode(""), null);
         assert.strictEqual(postelNErrorNormFromCode('abc'), "ERRORE GENERICO");
     });
