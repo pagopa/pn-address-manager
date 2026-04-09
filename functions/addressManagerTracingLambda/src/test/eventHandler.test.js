@@ -31,6 +31,24 @@ function buildSuccessResponse(count) {
 // utils
 
 describe("buildDeduplicaRequestItem", () => {
+  it("returns null when req is null", () => {
+    const result = buildDeduplicaRequestItem(null);
+    assert.strictEqual(result, null);
+  });
+
+  it("returns null when masterIn is missing", () => {
+    const result = buildDeduplicaRequestItem({});
+    assert.strictEqual(result, null);
+  });
+
+  it("returns null when masterIn.id is missing", () => {
+    const result = buildDeduplicaRequestItem({
+      masterIn: {},
+      slaveIn: { id: "slave-1" }
+    });
+    assert.strictEqual(result, null);
+  });
+
   it("builds a request item with correct fixed fields", () => {
     const result = buildDeduplicaRequestItem(deduplicaRequestItem.deduplicateRequest);
 
@@ -75,6 +93,59 @@ describe("buildDeduplicaRequestItem", () => {
 });
 
 describe("buildDeduplicaResponseItem", () => {
+  it("returns null when res is null", () => {
+    const result = buildDeduplicaResponseItem(null);
+    assert.strictEqual(result, null);
+  });
+
+  it("returns null when masterOut is missing", () => {
+    const result = buildDeduplicaResponseItem({});
+    assert.strictEqual(result, null);
+  });
+
+  it("returns null when masterOut.id is missing", () => {
+    const result = buildDeduplicaResponseItem({
+      masterOut: {},
+      slaveOut: { id: "slave-1" }
+    });
+    assert.strictEqual(result, null);
+  });
+
+  it("maps only base + masterOut when slaveOut is missing", () => {
+    const input = {
+      risultatoDedu: "OK",
+      errore: null,
+      masterOut: {
+        id: "master-1",
+        nRisultatoNorm: 1,
+        nErroreNorm: null,
+        sSiglaProv: "RM",
+        fPostalizzabile: 1,
+        sStatoUff: null,
+        sStatoAbb: null,
+        sStatoSpedizione: "ITALIA",
+        sComuneUff: null,
+        sComuneAbb: null,
+        sComuneSpedizione: "ROMA",
+        sFrazioneUff: null,
+        sFrazioneAbb: null,
+        sFrazioneSpedizione: "ROMA",
+        sCivicoAltro: null,
+        sCap: "00100",
+        sPresso: null,
+        sViaCompletaUff: null,
+        sViaCompletaAbb: null,
+        sViaCompletaSpedizione: "VIA ROMA 1"
+      }
+    };
+
+    const result = buildDeduplicaResponseItem(input);
+
+    assert.strictEqual(result.correlationId, "master-1");
+    assert.strictEqual(result.master_out_id, "master-1");
+    assert.strictEqual(result.slave_out_id, undefined);
+  });
+
   it("builds a response item with correct fixed fields", () => {
     const result = buildDeduplicaResponseItem(deduplicaResponseItem.deduplicateResponse);
 
@@ -140,6 +211,62 @@ describe("buildDeduplicaResponseItem", () => {
 describe("handleEvent", () => {
   beforeEach(() => {
     firehoseMock.reset();
+  });
+
+  it("skips Firehose put when DEDUPLICATE_REQUEST builder returns null", async () => {
+    const invalidRequest = {
+      ...deduplicaRequestItem.deduplicateRequest,
+      masterIn: {
+        ...deduplicaRequestItem.deduplicateRequest.masterIn,
+        id: null
+      }
+    };
+
+    const result = await handleEvent({
+      eventType: deduplicaRequestItem.eventType,
+      data: invalidRequest,
+    });
+
+    assert.deepStrictEqual(result, [{ success: true }]);
+    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
+  });
+
+  it("skips Firehose put when DEDUPLICATE_RESPONSE builder returns null", async () => {
+    const invalidResponse = {
+      ...deduplicaResponseItem.deduplicateResponse,
+      masterOut: {
+        ...deduplicaResponseItem.deduplicateResponse.masterOut,
+        id: null
+      }
+    };
+
+    const result = await handleEvent({
+      eventType: deduplicaResponseItem.eventType,
+      data: invalidResponse,
+    });
+
+    assert.deepStrictEqual(result, [{ success: true }]);
+    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
+  });
+
+  it("handles DEDUPLICATE_REQUEST with empty data object without calling Firehose", async () => {
+    const result = await handleEvent({
+      eventType: "DEDUPLICATE_REQUEST",
+      data: {},
+    });
+
+    assert.deepStrictEqual(result, [{ success: true }]);
+    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
+  });
+
+  it("handles DEDUPLICATE_RESPONSE with empty data object without calling Firehose", async () => {
+    const result = await handleEvent({
+      eventType: "DEDUPLICATE_RESPONSE",
+      data: {},
+    });
+
+    assert.deepStrictEqual(result, [{ success: true }]);
+    assert.strictEqual(firehoseMock.commandCalls(PutRecordBatchCommand).length, 0);
   });
 
   it("returns error when event is null", async () => {
