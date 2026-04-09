@@ -10,7 +10,7 @@ function buildDeduplicaRequestItem(req) {
 
     const correlationId = req?.masterIn?.id;
     if (!correlationId) {
-        console.error("Missing correlationId: masterIn.id is null or undefined", req);
+        console.error("Missing correlationId: masterIn.id is null or undefined");
         return null;
     }
 
@@ -46,7 +46,7 @@ function buildDeduplicaResponseItem(res) {
 
     const correlationId = res?.masterOut?.id;
     if (!correlationId) {
-        console.error("Missing correlationId: masterOut.id is null or undefined", res);
+        console.error("Missing correlationId: masterOut.id is null or undefined");
         return null;
     }
 
