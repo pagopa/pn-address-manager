@@ -8,93 +8,121 @@ const RESPONSE = 'RESPONSE';
 
 function buildDeduplicaRequestItem(req) {
 
+    const correlationId = req?.masterIn?.id;
+    if (!correlationId) {
+        console.error("Missing correlationId: masterIn.id is null or undefined");
+        return null;
+    }
+
     return {
-        correlationId: req.masterIn.id,
+        correlationId,
         service: DEDUPLICATE_SERVICE,
         type: REQUEST,
         requestTimestamp: new Date().toISOString(),
 
         // SLAVE IN
-        slave_in_id: req.slaveIn.id,
-        slave_in_provincia: req.slaveIn.provincia,
-        slave_in_cap: req.slaveIn.cap,
-        slave_in_localita: req.slaveIn.localita,
-        slave_in_localitaAggiuntiva: req.slaveIn.localitaAggiuntiva,
-        slave_in_indirizzo: req.slaveIn.indirizzo,
-        slave_in_indirizzoAggiuntivo: req.slaveIn.indirizzoAggiuntivo,
-        slave_in_stato: req.slaveIn.stato,
+        slave_in_id: req?.slaveIn?.id ?? null,
+        slave_in_provincia: req?.slaveIn?.provincia ?? null,
+        slave_in_cap: req?.slaveIn?.cap ?? null,
+        slave_in_localita: req?.slaveIn?.localita ?? null,
+        slave_in_localitaAggiuntiva: req?.slaveIn?.localitaAggiuntiva ?? null,
+        slave_in_indirizzo: req?.slaveIn?.indirizzo ?? null,
+        slave_in_indirizzoAggiuntivo: req?.slaveIn?.indirizzoAggiuntivo ?? null,
+        slave_in_stato: req?.slaveIn?.stato ?? null,
 
         // MASTER IN
-        master_in_id: req.masterIn.id,
-        master_in_provincia: req.masterIn.provincia,
-        master_in_cap: req.masterIn.cap,
-        master_in_localita: req.masterIn.localita,
-        master_in_localitaAggiuntiva: req.masterIn.localitaAggiuntiva,
-        master_in_indirizzo: req.masterIn.indirizzo,
-        master_in_indirizzoAggiuntivo: req.masterIn.indirizzoAggiuntivo,
-        master_in_stato: req.masterIn.stato
+        master_in_id: req?.masterIn?.id ?? null,
+        master_in_provincia: req?.masterIn?.provincia ?? null,
+        master_in_cap: req?.masterIn?.cap ?? null,
+        master_in_localita: req?.masterIn?.localita ?? null,
+        master_in_localitaAggiuntiva: req?.masterIn?.localitaAggiuntiva ?? null,
+        master_in_indirizzo: req?.masterIn?.indirizzo ?? null,
+        master_in_indirizzoAggiuntivo: req?.masterIn?.indirizzoAggiuntivo ?? null,
+        master_in_stato: req?.masterIn?.stato ?? null
     };
 }
 
 function buildDeduplicaResponseItem(res) {
 
-    return {
-        correlationId: res.masterOut.id,
+    const correlationId = res?.masterOut?.id;
+    if (!correlationId) {
+        console.error("Missing correlationId: masterOut.id is null or undefined");
+        return null;
+    }
+
+    const base = {
+        correlationId,
         service: DEDUPLICATE_SERVICE,
         type: RESPONSE,
         responseTimestamp: new Date().toISOString(),
+        risultatoDedu: res?.risultatoDedu ?? null,
+        errore: res?.errore ?? null
+    };
 
-        risultatoDedu: res.risultatoDedu,
-        errore: res.errore,
+    const slaveOut = res?.slaveOut
+        ? {
+            slave_out_id: res.slaveOut.id ?? null,
+            slave_out_nRisultatoNorm: res.slaveOut.nRisultatoNorm ?? null,
+            slave_out_nErroreNorm: res.slaveOut.nErroreNorm ?? null,
+            slave_out_nErroreNormDescription:
+                res.slaveOut.nErroreNorm != null
+                    ? postelNErrorNormFromCode(res.slaveOut.nErroreNorm)
+                    : null,
+            slave_out_sSiglaProv: res.slaveOut.sSiglaProv ?? null,
+            slave_out_fPostalizzabile: res.slaveOut.fPostalizzabile ?? null,
+            slave_out_sStatoUff: res.slaveOut.sStatoUff ?? null,
+            slave_out_sStatoAbb: res.slaveOut.sStatoAbb ?? null,
+            slave_out_sStatoSpedizione: res.slaveOut.sStatoSpedizione ?? null,
+            slave_out_sComuneUff: res.slaveOut.sComuneUff ?? null,
+            slave_out_sComuneAbb: res.slaveOut.sComuneAbb ?? null,
+            slave_out_sComuneSpedizione: res.slaveOut.sComuneSpedizione ?? null,
+            slave_out_sFrazioneUff: res.slaveOut.sFrazioneUff ?? null,
+            slave_out_sFrazioneAbb: res.slaveOut.sFrazioneAbb ?? null,
+            slave_out_sFrazioneSpedizione: res.slaveOut.sFrazioneSpedizione ?? null,
+            slave_out_sCivicoAltro: res.slaveOut.sCivicoAltro ?? null,
+            slave_out_sCap: res.slaveOut.sCap ?? null,
+            slave_out_sPresso: res.slaveOut.sPresso ?? null,
+            slave_out_sViaCompletaUff: res.slaveOut.sViaCompletaUff ?? null,
+            slave_out_sViaCompletaAbb: res.slaveOut.sViaCompletaAbb ?? null,
+            slave_out_sViaCompletaSpedizione: res.slaveOut.sViaCompletaSpedizione ?? null
+        }
+        : {};
 
-        // SLAVE OUT
-        slave_out_id: res.slaveOut.id,
-        slave_out_nRisultatoNorm: res.slaveOut.nRisultatoNorm,
-        slave_out_nErroreNorm: res.slaveOut.nErroreNorm,
-        slave_out_nErroreNormDescription: res.slaveOut.nErroreNorm!== null ? postelNErrorNormFromCode(res.slaveOut.nErroreNorm) : null,
-        slave_out_sSiglaProv: res.slaveOut.sSiglaProv,
-        slave_out_fPostalizzabile: res.slaveOut.fPostalizzabile,
-        slave_out_sStatoUff: res.slaveOut.sStatoUff,
-        slave_out_sStatoAbb: res.slaveOut.sStatoAbb,
-        slave_out_sStatoSpedizione: res.slaveOut.sStatoSpedizione,
-        slave_out_sComuneUff: res.slaveOut.sComuneUff,
-        slave_out_sComuneAbb: res.slaveOut.sComuneAbb,
-        slave_out_sComuneSpedizione: res.slaveOut.sComuneSpedizione,
-        slave_out_sFrazioneUff: res.slaveOut.sFrazioneUff,
-        slave_out_sFrazioneAbb: res.slaveOut.sFrazioneAbb,
-        slave_out_sFrazioneSpedizione: res.slaveOut.sFrazioneSpedizione,
-        slave_out_sCivicoAltro: res.slaveOut.sCivicoAltro,
-        slave_out_sCap: res.slaveOut.sCap,
-        slave_out_sPresso: res.slaveOut.sPresso,
-        slave_out_sViaCompletaUff: res.slaveOut.sViaCompletaUff,
-        slave_out_sViaCompletaAbb: res.slaveOut.sViaCompletaAbb,
-        slave_out_sViaCompletaSpedizione: res.slaveOut.sViaCompletaSpedizione,
+    const masterOut = res?.masterOut
+        ? {
+            master_out_id: res.masterOut.id ?? null,
+            master_out_nRisultatoNorm: res.masterOut.nRisultatoNorm ?? null,
+            master_out_nErroreNorm: res.masterOut.nErroreNorm ?? null,
+            master_out_nErroreNormDescription:
+                res.masterOut.nErroreNorm != null
+                    ? postelNErrorNormFromCode(res.masterOut.nErroreNorm)
+                    : null,
+            master_out_sSiglaProv: res.masterOut.sSiglaProv ?? null,
+            master_out_fPostalizzabile: res.masterOut.fPostalizzabile ?? null,
+            master_out_sStatoUff: res.masterOut.sStatoUff ?? null,
+            master_out_sStatoAbb: res.masterOut.sStatoAbb ?? null,
+            master_out_sStatoSpedizione: res.masterOut.sStatoSpedizione ?? null,
+            master_out_sComuneUff: res.masterOut.sComuneUff ?? null,
+            master_out_sComuneAbb: res.masterOut.sComuneAbb ?? null,
+            master_out_sComuneSpedizione: res.masterOut.sComuneSpedizione ?? null,
+            master_out_sFrazioneUff: res.masterOut.sFrazioneUff ?? null,
+            master_out_sFrazioneAbb: res.masterOut.sFrazioneAbb ?? null,
+            master_out_sFrazioneSpedizione: res.masterOut.sFrazioneSpedizione ?? null,
+            master_out_sCivicoAltro: res.masterOut.sCivicoAltro ?? null,
+            master_out_sCap: res.masterOut.sCap ?? null,
+            master_out_sPresso: res.masterOut.sPresso ?? null,
+            master_out_sViaCompletaUff: res.masterOut.sViaCompletaUff ?? null,
+            master_out_sViaCompletaAbb: res.masterOut.sViaCompletaAbb ?? null,
+            master_out_sViaCompletaSpedizione: res.masterOut.sViaCompletaSpedizione ?? null
+        }
+        : {};
 
-        // MASTER OUT
-        master_out_id: res.masterOut.id,
-        master_out_nRisultatoNorm: res.masterOut.nRisultatoNorm,
-        master_out_nErroreNorm: res.masterOut.nErroreNorm,
-        master_out_nErroreNormDescription: res.masterOut.nErroreNorm !== null ? postelNErrorNormFromCode(res.masterOut.nErroreNorm) : null,
-        master_out_sSiglaProv: res.masterOut.sSiglaProv,
-        master_out_fPostalizzabile: res.masterOut.fPostalizzabile,
-        master_out_sStatoUff: res.masterOut.sStatoUff,
-        master_out_sStatoAbb: res.masterOut.sStatoAbb,
-        master_out_sStatoSpedizione: res.masterOut.sStatoSpedizione,
-        master_out_sComuneUff: res.masterOut.sComuneUff,
-        master_out_sComuneAbb: res.masterOut.sComuneAbb,
-        master_out_sComuneSpedizione: res.masterOut.sComuneSpedizione,
-        master_out_sFrazioneUff: res.masterOut.sFrazioneUff,
-        master_out_sFrazioneAbb: res.masterOut.sFrazioneAbb,
-        master_out_sFrazioneSpedizione: res.masterOut.sFrazioneSpedizione,
-        master_out_sCivicoAltro: res.masterOut.sCivicoAltro,
-        master_out_sCap: res.masterOut.sCap,
-        master_out_sPresso: res.masterOut.sPresso,
-        master_out_sViaCompletaUff: res.masterOut.sViaCompletaUff,
-        master_out_sViaCompletaAbb: res.masterOut.sViaCompletaAbb,
-        master_out_sViaCompletaSpedizione: res.masterOut.sViaCompletaSpedizione
+    return {
+        ...base,
+        ...slaveOut,
+        ...masterOut
     };
 }
-
 function checkNormalizerItem({normalizer}) {
     const { eventName, batchId, oldFileKey, oldOutputFileKey, newFileKey, newOutputFileKey } = normalizer;
     const outputChanged = oldOutputFileKey !== newOutputFileKey;

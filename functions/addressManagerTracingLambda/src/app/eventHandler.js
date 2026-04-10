@@ -84,12 +84,17 @@ const processSingleEvent = async (event) => {
 
         const itemsList = await handler();
 
-        if (itemsList?.length) {
-            await putRecordBatch(itemsList);
+        const validItems = (itemsList ?? []).filter(item => item != null);
+
+        if (validItems.length > 0) {
+            await putRecordBatch(validItems);
+        } else {
+            console.warn(`No valid items to put for ${eventType}`);
         }
 
         console.log(`Successfully processed ${eventType}`, {
-            recordCount: itemsList?.length || 0
+            recordCount: validItems.length,
+            discardedCount: (itemsList?.length ?? 0) - validItems.length
         });
 
         return { success: true };
