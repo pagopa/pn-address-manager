@@ -943,14 +943,6 @@ Resources:
             Resource:
               - !GetAtt AddressManagerTracingFirehose.Outputs.DeliveryStreamArn
 
-  AddressManagerTracingLambdaAlarms:
-    Type: AWS::CloudFormation::Stack
-    Properties:
-      TemplateURL: !Sub "${TemplateBucketBaseUrl}/fragments/lambda-alarms.yaml"
-      Parameters:
-        FunctionName: !Ref AddressManagerTracingLambda
-        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-
   AddressManagerTracingLambdaSQSSource:
     Type: AWS::Lambda::EventSourceMapping
     Properties:
