@@ -41,6 +41,9 @@ Parameters:
     Default: '001'
     Description: Optional suffix for tracing S3 Table bucket name to avoid naming collisions
 
+  LogsKinesisSourceStreamArn:
+    Type: String
+    Description: 'Where to send Logs'
 
 Resources:
   # Log group
@@ -54,6 +57,7 @@ Resources:
         LogGroupName: !Sub "${ProjectName}-address-manager"
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/ecs'
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
 
   # Event Bus
   AddressManagerEventBus:
