@@ -79,6 +79,22 @@ Parameters:
     Default: ''
     Description: 'Escaped JSON object containing trusted headers enforced by the private channel proxy; leave empty when enforcement is not required'
 
+  PrivateChannelProxyRequestPayloadLoggingEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: 'Enable inbound request payload logging for the private channel proxy'
+
+  PrivateChannelProxyResponsePayloadLoggingEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: 'Enable outbound response payload logging for the private channel proxy'
+
   PrivateChannelProxyTarget4xxAlarmThreshold:
     Type: Number
     Default: 1
@@ -733,13 +749,15 @@ Resources:
     Properties:
       TemplateURL: !Sub '${TemplateBucketBaseUrl}/fragments/private-link-routing.yaml'
       Parameters:
-        ProjectName: !Ref ProjectName
         ChannelId: 'address-manager'
         LambdasBucketName: !Ref LambdasBucketName
         LambdasBasePath: !Ref LambdasBasePath
         TemplateBucketBaseUrl: !Ref TemplateBucketBaseUrl
         ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
+        RequestPayloadLoggingEnabled: !Ref PrivateChannelProxyRequestPayloadLoggingEnabled
+        ResponsePayloadLoggingEnabled: !Ref PrivateChannelProxyResponsePayloadLoggingEnabled
         LogRetention: !Ref LogRetention
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
         VpcId: !Ref VpcId
         Subnets: !Ref SubnetsIds
         AlbSecurityGroup: !Ref AlbSecurityGroup
@@ -760,15 +778,12 @@ Resources:
       TemplateURL: !Sub '${TemplateBucketBaseUrl}/fragments/alb-tg-alarms.yaml'
       Parameters:
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
-        MetricPrefix: !Sub '${ProjectName}-address-manager-private-link-proxy'
+        AlarmPrefix: !Sub '${ProjectName}-address-manager'
         ApplicationLoadBalancerMetricsDimensionName: !Ref ApplicationLoadBalancerMetricsDimensionName
         TargetGroupName: !GetAtt AddressManagerPrivateLinkRouting.Outputs.ProxyTargetGroupFullName
-        TargetType: lambda
         Target4xxThreshold: !Ref PrivateChannelProxyTarget4xxAlarmThreshold
         Target5xxThreshold: !Ref PrivateChannelProxyTarget5xxAlarmThreshold
-        HasLambdaInternalErrorAlarm: 'true'
         LambdaInternalErrorThreshold: !Ref PrivateChannelProxyLambdaInternalErrorAlarmThreshold
-        HasLambdaUserErrorAlarm: 'true'
         LambdaUserErrorThreshold: !Ref PrivateChannelProxyLambdaUserErrorAlarmThreshold
 
 
