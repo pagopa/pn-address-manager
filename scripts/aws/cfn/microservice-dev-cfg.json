@@ -50,6 +50,7 @@
     "EnvironmentType": "dev",
     "CoreSsoAdminRole": "AWSReservedSSO_FullAdmin_43958289ef7e269c",
     "TracingAdditionalTablePrincipals": "ntt-dev",
-    "TracingAdditionalCrossAccountPrincipals": "ntt-dev"
+    "TracingAdditionalCrossAccountPrincipals": "ntt-dev",
+    "PrivateChannelProxyEnabled": "true"
   }
 }
