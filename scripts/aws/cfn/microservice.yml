@@ -56,16 +56,6 @@ Parameters:
     Default: ''
     Description: 'Dedicated load balancer listener for the ConsNorm PrivateLink channel'
 
-  LambdasBucketName:
-    Type: String
-    Default: ''
-    Description: 'Bucket containing shared Lambda artifacts'
-
-  LambdasBasePath:
-    Type: String
-    Default: ''
-    Description: 'Base path containing shared Lambda artifacts'
-
   PrivateChannelProxyEnabled:
     Type: String
     Default: 'false'
@@ -750,8 +740,8 @@ Resources:
       TemplateURL: !Sub '${TemplateBucketBaseUrl}/fragments/private-link-routing.yaml'
       Parameters:
         ChannelId: 'address-manager'
-        LambdasBucketName: !Ref LambdasBucketName
-        LambdasBasePath: !Ref LambdasBasePath
+        LambdasBucketName: !Ref MicroserviceBucketName
+        LambdasBasePath: !Sub '${MicroserviceBucketBaseKey}/functions_zip'
         TemplateBucketBaseUrl: !Ref TemplateBucketBaseUrl
         ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
         RequestPayloadLoggingEnabled: !Ref PrivateChannelProxyRequestPayloadLoggingEnabled
