@@ -47,10 +47,73 @@ Parameters:
     Type: String
     Description: 'Load balancer listener where HTTP endpoints is going to be registered'
 
+  ApplicationLoadBalancerMetricsDimensionName:
+    Type: String
+    Description: 'ALB name (used by alarm metrics)'
+
+  ConsNormPrivateLinkListenerArn:
+    Type: String
+    Default: ''
+    Description: 'Dedicated load balancer listener for the ConsNorm PrivateLink channel'
+
+  PrivateChannelProxyEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: 'Enable the Lambda proxy/enforcer variant for the dedicated PrivateLink channel'
+
+  PrivateChannelProxyTrustedHeaders:
+    Type: String
+    Default: ''
+    Description: 'Escaped JSON object containing trusted headers enforced by the private channel proxy; leave empty when enforcement is not required'
+
+  PrivateChannelProxyRequestPayloadLoggingEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: 'Enable inbound request payload logging for the private channel proxy'
+
+  PrivateChannelProxyResponsePayloadLoggingEnabled:
+    Type: String
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+    Description: 'Enable outbound response payload logging for the private channel proxy'
+
+  PrivateChannelProxyTarget4xxAlarmThreshold:
+    Type: Number
+    Default: 1
+    Description: 'Target 4xx threshold for private channel proxy target group alarms'
+
+  PrivateChannelProxyTarget5xxAlarmThreshold:
+    Type: Number
+    Default: 1
+    Description: 'Target 5xx threshold for private channel proxy target group alarms'
+
+  PrivateChannelProxyLambdaInternalErrorAlarmThreshold:
+    Type: Number
+    Default: 1
+    Description: 'Lambda internal error threshold for private channel proxy target group alarms'
+
+  PrivateChannelProxyLambdaUserErrorAlarmThreshold:
+    Type: Number
+    Default: 1
+    Description: 'Lambda user error threshold for private channel proxy target group alarms'
+
+  LogRetention:
+    Type: Number
+    Default: 14
+    Description: 'CloudWatch log retention in days for the private channel proxy'
+
   ApplicationLoadBalancerDomain:
     Type: String
     Description: 'Is the base URL of the load balancer where the service is going to be reachable'
-  
+
   LogsKinesisSourceStreamArn:
     Type: String
     Description: 'Kinesis stream that receive logs'
@@ -566,6 +629,13 @@ Parameters:
       ARN is built automatically using PnCoreAwsAccountId.
       Example: ntt-dev,other-role
 
+Conditions:
+  HasAlarmTopic: !Not [ !Equals [ !Ref AlarmSNSTopicArn, '-' ] ]
+  IsPrivateChannelProxyEnabled: !Equals [ !Ref PrivateChannelProxyEnabled, 'true' ]
+  UsePrivateChannelProxyTargetGroupAlarms: !And
+    - !Condition IsPrivateChannelProxyEnabled
+    - !Condition HasAlarmTopic
+
 Resources:
 
   # PN-address-manager microservice
@@ -663,6 +733,48 @@ Resources:
         TaskRoleManagedPolicyArn: !Ref AddressManagerMicroserviceTaskManagedPolicy
         EcsLogGroup: !Ref EcsLogGroup
         LogAlarmStrategyV1: !Ref LogAlarmStrategy
+
+  AddressManagerPrivateLinkRouting:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub '${TemplateBucketBaseUrl}/fragments/private-link-routing.yaml'
+      Parameters:
+        ChannelId: 'address-manager'
+        LambdasBucketName: !Ref MicroserviceBucketName
+        LambdasBasePath: !Sub '${MicroserviceBucketBaseKey}/functions_zip'
+        TemplateBucketBaseUrl: !Ref TemplateBucketBaseUrl
+        ApplicationLoadBalancerDomain: !Ref ApplicationLoadBalancerDomain
+        RequestPayloadLoggingEnabled: !Ref PrivateChannelProxyRequestPayloadLoggingEnabled
+        ResponsePayloadLoggingEnabled: !Ref PrivateChannelProxyResponsePayloadLoggingEnabled
+        LogRetention: !Ref LogRetention
+        LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
+        VpcId: !Ref VpcId
+        Subnets: !Ref SubnetsIds
+        AlbSecurityGroup: !Ref AlbSecurityGroup
+        PrivateLinkProxyEnabled: !Ref PrivateChannelProxyEnabled
+        PrivateLinkListenerArn: !Ref ConsNormPrivateLinkListenerArn
+        PrivateLinkRulePriority: !Ref MicroserviceNumber
+        PrivateLinkMappedPaths: '/normalizzatore-ingress/*'
+        ApplicationTargetGroupArn: !Sub
+          - 'arn:${AWS::Partition}:elasticloadbalancing:${AWS::Region}:${AWS::AccountId}:${TargetGroupName}'
+          - TargetGroupName: !GetAtt AddressManagerMicroservice.Outputs.TargetGroupName
+        TrustedHeaders: !Ref PrivateChannelProxyTrustedHeaders
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+
+  AddressManagerPrivateLinkProxyTargetGroupAlarms:
+    Type: AWS::CloudFormation::Stack
+    Condition: UsePrivateChannelProxyTargetGroupAlarms
+    Properties:
+      TemplateURL: !Sub '${TemplateBucketBaseUrl}/fragments/alb-tg-alarms.yaml'
+      Parameters:
+        AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        AlarmPrefix: !Sub '${ProjectName}-address-manager'
+        ApplicationLoadBalancerMetricsDimensionName: !Ref ApplicationLoadBalancerMetricsDimensionName
+        TargetGroupName: !GetAtt AddressManagerPrivateLinkRouting.Outputs.ProxyTargetGroupFullName
+        Target4xxThreshold: !Ref PrivateChannelProxyTarget4xxAlarmThreshold
+        Target5xxThreshold: !Ref PrivateChannelProxyTarget5xxAlarmThreshold
+        LambdaInternalErrorThreshold: !Ref PrivateChannelProxyLambdaInternalErrorAlarmThreshold
+        LambdaUserErrorThreshold: !Ref PrivateChannelProxyLambdaUserErrorAlarmThreshold
 
 
   AddressManagerTracingDeliveryRole:
