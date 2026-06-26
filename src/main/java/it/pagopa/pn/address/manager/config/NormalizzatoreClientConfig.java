@@ -17,7 +17,7 @@ public class NormalizzatoreClientConfig extends InsecureHttpsCommonBaseClient {
 
     @Bean
     NormalizzatoreApi normalizzatoreApi(PnAddressManagerConfig cfg) {
-        var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder()), "POSTEL");
+        var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), "POSTEL"));
         apiClient.setBasePath(cfg.getNormalizzatoreBasePath());
         return new NormalizzatoreApi(apiClient);
     }
