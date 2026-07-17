@@ -474,6 +474,84 @@ class DeduplicatesAddressServiceTest {
     }
 
     @Test
+    void deduplicaWithEqualityResultFalseShouldSetPNADDR003WhenNormalizedAddressMatchesMasterOut() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress tgt = analogIt("Via Milano 2", "00100", "Roma", "RM");
+        DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
+
+        AddressOut slave = addressOutIt(" via   roma 1 ", "00100", " roma ", "rm");
+        slave.setsCivicoAltro(" scala  A ");
+        slave.setsFrazioneSpedizione(" centro storico ");
+
+        AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+        master.setsCivicoAltro("Scala A");
+        master.setsFrazioneSpedizione("Centro   Storico");
+
+        DeduplicaResponse postelResp = new DeduplicaResponse();
+        postelResp.setSlaveOut(slave);
+        postelResp.setMasterOut(master);
+        postelResp.setRisultatoDedu(false);
+
+        CapModel capModel = new CapModel();
+        capModel.setCap("00100");
+
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(capRepo.findValidCap(any()))
+                .thenReturn(Mono.just(capModel));
+
+        StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
+                .assertNext(resp -> {
+                    assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
+                    assertThat(resp.getEqualityResult()).isTrue();
+                    assertThat(resp.getError()).isEqualTo("PNADDR003");
+                    assertThat(resp.getNormalizedAddress()).isNull();
+                })
+                .verifyComplete();
+
+        verify(postelClient).deduplica(any());
+        verify(capRepo).findValidCap("00100");
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(any());
+    }
+
+    @Test
+    void deduplicaWithEqualityResultFalseShouldKeepNormalizedAddressWhenItDoesNotMatchMasterOut() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress tgt = analogIt("Via Milano 2", "00100", "Roma", "RM");
+        DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
+
+        AddressOut slave = addressOutIt("Via Milano 2", "00100", "Roma", "RM");
+        AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+
+        DeduplicaResponse postelResp = new DeduplicaResponse();
+        postelResp.setSlaveOut(slave);
+        postelResp.setMasterOut(master);
+        postelResp.setRisultatoDedu(false);
+
+        CapModel capModel = new CapModel();
+        capModel.setCap("00100");
+
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(capRepo.findValidCap(any()))
+                .thenReturn(Mono.just(capModel));
+
+        StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
+                .assertNext(resp -> {
+                    assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
+                    assertThat(resp.getEqualityResult()).isFalse();
+                    assertThat(resp.getError()).isNull();
+                    assertThat(resp.getNormalizedAddress()).isNotNull();
+                    assertThat(resp.getNormalizedAddress().getAddressRow()).isEqualTo("Via Milano 2");
+                })
+                .verifyComplete();
+
+        verify(postelClient).deduplica(any());
+        verify(capRepo).findValidCap("00100");
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(any());
+    }
+
+    @Test
     void deduplicaOkWithFlagCsv() {
         when(pnAddressManagerConfig.getFlagCsv()).thenReturn(true);
         AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
