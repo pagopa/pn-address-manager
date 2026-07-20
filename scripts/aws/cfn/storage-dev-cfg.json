@@ -1,5 +1,6 @@
 {
   "Parameters": {
-    "TracingTableBucketSuffix": "001"
+    "TracingTableBucketSuffix": "001",
+    "EnableDownstreamSubscriptionFilter": "true"
   }
 }
