@@ -81,8 +81,7 @@ public class DeduplicatesAddressService {
             boolean equalityResult = addressUtils.compareAddress(
                     addressConverter.getAnalogAddressFromAddressOut(addressOut),
                     normalizedAddress,
-                    true,
-                    true);
+                    null);
             if (equalityResult){
                 deduplicatesResponse.setEqualityResult(true);
                 deduplicatesResponse.setError(DeduplicatesError.PNADDR003.name());
@@ -110,7 +109,7 @@ public class DeduplicatesAddressService {
         DeduplicatesResponse deduplicatesResponse = new DeduplicatesResponse();
         deduplicatesResponse.setCorrelationId(request.getCorrelationId());
         NormalizedAddressResponse normalizeAddressResponse = addressUtils.normalizeAddress(request.getTargetAddress(), request.getCorrelationId(), request.getCorrelationId());
-        deduplicatesResponse.setEqualityResult(addressUtils.compareAddress(request.getBaseAddress(), request.getTargetAddress(), false, normalizeAddressResponse.isItalian()));
+        deduplicatesResponse.setEqualityResult(addressUtils.compareAddress(request.getBaseAddress(), request.getTargetAddress(), normalizeAddressResponse.isItalian()));
         deduplicatesResponse.setError(normalizeAddressResponse.getError());
         deduplicatesResponse.setNormalizedAddress(normalizeAddressResponse.getNormalizedAddress());
         return deduplicatesResponse;
