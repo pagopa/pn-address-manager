@@ -331,7 +331,32 @@ class AddressUtilsTest {
         base.setCountry("42");
         base.setCap("42");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertTrue(addressUtils.compareAddress(base, base, true));
+        assertTrue(addressUtils.compareAddress(base, base, false, true));
+    }
+
+    @Test
+    void compareAddressShouldIgnoreCountryWhenRequestedAndNormalizeSpacesAndCase() {
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("Roma");
+        base.setCity2("Centro Storico");
+        base.setAddressRow("Via  Roma 1");
+        base.setAddressRow2("Scala A");
+        base.setPr("RM");
+        base.setCountry("ITALIA");
+        base.setCap("00100");
+
+        AnalogAddress target = new AnalogAddress();
+        target.setCity(" roma ");
+        target.setCity2("centro   storico");
+        target.setAddressRow(" via roma 1 ");
+        target.setAddressRow2("scala   a");
+        target.setPr("rm");
+        target.setCountry(null);
+        target.setCap("00100");
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertTrue(addressUtils.compareAddress(base, target, true, true));
+        assertFalse(addressUtils.compareAddress(base, target, false, true));
     }
 
     @Test
@@ -679,7 +704,7 @@ class AddressUtilsTest {
         base.setCountry("42");
         base.setCap("42");
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertTrue(addressUtils.compareAddress(base, base, false));
+        assertTrue(addressUtils.compareAddress(base, base, false, false));
     }
 
     @Test
@@ -688,7 +713,7 @@ class AddressUtilsTest {
         base.setCity("42");
         AnalogAddress target = new AnalogAddress();
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
-        assertFalse(addressUtils.compareAddress(base, target, true));
+        assertFalse(addressUtils.compareAddress(base, target, false, true));
     }
 
     @Test
