@@ -45,6 +45,14 @@ Parameters:
     Type: String
     Description: 'Where to send Logs'
 
+  EnableDownstreamSubscriptionFilter:
+    Type: String
+    Default: false
+    Description: Enable downstream subscription filter
+    AllowedValues:
+      - true
+      - false
+
 Resources:
   # Log group
   PnAddressManagerLogGroup:
@@ -58,7 +66,8 @@ Resources:
         LogGroupRetention: !Ref LogRetention
         LogGroupPrefix: '/aws/ecs'
         LogsKinesisSourceStreamArn: !Ref LogsKinesisSourceStreamArn
-
+        LogEnableDownstreamSubscriptionFilter: !Ref EnableDownstreamSubscriptionFilter
+        
   # Event Bus
   AddressManagerEventBus:
     Type: AWS::Events::EventBus

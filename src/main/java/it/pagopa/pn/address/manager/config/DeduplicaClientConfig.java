@@ -14,7 +14,7 @@ public class DeduplicaClientConfig extends InsecureHttpsCommonBaseClient {
 
     @Bean
     DeduplicaApi deduplicaApi(PnAddressManagerConfig cfg) {
-        var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder()));
+        var apiClient = new ApiClient(initWebClient(ApiClient.buildWebClientBuilder(), "NORMALIZZATORE"));
         apiClient.setBasePath(cfg.getDeduplicaBasePath());
         return new DeduplicaApi(apiClient);
     }
