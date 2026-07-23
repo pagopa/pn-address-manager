@@ -335,6 +335,32 @@ class AddressUtilsTest {
     }
 
     @Test
+    void compareAddressShouldIgnoreCountryWhenIsItalianIsNullOrTrueAndNormalizeSpacesAndCase() {
+        AnalogAddress base = new AnalogAddress();
+        base.setCity("Roma");
+        base.setCity2("Centro Storico");
+        base.setAddressRow("Via  Roma 1");
+        base.setAddressRow2("Scala A");
+        base.setPr("RM");
+        base.setCountry("ITALIA");
+        base.setCap("00100");
+
+        AnalogAddress target = new AnalogAddress();
+        target.setCity(" roma ");
+        target.setCity2("centro   storico");
+        target.setAddressRow(" via roma 1 ");
+        target.setAddressRow2("scala   a");
+        target.setPr("rm");
+        target.setCountry(null);
+        target.setCap("00100");
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        assertTrue(addressUtils.compareAddress(base, target, null));
+        assertTrue(addressUtils.compareAddress(base, target, true));
+        assertFalse(addressUtils.compareAddress(base, target, false));
+    }
+
+    @Test
     void toObject() throws JsonProcessingException {
         PnRequest pnRequest = new PnRequest();
         pnRequest.setCorrelationId("correlationId");

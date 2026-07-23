@@ -115,6 +115,10 @@ public class AddressConverter {
         return target;
     }
 
+    public AnalogAddress getAnalogAddressFromAddressOut(AddressOut addressOut) {
+        return getAddress(addressOut);
+    }
+
     public NormalizzatoreBatch createPostelBatchByBatchIdAndFileKey(String batchId, String fileKey, String sha256) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         NormalizzatoreBatch batchPolling = new NormalizzatoreBatch();

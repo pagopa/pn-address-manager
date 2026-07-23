@@ -54,14 +54,19 @@ public class AddressUtils {
         this.objectMapper = objectMapper;
     }
 
-    public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress, boolean isItalian) {
-        return compare(baseAddress.getAddressRow(), targetAddress.getAddressRow())
+    public boolean compareAddress(AnalogAddress baseAddress, AnalogAddress targetAddress, Boolean isItalian) {
+        boolean equalsWithoutCountry = compare(baseAddress.getAddressRow(), targetAddress.getAddressRow())
                 && compare(baseAddress.getAddressRow2(), targetAddress.getAddressRow2())
                 && compare(baseAddress.getCap(), targetAddress.getCap())
                 && compare(baseAddress.getCity(), targetAddress.getCity())
                 && compare(baseAddress.getCity2(), targetAddress.getCity2())
-                && compare(baseAddress.getPr(), targetAddress.getPr())
-                && (isItalian || compare(baseAddress.getCountry(), targetAddress.getCountry()));
+                && compare(baseAddress.getPr(), targetAddress.getPr());
+
+        if (isItalian == null || isItalian) {
+            return equalsWithoutCountry;
+        }
+
+        return equalsWithoutCountry && compare(baseAddress.getCountry(), targetAddress.getCountry());
     }
 
     private boolean compare(String base, String target) {

@@ -1,9 +1,11 @@
 package it.pagopa.pn.address.manager.service;
 
+import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressOut;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.DeduplicatesError;
 import it.pagopa.pn.address.manager.constant.DeduplicatesResultDetails;
 import it.pagopa.pn.address.manager.converter.AddressConverter;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
@@ -65,10 +67,28 @@ public class DeduplicatesAddressService {
                 .flatMap(postelClient::deduplica)
                 .flatMap(deduplicaResponse -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaResponseEvent(deduplicaResponse))
                         .thenReturn(deduplicaResponse))
-                .map(deduplicaResponse -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(deduplicaResponse, request.getCorrelationId()))
+                .flatMap(deduplicaResponse -> Mono.just(addressConverter.createDeduplicatesResponseFromDeduplicaResponse(deduplicaResponse, request.getCorrelationId()))
                 .map(addressUtils::verifyRequiredFields)
                 .flatMap(capAndCountryService::verifyCapAndCountry)
+                .map(deduplicatesResponse -> compareNormalizedAddress(deduplicaResponse.getMasterOut(), deduplicatesResponse)))
                 .doOnError(error -> log.error("Error during deduplica call for request: [{}]", request.getCorrelationId(), error));
+    }
+
+    private DeduplicatesResponse compareNormalizedAddress(AddressOut addressOut, DeduplicatesResponse deduplicatesResponse) {
+        AnalogAddress normalizedAddress = deduplicatesResponse.getNormalizedAddress();
+        if (normalizedAddress != null && Boolean.FALSE.equals(deduplicatesResponse.getEqualityResult())) {
+
+            boolean equalityResult = addressUtils.compareAddress(
+                    addressConverter.getAnalogAddressFromAddressOut(addressOut),
+                    normalizedAddress,
+                    null);
+            if (equalityResult){
+                deduplicatesResponse.setEqualityResult(true);
+                deduplicatesResponse.setError(DeduplicatesError.PNADDR003.name());
+                deduplicatesResponse.setNormalizedAddress(null);
+            }
+        }
+        return deduplicatesResponse;
     }
 
     private static boolean areRequiredFieldsMissing(DeduplicatesRequest request) {
