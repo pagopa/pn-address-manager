@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
-import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.dto.NormalizzazioneResponse;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.dto.NormalizzazioneResponse;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationResponseDto;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import org.mockito.ArgumentCaptor;

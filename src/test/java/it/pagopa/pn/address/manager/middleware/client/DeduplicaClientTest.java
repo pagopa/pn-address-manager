@@ -1,9 +1,9 @@
 package it.pagopa.pn.address.manager.middleware.client;
 
-import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressIn;
-import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.ConfigIn;
-import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
-import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressIn;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.ConfigIn;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
 import io.netty.handler.timeout.ReadTimeoutException;
 import it.pagopa.pn.address.manager.MockServeConfig;
 import lombok.extern.slf4j.Slf4j;
