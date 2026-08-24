@@ -12,9 +12,9 @@ import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.CountryModel;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.ResourceLoader;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.util.ResourceUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -36,6 +36,7 @@ public class CsvService {
 
     private static final String VERIFY_CSV_ERROR = "Error during verify CSV";
     private final PnAddressManagerConfig pnAddressManagerConfig;
+    private final ResourceLoader resourceLoader;
 
     public <T> void writeItemsOnCsv(List<T> items, String nameFile, String directoryPath) {
         try (FileWriter writer = new FileWriter(new File(directoryPath, nameFile))) {
@@ -83,8 +84,8 @@ public class CsvService {
     }
 
     public Map<String, String> countryMap() {
-        try(FileReader fileReader = new FileReader(ResourceUtils.getFile("classpath:" + pnAddressManagerConfig.getCsv().getPathCountry()))) {
-            CsvToBeanBuilder<CountryModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
+        try(Reader reader = openClasspathResource(pnAddressManagerConfig.getCsv().getPathCountry())) {
+            CsvToBeanBuilder<CountryModel> csvToBeanBuilder = new CsvToBeanBuilder<>(reader);
             csvToBeanBuilder.withSkipLines(1);
             csvToBeanBuilder.withType(CountryModel.class);
             return csvToBeanBuilder.build().parse()
@@ -98,8 +99,8 @@ public class CsvService {
     }
 
     public List<CapModel> capList() {
-        try(FileReader fileReader = new FileReader(ResourceUtils.getFile("classpath:" + pnAddressManagerConfig.getCsv().getPathCap()))) {
-            CsvToBeanBuilder<CapModel> csvToBeanBuilder = new CsvToBeanBuilder<>(fileReader);
+        try(Reader reader = openClasspathResource(pnAddressManagerConfig.getCsv().getPathCap())) {
+            CsvToBeanBuilder<CapModel> csvToBeanBuilder = new CsvToBeanBuilder<>(reader);
             csvToBeanBuilder.withSkipLines(1);
             csvToBeanBuilder.withSeparator(';');
             csvToBeanBuilder.withType(CapModel.class);
@@ -110,6 +111,11 @@ public class CsvService {
         } catch (IOException e) {
             throw new PnInternalAddressManagerException(VERIFY_CSV_ERROR, "Error reading file: " + pnAddressManagerConfig.getCsv().getPathCap(), HttpStatus.INTERNAL_SERVER_ERROR.value(), ERROR_CODE_ADDRESS_MANAGER_CSVERROR);
         }
+    }
+
+    private Reader openClasspathResource(String path) throws IOException {
+        InputStream inputStream = resourceLoader.getResource(ResourceLoader.CLASSPATH_URL_PREFIX + path).getInputStream();
+        return new InputStreamReader(inputStream, StandardCharsets.UTF_8);
     }
 
 }
