@@ -1,7 +1,7 @@
 package it.pagopa.pn.address.manager.middleware.queue.producer;
 
-import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
-import _it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.middleware.queue.model.DeduplicateTracingEvent;
 import it.pagopa.pn.address.manager.middleware.queue.model.DeduplicateEventType;
 import it.pagopa.pn.api.dto.events.GenericEventHeader;

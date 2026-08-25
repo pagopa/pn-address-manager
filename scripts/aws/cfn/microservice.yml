@@ -663,8 +663,10 @@ Resources:
         AutoscalingDataPointN: !Ref AutoscalingDataPointN
         AutoscalingDataPointM: !Ref AutoscalingDataPointM
         AlarmSNSTopicArn: !Ref AlarmSNSTopicArn
+        JavaToolOptions: '--add-modules=java.instrument --add-opens=java.base/java.lang=ALL-UNNAMED'
+        JavaVersion: '25'
         ContainerImageURI: !Sub '${ContainerImageUri}'
-        ContainerEnvEntry1: !Sub 'AWS_REGION=${AWS::Region}'
+        ContainerEnvEntry1: !Sub 'AWS_REGIONCODE=${AWS::Region}'
         ContainerEnvEntry2: !Sub 'PN_ADDRESSMANAGER_EVENTBUS=${AddressManagerEventBusName}'
         ContainerEnvEntry3: !Sub 'PN_ADDRESSMANAGER_FLAGCSV=${flagCsv}'
         ContainerEnvEntry4: !Sub 'PN_ADDRESSMANAGER_HEALTHCHECKPATH=${HealthCheckPath}'
