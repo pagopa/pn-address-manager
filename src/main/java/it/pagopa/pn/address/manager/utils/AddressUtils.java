@@ -425,4 +425,39 @@ public class AddressUtils {
         if (isItalian && StringUtils.isBlank(analogAddress.getCap())) missing.add("cap");
         return missing;
     }
+
+    public boolean hasMinimumRequiredFieldsForAllItems(NormalizeItemsRequest normalizeItemsRequest) {
+        if (normalizeItemsRequest == null || CollectionUtils.isEmpty(normalizeItemsRequest.getRequestItems())) {
+            return false;
+        }
+
+        return normalizeItemsRequest.getRequestItems().stream()
+                .map(NormalizeRequest::getAddress)
+                .allMatch(this::hasMinimumRequiredFields);
+    }
+
+    public boolean hasMinimumRequiredFields(AnalogAddress analogAddress) {
+        return analogAddress != null
+                && StringUtils.isNotBlank(analogAddress.getAddressRow())
+                && StringUtils.isNotBlank(analogAddress.getCity());
+    }
+
+    public NormalizeItemsResult buildNotPostalizableItemsResult(NormalizeItemsRequest normalizeItemsRequest) {
+        NormalizeItemsResult result = new NormalizeItemsResult();
+        result.setCorrelationId(normalizeItemsRequest.getCorrelationId());
+        result.setResultItems(
+                normalizeItemsRequest.getRequestItems().stream()
+                        .map(item -> buildNotPostalizableItemResult(item.getId()))
+                        .toList()
+        );
+        return result;
+    }
+
+    private NormalizeResult buildNotPostalizableItemResult(String id) {
+        NormalizeResult normalizeResult = new NormalizeResult();
+        normalizeResult.setId(id);
+        normalizeResult.setError(PNADDR001_MESSAGE);
+        normalizeResult.setNormalizedAddress(null);
+        return normalizeResult;
+    }
 }

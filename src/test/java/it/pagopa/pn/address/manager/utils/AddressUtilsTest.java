@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.PNADDR001_MESSAGE;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.WORKING;
 import static it.pagopa.pn.address.manager.constant.ErrorNormEvaluationMode.AUTO;
@@ -1086,6 +1087,186 @@ class AddressUtilsTest {
 
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertFalse(addressUtils.verifyRequiredFields(results).isEmpty());
+    }
+
+    @Test
+    void hasMinimumRequiredFieldsForAllItems_shouldReturnFalse_whenRequestIsNull() {
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertFalse(addressUtils.hasMinimumRequiredFieldsForAllItems(null));
+    }
+
+    @Test
+    void hasMinimumRequiredFieldsForAllItems_shouldReturnFalse_whenRequestItemsIsNull() {
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corr-id");
+        request.setRequestItems(null);
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertFalse(addressUtils.hasMinimumRequiredFieldsForAllItems(request));
+    }
+
+    @Test
+    void hasMinimumRequiredFieldsForAllItems_shouldReturnFalse_whenRequestItemsIsEmpty() {
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corr-id");
+        request.setRequestItems(List.of());
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertFalse(addressUtils.hasMinimumRequiredFieldsForAllItems(request));
+    }
+
+    @Test
+    void hasMinimumRequiredFieldsForAllItems_shouldReturnTrue_whenAllItemsHaveMinimumRequiredFields() {
+        AnalogAddress firstAddress = new AnalogAddress();
+        firstAddress.setAddressRow("Via Roma 1");
+        firstAddress.setCity("Roma");
+
+        AnalogAddress secondAddress = new AnalogAddress();
+        secondAddress.setAddressRow("Via Milano 2");
+        secondAddress.setCity("Milano");
+
+        NormalizeRequest firstItem = new NormalizeRequest();
+        firstItem.setId("1");
+        firstItem.setAddress(firstAddress);
+
+        NormalizeRequest secondItem = new NormalizeRequest();
+        secondItem.setId("2");
+        secondItem.setAddress(secondAddress);
+
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corr-id");
+        request.setRequestItems(List.of(firstItem, secondItem));
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertTrue(addressUtils.hasMinimumRequiredFieldsForAllItems(request));
+    }
+
+    @Test
+    void hasMinimumRequiredFieldsForAllItems_shouldReturnFalse_whenAtLeastOneItemIsInvalid() {
+        AnalogAddress validAddress = new AnalogAddress();
+        validAddress.setAddressRow("Via Roma 1");
+        validAddress.setCity("Roma");
+
+        AnalogAddress invalidAddress = new AnalogAddress();
+        invalidAddress.setAddressRow("Via Milano 2");
+        invalidAddress.setCity(" ");
+
+        NormalizeRequest validItem = new NormalizeRequest();
+        validItem.setId("1");
+        validItem.setAddress(validAddress);
+
+        NormalizeRequest invalidItem = new NormalizeRequest();
+        invalidItem.setId("2");
+        invalidItem.setAddress(invalidAddress);
+
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corr-id");
+        request.setRequestItems(List.of(validItem, invalidItem));
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertFalse(addressUtils.hasMinimumRequiredFieldsForAllItems(request));
+    }
+
+    @Test
+    void hasMinimumRequiredFields_shouldReturnFalse_whenAddressIsNull() {
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertFalse(addressUtils.hasMinimumRequiredFields(null));
+    }
+
+    @Test
+    void hasMinimumRequiredFields_shouldReturnTrue_whenAddressRowAndCityArePresent() {
+        AnalogAddress address = new AnalogAddress();
+        address.setAddressRow("Via Roma 1");
+        address.setCity("Roma");
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertTrue(addressUtils.hasMinimumRequiredFields(address));
+    }
+
+    @Test
+    void hasMinimumRequiredFields_shouldReturnFalse_whenAddressRowIsBlank() {
+        AnalogAddress address = new AnalogAddress();
+        address.setAddressRow(" ");
+        address.setCity("Roma");
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertFalse(addressUtils.hasMinimumRequiredFields(address));
+    }
+
+    @Test
+    void hasMinimumRequiredFields_shouldReturnFalse_whenCityIsBlank() {
+        AnalogAddress address = new AnalogAddress();
+        address.setAddressRow("Via Roma 1");
+        address.setCity(" ");
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        assertFalse(addressUtils.hasMinimumRequiredFields(address));
+    }
+
+    @Test
+    void buildNotPostalizableItemsResult_shouldBuildOneErrorResultForEachRequestItem() {
+        NormalizeRequest firstItem = new NormalizeRequest();
+        firstItem.setId("id-1");
+        firstItem.setAddress(new AnalogAddress());
+
+        NormalizeRequest secondItem = new NormalizeRequest();
+        secondItem.setId("id-2");
+        secondItem.setAddress(new AnalogAddress());
+
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corr-id");
+        request.setRequestItems(List.of(firstItem, secondItem));
+
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        NormalizeItemsResult result = addressUtils.buildNotPostalizableItemsResult(request);
+
+        assertNotNull(result);
+        assertEquals("corr-id", result.getCorrelationId());
+        assertNotNull(result.getResultItems());
+        assertEquals(2, result.getResultItems().size());
+
+        NormalizeResult firstResult = result.getResultItems().get(0);
+        assertEquals("id-1", firstResult.getId());
+        assertEquals(PNADDR001_MESSAGE, firstResult.getError());
+        assertNull(firstResult.getNormalizedAddress());
+
+        NormalizeResult secondResult = result.getResultItems().get(1);
+        assertEquals("id-2", secondResult.getId());
+        assertEquals(PNADDR001_MESSAGE, secondResult.getError());
+        assertNull(secondResult.getNormalizedAddress());
+    }
+
+    @Test
+    void buildNotPostalizableItemsResult_shouldBuildSingleNotPostalizableResult() {
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        NormalizeItemsRequest normalizeItemsRequest = new NormalizeItemsRequest();
+        normalizeItemsRequest.setCorrelationId("corr-id");
+        normalizeItemsRequest.setRequestItems(
+                List.of(new NormalizeRequest().id("id-123").address(new AnalogAddress()))
+        );
+
+        NormalizeItemsResult result = addressUtils.buildNotPostalizableItemsResult(normalizeItemsRequest);
+
+        assertNotNull(result);
+        assertEquals("corr-id", result.getCorrelationId());
+        assertNotNull(result.getResultItems());
+        assertEquals(1, result.getResultItems().size());
+
+        NormalizeResult itemResult = result.getResultItems().get(0);
+        assertEquals("id-123", itemResult.getId());
+        assertEquals(PNADDR001_MESSAGE, itemResult.getError());
+        assertNull(itemResult.getNormalizedAddress());
     }
 }
 

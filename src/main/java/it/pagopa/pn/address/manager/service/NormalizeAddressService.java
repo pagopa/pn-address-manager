@@ -1,7 +1,6 @@
 package it.pagopa.pn.address.manager.service;
 
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
-import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
@@ -10,7 +9,6 @@ import it.pagopa.pn.address.manager.middleware.queue.consumer.event.PnPostelCall
 import it.pagopa.pn.address.manager.model.EventDetail;
 import it.pagopa.pn.address.manager.model.InternalCodeSqsDto;
 import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
-import it.pagopa.pn.address.manager.repository.ApiKeyRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import lombok.CustomLog;
@@ -89,6 +87,20 @@ public class NormalizeAddressService {
     public Mono<Void> handleRequest(PnNormalizeRequestEvent.Payload payload) {
         log.logStartingProcess(PROCESS_SERVICE_NORMALIZE_ADDRESS);
         log.info("Received normalizeAddressAsync request for correlationId: {}", payload.getNormalizeItemsRequest().getCorrelationId());
+
+        if (!addressUtils.hasMinimumRequiredFieldsForAllItems(payload.getNormalizeItemsRequest())) {
+            log.warn("Required fields are missing for request: [{}]", payload.getNormalizeItemsRequest().getCorrelationId());
+            return Mono.fromCallable(() -> addressUtils.buildNotPostalizableItemsResult(payload.getNormalizeItemsRequest()))
+                    .flatMap(result -> {
+                        log.info("normalizeAddressAsync fallback: correlationId={}, items={}",
+                                result.getCorrelationId(),
+                                result.getResultItems().size());
+                        return sendEvents(result, payload.getPnAddressManagerCxId());
+                    })
+                    .doOnError(throwable -> log.error("normalizeAddressAsync error: {}", throwable.getMessage(), throwable))
+                    .then();
+        }
+
         if (Boolean.TRUE.equals(pnAddressManagerConfig.getFlagCsv())) {
             return Mono.fromCallable(() -> addressUtils.normalizeRequestToResult(payload.getNormalizeItemsRequest()))
                     .flatMap(normalizeItemsResult -> {

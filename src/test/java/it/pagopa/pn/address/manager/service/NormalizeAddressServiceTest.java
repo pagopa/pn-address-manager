@@ -193,4 +193,77 @@ class NormalizeAddressServiceTest {
         when(normalizzatoreBatchService.getResponse(any(),any())).thenReturn(Mono.empty());
         StepVerifier.create(normalizeAddressService.handlePostelCallback(PnPostelCallbackEvent.Payload.builder().build())).expectNextCount(0).verifyComplete();
     }
+
+    @Test
+    void handleRequest_shouldUseFallbackWhenMinimumRequiredFieldsAreMissing() {
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setFlagCsv(true);
+
+        normalizeAddressService = new NormalizeAddressService(
+                eventService, addressUtils, sqsService, addressBatchRequestRepository,
+                apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService
+        );
+
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corrId");
+
+        NormalizeRequest item = new NormalizeRequest();
+        item.setId("id");
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setCity("Roma");
+        item.setAddress(analogAddress);
+
+        request.setRequestItems(List.of(item));
+
+        when(addressUtils.hasMinimumRequiredFieldsForAllItems(any())).thenReturn(false);
+        when(addressUtils.buildNotPostalizableItemsResult(any())).thenReturn(new NormalizeItemsResult());
+        when(addressUtils.toJson(any())).thenReturn("json");
+        when(eventService.sendEvent(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(
+                normalizeAddressService.handleRequest(
+                        PnNormalizeRequestEvent.Payload.builder()
+                                .pnAddressManagerCxId("cxId")
+                                .normalizeItemsRequest(request)
+                                .build()
+                )
+        ).verifyComplete();
+    }
+
+    @Test
+    void handleRequest_shouldProceedWithNormalFlowWhenMinimumRequiredFieldsArePresent() {
+        pnAddressManagerConfig = new PnAddressManagerConfig();
+        pnAddressManagerConfig.setFlagCsv(true);
+
+        normalizeAddressService = new NormalizeAddressService(
+                eventService, addressUtils, sqsService, addressBatchRequestRepository,
+                apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService
+        );
+
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corrId");
+
+        NormalizeRequest item = new NormalizeRequest();
+        item.setId("id");
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("Via Roma 1");
+        analogAddress.setCity("Roma");
+        item.setAddress(analogAddress);
+
+        request.setRequestItems(List.of(item));
+
+        when(addressUtils.hasMinimumRequiredFieldsForAllItems(any())).thenReturn(true);
+        when(addressUtils.normalizeRequestToResult(any())).thenReturn(new NormalizeItemsResult());
+        when(addressUtils.toJson(any())).thenReturn("json");
+        when(eventService.sendEvent(any())).thenReturn(Mono.empty());
+
+        StepVerifier.create(
+                normalizeAddressService.handleRequest(
+                        PnNormalizeRequestEvent.Payload.builder()
+                                .pnAddressManagerCxId("cxId")
+                                .normalizeItemsRequest(request)
+                                .build()
+                )
+        ).verifyComplete();
+    }
 }
