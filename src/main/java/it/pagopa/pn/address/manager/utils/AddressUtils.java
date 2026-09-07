@@ -433,7 +433,13 @@ public class AddressUtils {
 
         return normalizeItemsRequest.getRequestItems().stream()
                 .map(NormalizeRequest::getAddress)
-                .allMatch(this::hasMinimumRequiredFields);
+                .allMatch(address -> {
+                    boolean isValid = this.hasMinimumRequiredFields(address);
+                    if (!isValid) {
+                        log.warn("Address failed the MinimumRequiredFields check: {}", address);
+                    }
+                    return isValid;
+                });
     }
 
     public boolean hasMinimumRequiredFields(AnalogAddress analogAddress) {
@@ -442,6 +448,8 @@ public class AddressUtils {
                 && StringUtils.isNotBlank(analogAddress.getCity());
     }
 
+    // Se per uno stesso correlationId c'è almeno un indirizzo che non ha valorizzato via e/o città,
+    // allora tutti gli indirizzi verranno marcati come NON POSTALIZZABILI da Address Manager
     public NormalizeItemsResult buildNotPostalizableItemsResult(NormalizeItemsRequest normalizeItemsRequest) {
         NormalizeItemsResult result = new NormalizeItemsResult();
         result.setCorrelationId(normalizeItemsRequest.getCorrelationId());
