@@ -17,7 +17,6 @@ import lombok.CustomLog;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 import reactor.core.publisher.Mono;
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_SYNC;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_CHECKING_APIKEY;
@@ -57,7 +56,7 @@ public class DeduplicatesAddressService {
     }
 
     private Mono<DeduplicatesResponse> callPostel(DeduplicatesRequest request) {
-        if (areRequiredFieldsMissing(request)) {
+        if (!addressUtils.hasMinimumRequiredFields(request.getTargetAddress())) {
             log.warn("{} Required fields are missing for request: [{}]", ADDRESS_NORMALIZER_SYNC, request.getCorrelationId());
             return Mono.just(getDeduplicatesResponse(request));
         }
@@ -89,11 +88,6 @@ public class DeduplicatesAddressService {
             }
         }
         return deduplicatesResponse;
-    }
-
-    private static boolean areRequiredFieldsMissing(DeduplicatesRequest request) {
-        return !StringUtils.hasText(request.getTargetAddress().getCity()) ||
-                !StringUtils.hasText(request.getTargetAddress().getAddressRow());
     }
 
     private static DeduplicatesResponse getDeduplicatesResponse(DeduplicatesRequest request) {
