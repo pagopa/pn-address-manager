@@ -188,6 +188,8 @@ components:
           type: string
         sViaCompletaSpedizione:
           type: string
+        sCodiceCatastaleComune:
+          type: string
 
     Problem:
       required:
