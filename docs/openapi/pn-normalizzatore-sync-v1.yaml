@@ -1,9 +1,12 @@
 openapi: 3.0.3
 info:
-  title:  API fornite dal normalizzatore - servizio di deduplica
+  title:  API fornite dal normalizzatore in modalità sincrona
   version: 1.0.0
 tags:
-  - Deduplica
+  - name: Deduplica
+    description: Servizio di decuplica online.
+  - name: Normalizzatore
+    description: Servizio di normalizzazione sincrona.
 paths:
 
   /send-normalizzatore-ingress/v1/deduplica:
@@ -28,6 +31,41 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeduplicaResponse'
+        '400':
+          description: Bad request
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+        '500':
+          description: Internal error
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Problem'
+
+  /send-normalizzatore-ingress/v1/normalizzazionesync:
+    post:
+      operationId: normalizzazioneSync
+      tags:
+        - Normalizzatore
+      summary: PN richiede la normalizzazione sincrona.
+      parameters:
+        - $ref: '#/components/parameters/xPagopaAddrManCxId'
+        - $ref: '#/components/parameters/xPagopaAddrManApiKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NormalizzazioneSyncRequest'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NormalizzazioneSyncResponse'
         '400':
           description: Bad request
           content:
@@ -188,6 +226,27 @@ components:
           type: string
         sViaCompletaSpedizione:
           type: string
+
+    NormalizzazioneSyncRequest:
+      type: object
+      required:
+        - addressIn
+      properties:
+        addressIn:
+          $ref: '#/components/schemas/AddressIn'
+
+    NormalizzazioneSyncResponse:
+      type: object
+      description: >-
+        addressOut: obbligatorio in caso di risposta di successo
+        errore: valorizzato in caso di risposta con errore
+      properties:
+        addressOut:
+          $ref: '#/components/schemas/AddressOut'
+        errore:
+          type: string
+          description: >-
+            identificativo dell'errore
 
     Problem:
       required:
