@@ -117,6 +117,66 @@ class AddressConverterTest {
         assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
     }
 
+    @Test
+    void testCreateNormalizeSyncRequestFromRequest() {
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("Via Roma 1");
+        analogAddress.setAddressRow2("Scala A");
+        analogAddress.setCap("00100");
+        analogAddress.setCity("Roma");
+        analogAddress.setCity2("Centro");
+        analogAddress.setPr("RM");
+        analogAddress.setCountry("ITALIA");
+
+        it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncRequest request =
+                new it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncRequest();
+        request.setCorrelationId("corr-1");
+        request.setRequestItem(new it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest("id-1", analogAddress));
+
+        it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.NormalizzazioneSyncRequest mappedRequest =
+                addressConverter.createNormalizeSyncRequestFromRequest(request);
+
+        assertNotNull(mappedRequest.getAddressIn());
+        assertEquals("id-1", mappedRequest.getAddressIn().getId());
+        assertEquals("Via Roma 1", mappedRequest.getAddressIn().getIndirizzo());
+        assertEquals("Scala A", mappedRequest.getAddressIn().getIndirizzoAggiuntivo());
+        assertEquals("00100", mappedRequest.getAddressIn().getCap());
+        assertEquals("Roma", mappedRequest.getAddressIn().getLocalita());
+        assertEquals("Centro", mappedRequest.getAddressIn().getLocalitaAggiuntiva());
+        assertEquals("RM", mappedRequest.getAddressIn().getProvincia());
+        assertEquals("ITALIA", mappedRequest.getAddressIn().getStato());
+    }
+
+    @Test
+    void testCreateNormalizeSyncResponseFromResponse() {
+        AddressOut addressOut = new AddressOut();
+        addressOut.setsViaCompletaSpedizione("VIA ROMA 1");
+        addressOut.setsCivicoAltro("SCALA A");
+        addressOut.setsCap("00100");
+        addressOut.setsComuneSpedizione("ROMA");
+        addressOut.setsFrazioneSpedizione("CENTRO");
+        addressOut.setsSiglaProv("RM");
+        addressOut.setsStatoSpedizione("ITALIA");
+
+        it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.NormalizzazioneSyncResponse postelResponse =
+                new it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.NormalizzazioneSyncResponse();
+        postelResponse.setErrore("ERR001");
+        postelResponse.setAddressOut(addressOut);
+
+        it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncResponse response =
+                addressConverter.createNormalizeSyncResponseFromResponse(postelResponse);
+
+        assertEquals("ERR001", response.getError());
+        assertNotNull(response.getNormalizedAddress());
+        assertEquals("VIA ROMA 1", response.getNormalizedAddress().getAddressRow());
+        assertEquals("SCALA A", response.getNormalizedAddress().getAddressRow2());
+        assertEquals("00100", response.getNormalizedAddress().getCap());
+        assertEquals("ROMA", response.getNormalizedAddress().getCity());
+        assertEquals("CENTRO", response.getNormalizedAddress().getCity2());
+        assertEquals("RM", response.getNormalizedAddress().getPr());
+        assertEquals("ITALIA", response.getNormalizedAddress().getCountry());
+    }
+
     /**
      * Method under test: {@link AddressConverter#createDeduplicatesResponseFromDeduplicaResponse(DeduplicaResponse, String)}
      */
