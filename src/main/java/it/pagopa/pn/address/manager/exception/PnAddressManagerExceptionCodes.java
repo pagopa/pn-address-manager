@@ -18,6 +18,7 @@ public class PnAddressManagerExceptionCodes extends PnExceptionsCodes {
     public static final String ERROR_ADDRESS_MANAGER_READING_CSV = "Error reading CSV";
     public static final String ERROR_ADDRESS_MANAGER_READING_CSV_DESCRIPTION = "An error occurred while reading the CSV file";
     public static final String ERROR_ADDRESS_MANAGER_DEDUPLICA_ONLINE_ERROR_CODE = "DEDUPLICA_ONLINE_ERROR";
+    public static final String ERROR_ADDRESS_MANAGER_NORMALIZZAZIONE_SYNC_ONLINE_ERROR_CODE = "NORMALIZZAZIONE_SYNC_ONLINE_ERROR";
 
     public static final String APIKEY_DOES_NOT_EXISTS = "ApiKey does not exist";
 

@@ -3,9 +3,7 @@ package it.pagopa.pn.address.manager.converter;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.*;
 import it.pagopa.pn.address.manager.constant.*;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import lombok.AccessLevel;
 import lombok.CustomLog;
@@ -39,6 +37,23 @@ public class AddressConverter {
         inputDeduplica.setMasterIn(masterIn);
 
         return inputDeduplica;
+    }
+
+    public NormalizzazioneSyncRequest createNormalizeSyncRequestFromRequest(NormalizeSyncRequest normalizeSyncRequest) {
+        NormalizzazioneSyncRequest postelRequest = new NormalizzazioneSyncRequest();
+        if (normalizeSyncRequest != null && normalizeSyncRequest.getRequestItem() != null && normalizeSyncRequest.getRequestItem().getAddress() != null) {
+            postelRequest.setAddressIn(getAddressIn(normalizeSyncRequest.getRequestItem().getAddress(), normalizeSyncRequest.getCorrelationId()));
+        }
+        return postelRequest;
+    }
+
+    public NormalizeSyncResponse createNormalizeSyncResponseFromResponse(NormalizzazioneSyncResponse postelResponse) {
+        NormalizeSyncResponse response = new NormalizeSyncResponse();
+        response.setError(postelResponse.getErrore());
+        if (postelResponse.getAddressOut() != null) {
+            response.setNormalizedAddress(getAddress(postelResponse.getAddressOut()));
+        }
+        return response;
     }
 
     @NotNull
