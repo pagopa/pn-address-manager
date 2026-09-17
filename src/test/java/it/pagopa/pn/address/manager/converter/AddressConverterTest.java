@@ -1,15 +1,10 @@
 package it.pagopa.pn.address.manager.converter;
 
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.AddressIn;
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.AddressOut;
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.DeduplicaRequest;
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.DeduplicaResponse;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.*;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -128,16 +123,14 @@ class AddressConverterTest {
         analogAddress.setPr("RM");
         analogAddress.setCountry("ITALIA");
 
-        it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncRequest request =
-                new it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncRequest();
+        NormalizeSyncRequest request = new NormalizeSyncRequest();
         request.setCorrelationId("corr-1");
-        request.setRequestItem(new it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest("id-1", analogAddress));
+        request.setRequestItem(new NormalizeRequest("id-1", analogAddress));
 
-        it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.NormalizzazioneSyncRequest mappedRequest =
-                addressConverter.createNormalizeSyncRequestFromRequest(request);
+        NormalizzazioneSyncRequest mappedRequest = addressConverter.createNormalizeSyncRequestFromRequest(request);
 
         assertNotNull(mappedRequest.getAddressIn());
-        assertEquals("id-1", mappedRequest.getAddressIn().getId());
+        assertEquals("corr-1", mappedRequest.getAddressIn().getId());
         assertEquals("Via Roma 1", mappedRequest.getAddressIn().getIndirizzo());
         assertEquals("Scala A", mappedRequest.getAddressIn().getIndirizzoAggiuntivo());
         assertEquals("00100", mappedRequest.getAddressIn().getCap());
@@ -158,13 +151,11 @@ class AddressConverterTest {
         addressOut.setsSiglaProv("RM");
         addressOut.setsStatoSpedizione("ITALIA");
 
-        it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.NormalizzazioneSyncResponse postelResponse =
-                new it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.NormalizzazioneSyncResponse();
+        NormalizzazioneSyncResponse postelResponse = new NormalizzazioneSyncResponse();
         postelResponse.setErrore("ERR001");
         postelResponse.setAddressOut(addressOut);
 
-        it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncResponse response =
-                addressConverter.createNormalizeSyncResponseFromResponse(postelResponse);
+        NormalizeSyncResponse response = addressConverter.createNormalizeSyncResponseFromResponse(postelResponse);
 
         assertEquals("ERR001", response.getError());
         assertNotNull(response.getNormalizedAddress());
