@@ -164,6 +164,8 @@ components:
     NormalizeSyncResponse:
       type: object
       properties:
+        correlationId:
+          type: string
         error:
           type: string
           description: >-
