@@ -1,7 +1,7 @@
 package it.pagopa.pn.address.manager.config;
 
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.ApiClient;
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.api.DeduplicaApi;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.ApiClient;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.api.DeduplicaApi;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;

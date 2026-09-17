@@ -233,13 +233,13 @@
 							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.normalizzatore.v1.api</apiPackage>				</configuration>
 					</execution>
 					<execution>
-						<id>generate-client-postel-deduplica</id>
+						<id>generate-client-postel-normalizzatore-sync</id>
 						<goals>
 							<goal>generate</goal>
 						</goals>
 						<phase>process-resources</phase>
 						<configuration>
-							<inputSpec>${project.basedir}/docs/openapi/pn-normalizzatore-deduplica-v1.yaml</inputSpec>
+							<inputSpec>${project.basedir}/docs/openapi/pn-normalizzatore-sync-v1.yaml</inputSpec>
 							<generatorName>java</generatorName>
 							<library>webclient</library>
 							<generateApiDocumentation>false</generateApiDocumentation>
@@ -251,8 +251,8 @@
 								<swaggerAnnotations>false</swaggerAnnotations>
 								<openApiNullable>false</openApiNullable>
 							</configOptions>
-							<modelPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto</modelPackage>
-							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.deduplica.v1.api</apiPackage>			</configuration>
+							<modelPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.sync.v1.dto</modelPackage>
+							<apiPackage>${project.groupId}.address.manager.generated.openapi.msclient.postel.sync.v1.api</apiPackage>			</configuration>
 					</execution>
 					<execution>
 						<id>generate-normalizzatore-webhook-server</id>
