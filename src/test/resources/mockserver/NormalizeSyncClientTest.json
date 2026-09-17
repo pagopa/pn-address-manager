@@ -1,0 +1,32 @@
+[
+  {
+    "httpRequest": {
+      "method": "POST",
+      "path": "/send-normalizzatore-ingress/v1/normalizzazionesync",
+      "headers": {
+        "pn-address-manager-cx-id": [
+          "POSTEL"
+        ],
+        "x-api-key": [
+          "test"
+        ]
+      },
+      "body": {
+        "type": "JSON",
+        "json": "{\"addressIn\":{\"id\":\"addr-1\",\"cap\":\"80124\",\"localita\":\"Napoli\",\"indirizzo\":\"Via Napoli 12\",\"provincia\":\"NA\"}}",
+        "matchType": "ONLY_MATCHING_FIELDS"
+      }
+    },
+    "httpResponse": {
+      "statusCode": 200,
+      "headers": {
+        "Content-Type": [
+          "application/json"
+        ]
+      },
+      "body": "{\n  \"addressOut\": {\n    \"fPostalizzabile\": \"1\",\n    \"id\": \"addr-1\",\n    \"nErroreNorm\": 0,\n    \"nRisultatoNorm\": 1,\n    \"sCap\": \"80124\",\n    \"sCivicoAltro\": \"\",\n    \"sComuneAbb\": \"NAPOLI\",\n    \"sComuneSpedizione\": \"NAPOLI\",\n    \"sComuneUff\": \"NAPOLI\",\n    \"sFrazioneAbb\": \"\",\n    \"sFrazioneSpedizione\": \"\",\n    \"sFrazioneUff\": \"\",\n    \"sPresso\": \"\",\n    \"sSiglaProv\": \"NA\",\n    \"sStatoAbb\": \"ITALIA\",\n    \"sStatoSpedizione\": \"ITALIA\",\n    \"sStatoUff\": \"ITALIA\",\n    \"sViaCompletaAbb\": \"VIA NAPOLI 12\",\n    \"sViaCompletaSpedizione\": \"VIA NAPOLI 12\",\n    \"sViaCompletaUff\": \"VIA NAPOLI 12\"\n  },\n  \"errore\": \"\"\n}"
+    }
+  }
+]
+
+
