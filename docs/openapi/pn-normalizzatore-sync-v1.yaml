@@ -226,6 +226,8 @@ components:
           type: string
         sViaCompletaSpedizione:
           type: string
+        sCodiceCatastaleComune:
+          type: string
 
     NormalizzazioneSyncRequest:
       type: object
