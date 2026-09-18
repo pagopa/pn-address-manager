@@ -1,15 +1,10 @@
 package it.pagopa.pn.address.manager.converter;
 
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressIn;
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressOut;
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaRequest;
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.DeduplicaResponse;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.*;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.entity.NormalizzatoreBatch;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.commons.exceptions.PnInternalException;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
@@ -115,6 +110,62 @@ class AddressConverterTest {
         risultatoDeduplica.setMasterOut(addressOut);
         risultatoDeduplica.setErrore(errore);
         assertDoesNotThrow(() -> addressConverter.createDeduplicatesResponseFromDeduplicaResponse(risultatoDeduplica, "42"));
+    }
+
+    @Test
+    void testCreateNormalizeSyncRequestFromRequest() {
+        AnalogAddress analogAddress = new AnalogAddress();
+        analogAddress.setAddressRow("Via Roma 1");
+        analogAddress.setAddressRow2("Scala A");
+        analogAddress.setCap("00100");
+        analogAddress.setCity("Roma");
+        analogAddress.setCity2("Centro");
+        analogAddress.setPr("RM");
+        analogAddress.setCountry("ITALIA");
+
+        NormalizeSyncRequest request = new NormalizeSyncRequest();
+        request.setCorrelationId("corr-1");
+        request.setRequestItem(new NormalizeRequest("id-1", analogAddress));
+
+        NormalizzazioneSyncRequest mappedRequest = addressConverter.createNormalizeSyncRequestFromRequest(request);
+
+        assertNotNull(mappedRequest.getAddressIn());
+        assertEquals("corr-1", mappedRequest.getAddressIn().getId());
+        assertEquals("Via Roma 1", mappedRequest.getAddressIn().getIndirizzo());
+        assertEquals("Scala A", mappedRequest.getAddressIn().getIndirizzoAggiuntivo());
+        assertEquals("00100", mappedRequest.getAddressIn().getCap());
+        assertEquals("Roma", mappedRequest.getAddressIn().getLocalita());
+        assertEquals("Centro", mappedRequest.getAddressIn().getLocalitaAggiuntiva());
+        assertEquals("RM", mappedRequest.getAddressIn().getProvincia());
+        assertEquals("ITALIA", mappedRequest.getAddressIn().getStato());
+    }
+
+    @Test
+    void testCreateNormalizeSyncResponseFromResponse() {
+        AddressOut addressOut = new AddressOut();
+        addressOut.setsViaCompletaSpedizione("VIA ROMA 1");
+        addressOut.setsCivicoAltro("SCALA A");
+        addressOut.setsCap("00100");
+        addressOut.setsComuneSpedizione("ROMA");
+        addressOut.setsFrazioneSpedizione("CENTRO");
+        addressOut.setsSiglaProv("RM");
+        addressOut.setsStatoSpedizione("ITALIA");
+
+        NormalizzazioneSyncResponse postelResponse = new NormalizzazioneSyncResponse();
+        postelResponse.setErrore("ERR001");
+        postelResponse.setAddressOut(addressOut);
+
+        NormalizeSyncResponse response = addressConverter.createNormalizeSyncResponseFromResponse(postelResponse);
+
+        assertEquals("ERR001", response.getError());
+        assertNotNull(response.getNormalizedAddress());
+        assertEquals("VIA ROMA 1", response.getNormalizedAddress().getAddressRow());
+        assertEquals("SCALA A", response.getNormalizedAddress().getAddressRow2());
+        assertEquals("00100", response.getNormalizedAddress().getCap());
+        assertEquals("ROMA", response.getNormalizedAddress().getCity());
+        assertEquals("CENTRO", response.getNormalizedAddress().getCity2());
+        assertEquals("RM", response.getNormalizedAddress().getPr());
+        assertEquals("ITALIA", response.getNormalizedAddress().getCountry());
     }
 
     /**
