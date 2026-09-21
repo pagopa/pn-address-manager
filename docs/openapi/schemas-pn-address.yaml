@@ -149,4 +149,26 @@ components:
           x-field-extra-annotation: "@lombok.ToString.Exclude" # NO EXTERNAL
           type: string
           description: Seconda riga sulla busta.
-      
+
+    NormalizeSyncRequest:
+      type: object
+      required:
+        - requestItem
+        - correlationId
+      properties:
+        correlationId:
+          type: string
+        requestItem:
+          $ref: '#/components/schemas/NormalizeRequest'
+
+    NormalizeSyncResponse:
+      type: object
+      properties:
+        correlationId:
+          type: string
+        error:
+          type: string
+          description: >-
+            Codice di errore del servizio
+        normalizedAddress:
+          $ref: '#/components/schemas/AnalogAddress'

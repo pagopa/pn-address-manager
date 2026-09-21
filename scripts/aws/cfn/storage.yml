@@ -361,6 +361,8 @@ Resources:
               Type: string
             - Name: requestCreatedAt
               Type: string
+            - Name: sCodiceCatastale
+              Type: string
             - Name: slave_in_id
               Type: string
             - Name: slave_in_provincia
@@ -441,6 +443,8 @@ Resources:
               Type: string
             - Name: master_out_id
               Type: string
+            - Name: slave_out_sCodiceCatastale
+              Type: string
             - Name: master_out_nRisultatoNorm
               Type: int
             - Name: master_out_nErroreNorm
@@ -480,6 +484,8 @@ Resources:
             - Name: master_out_sViaCompletaAbb
               Type: string
             - Name: master_out_sViaCompletaSpedizione
+              Type: string
+            - Name: master_out_sCodiceCatastale
               Type: string
             - Name: idCodiceCliente
               Type: string

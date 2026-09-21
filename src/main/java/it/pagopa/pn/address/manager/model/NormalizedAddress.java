@@ -1,6 +1,6 @@
 package it.pagopa.pn.address.manager.model;
 
-import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.deduplica.v1.dto.AddressOut;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.AddressOut;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.annotation.JsonTypeName;
 import com.opencsv.bean.CsvBindByPosition;
@@ -27,7 +27,8 @@ import lombok.Data;
         AddressOut.JSON_PROPERTY_S_PRESSO,
         AddressOut.JSON_PROPERTY_S_VIA_COMPLETA_UFF,
         AddressOut.JSON_PROPERTY_S_VIA_COMPLETA_ABB,
-        AddressOut.JSON_PROPERTY_S_VIA_COMPLETA_SPEDIZIONE
+        AddressOut.JSON_PROPERTY_S_VIA_COMPLETA_SPEDIZIONE,
+        AddressOut.JSON_PROPERTY_S_CODICE_CATASTALE_COMUNE
 })
 @JsonTypeName("NormalizedAddress")
 public class NormalizedAddress {
@@ -111,4 +112,8 @@ public class NormalizedAddress {
     public static final String JSON_PROPERTY_S_VIA_COMPLETA_SPEDIZIONE = "sViaCompletaSpedizione";
     @CsvBindByPosition(position = 19)
     private String sViaCompletaSpedizione;
+
+    public static final String JSON_PROPERTY_S_CODICE_CATASTALE_COMUNE = "sCodiceCatastaleComune";
+    @CsvBindByPosition(position = 20)
+    private String sCodiceCatastaleComune;
 }
