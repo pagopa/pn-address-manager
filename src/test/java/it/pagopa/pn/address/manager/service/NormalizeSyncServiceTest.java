@@ -78,6 +78,7 @@ class NormalizeSyncServiceTest {
 
         StepVerifier.create(service.normalizeSync(CX_ID, API_KEY, request))
                 .assertNext(response -> {
+                    assertThat(response.getCorrelationId()).isEqualTo("corr-1");
                     assertThat(response.getError()).isNull();
                     assertThat(response.getNormalizedAddress()).isNotNull();
                     assertThat(response.getNormalizedAddress().getAddressRow()).isEqualTo("VIA ROMA 1");
@@ -122,5 +123,3 @@ class NormalizeSyncServiceTest {
         verifyNoInteractions(normalizeSyncClient);
     }
 }
-
-
