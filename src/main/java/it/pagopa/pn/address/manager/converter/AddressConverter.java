@@ -47,8 +47,10 @@ public class AddressConverter {
         return postelRequest;
     }
 
-    public NormalizeSyncResponse createNormalizeSyncResponseFromResponse(NormalizzazioneSyncResponse postelResponse) {
+    public NormalizeSyncResponse createNormalizeSyncResponseFromResponse(NormalizzazioneSyncResponse postelResponse,
+                                                                         String correlationId) {
         NormalizeSyncResponse response = new NormalizeSyncResponse();
+        response.setCorrelationId(correlationId);
         response.setError(postelResponse.getErrore());
         if (postelResponse.getAddressOut() != null) {
             response.setNormalizedAddress(getAddress(postelResponse.getAddressOut()));

@@ -35,7 +35,7 @@ public class NormalizeSyncService {
                 })
                 .map(unused -> addressConverter.createNormalizeSyncRequestFromRequest(request))
                 .flatMap(postelRequest -> normalizeSyncClient.normalizzazioneSync(pnAddressManagerCxId, xApiKey, postelRequest))
-                .map(addressConverter::createNormalizeSyncResponseFromResponse);
+                .map(postelResponse -> addressConverter.createNormalizeSyncResponseFromResponse(postelResponse, request.getCorrelationId()));
 
         return MDCUtils.addMDCToContextAndExecute(normalizeSyncResponseMono);
     }

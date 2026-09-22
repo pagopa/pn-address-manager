@@ -155,8 +155,9 @@ class AddressConverterTest {
         postelResponse.setErrore("ERR001");
         postelResponse.setAddressOut(addressOut);
 
-        NormalizeSyncResponse response = addressConverter.createNormalizeSyncResponseFromResponse(postelResponse);
+        NormalizeSyncResponse response = addressConverter.createNormalizeSyncResponseFromResponse(postelResponse, "corr-1");
 
+        assertEquals("corr-1", response.getCorrelationId());
         assertEquals("ERR001", response.getError());
         assertNotNull(response.getNormalizedAddress());
         assertEquals("VIA ROMA 1", response.getNormalizedAddress().getAddressRow());
@@ -349,4 +350,3 @@ class AddressConverterTest {
         return normalizer;
     }
 }
-
