@@ -41,8 +41,8 @@ public class AddressConverter {
 
     public NormalizzazioneSyncRequest createNormalizeSyncRequestFromRequest(NormalizeSyncRequest normalizeSyncRequest) {
         NormalizzazioneSyncRequest postelRequest = new NormalizzazioneSyncRequest();
-        if (normalizeSyncRequest != null && normalizeSyncRequest.getRequestItem() != null && normalizeSyncRequest.getRequestItem().getAddress() != null) {
-            postelRequest.setAddressIn(getAddressIn(normalizeSyncRequest.getRequestItem().getAddress(), normalizeSyncRequest.getCorrelationId()));
+        if (normalizeSyncRequest != null && normalizeSyncRequest.getAddress() != null) {
+            postelRequest.setAddressIn(getAddressIn(normalizeSyncRequest.getAddress(), normalizeSyncRequest.getCorrelationId()));
         }
         return postelRequest;
     }

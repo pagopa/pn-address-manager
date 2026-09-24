@@ -6,7 +6,6 @@ import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dt
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.NormalizzazioneSyncRequest;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.NormalizzazioneSyncResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncRequest;
 import it.pagopa.pn.address.manager.middleware.client.NormalizeSyncClient;
 import org.junit.jupiter.api.BeforeEach;
@@ -57,7 +56,7 @@ class NormalizeSyncServiceTest {
 
         NormalizeSyncRequest request = new NormalizeSyncRequest();
         request.setCorrelationId("corr-1");
-        request.setRequestItem(new NormalizeRequest("addr-1", analogAddress));
+        request.setAddress(analogAddress);
 
         NormalizzazioneSyncResponse postelResponse =
                 new NormalizzazioneSyncResponse();
@@ -111,7 +110,7 @@ class NormalizeSyncServiceTest {
     void normalizeSyncShouldStopWhenApiKeyCheckFails() {
         NormalizeSyncRequest request = new NormalizeSyncRequest();
         request.setCorrelationId("corr-1");
-        request.setRequestItem(new NormalizeRequest());
+        request.setAddress(new AnalogAddress());
 
         when(apiKeyUtils.checkApiKey(eq(CX_ID), eq(API_KEY)))
                 .thenReturn(Mono.error(new RuntimeException("api-key-error")));

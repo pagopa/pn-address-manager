@@ -86,6 +86,16 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/NormalizeSyncRequest"
+            example:
+              correlationId: "normalize-sync-20260924-001"
+              address:
+                addressRow: "Via Garibaldi 25"
+                addressRow2: "Piano 2"
+                cap: "00184"
+                city: "Roma"
+                pr: "RM"
+                country: "IT"
+                nameRow2: "Giulia Bianchi"
         required: true
       responses:
         "200":

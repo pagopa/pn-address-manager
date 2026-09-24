@@ -153,13 +153,13 @@ components:
     NormalizeSyncRequest:
       type: object
       required:
-        - requestItem
+        - address
         - correlationId
       properties:
         correlationId:
           type: string
-        requestItem:
-          $ref: '#/components/schemas/NormalizeRequest'
+        address:
+          $ref: '#/components/schemas/AnalogAddress'
 
     NormalizeSyncResponse:
       type: object
