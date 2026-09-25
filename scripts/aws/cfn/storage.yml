@@ -361,8 +361,6 @@ Resources:
               Type: string
             - Name: requestCreatedAt
               Type: string
-#            - Name: sCodiceCatastale
-#              Type: string
             - Name: slave_in_id
               Type: string
             - Name: slave_in_provincia
@@ -443,8 +441,6 @@ Resources:
               Type: string
             - Name: master_out_id
               Type: string
-#            - Name: slave_out_sCodiceCatastale
-#              Type: string
             - Name: master_out_nRisultatoNorm
               Type: int
             - Name: master_out_nErroreNorm
@@ -485,8 +481,6 @@ Resources:
               Type: string
             - Name: master_out_sViaCompletaSpedizione
               Type: string
-#            - Name: master_out_sCodiceCatastale
-#              Type: string
             - Name: idCodiceCliente
               Type: string
             - Name: provincia
@@ -545,6 +539,18 @@ Resources:
               Type: string
             - Name: sViaCompletaSpedizione
               Type: string
+# PN-21002: additional columns to add through Athena (string):
+#            - Name: sCodiceCatastale
+#              Type: string
+#            - Name: slave_out_sCodiceCatastale
+#              Type: string
+#            - Name: master_out_sCodiceCatastale
+#              Type: string
+# CloudFormation requires replacement when IcebergMetadata changes;
+# reusing the same table name may fail with AlreadyExists (409).
+# Keep the initial schema unchanged and apply Athena SQL migrations
+# before deploying writers of new fields, including in new environments.
+# https://docs.aws.amazon.com/AWSCloudFormation/latest/TemplateReference/aws-resource-s3tables-table.html#cfn-s3tables-table-icebergmetadata
 
 Outputs:
   ApiKeyTableArn:

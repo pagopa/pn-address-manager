@@ -84,7 +84,8 @@ function buildDeduplicaResponseItem(res) {
             slave_out_sPresso: res.slaveOut.sPresso ?? null,
             slave_out_sViaCompletaUff: res.slaveOut.sViaCompletaUff ?? null,
             slave_out_sViaCompletaAbb: res.slaveOut.sViaCompletaAbb ?? null,
-            slave_out_sViaCompletaSpedizione: res.slaveOut.sViaCompletaSpedizione ?? null
+            slave_out_sViaCompletaSpedizione: res.slaveOut.sViaCompletaSpedizione ?? null,
+            slave_out_sCodiceCatastale: res.slaveOut.sCodiceCatastale ?? null
         }
         : {};
 
@@ -113,7 +114,8 @@ function buildDeduplicaResponseItem(res) {
             master_out_sPresso: res.masterOut.sPresso ?? null,
             master_out_sViaCompletaUff: res.masterOut.sViaCompletaUff ?? null,
             master_out_sViaCompletaAbb: res.masterOut.sViaCompletaAbb ?? null,
-            master_out_sViaCompletaSpedizione: res.masterOut.sViaCompletaSpedizione ?? null
+            master_out_sViaCompletaSpedizione: res.masterOut.sViaCompletaSpedizione ?? null,
+            master_out_sCodiceCatastale: res.masterOut.sCodiceCatastale ?? null
         }
         : {};
 
@@ -199,6 +201,7 @@ async function processNormalizerResponse(data, csvPayload) {
             sViaCompletaUff:         col[17] || null,
             sViaCompletaAbb:         col[18] || null,
             sViaCompletaSpedizione:  col[19] || null,
+            sCodiceCatastale:        col[20] || null
         };
     });
 }
