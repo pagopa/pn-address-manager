@@ -125,7 +125,7 @@ class AddressConverterTest {
 
         NormalizeSyncRequest request = new NormalizeSyncRequest();
         request.setCorrelationId("corr-1");
-        request.setRequestItem(new NormalizeRequest("id-1", analogAddress));
+        request.setAddress(analogAddress);
 
         NormalizzazioneSyncRequest mappedRequest = addressConverter.createNormalizeSyncRequestFromRequest(request);
 

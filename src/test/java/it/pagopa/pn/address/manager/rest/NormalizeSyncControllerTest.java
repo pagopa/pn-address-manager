@@ -1,7 +1,6 @@
 package it.pagopa.pn.address.manager.rest;
 
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
-import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncRequest;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.NormalizeSyncResponse;
 import it.pagopa.pn.address.manager.service.NormalizeSyncService;
@@ -44,7 +43,7 @@ class NormalizeSyncControllerTest {
 
         NormalizeSyncRequest request = new NormalizeSyncRequest();
         request.setCorrelationId("corr-1");
-        request.setRequestItem(new NormalizeRequest("id-1", analogAddress));
+        request.setAddress(analogAddress);
 
         NormalizeSyncResponse response = new NormalizeSyncResponse();
         response.setNormalizedAddress(analogAddress);
@@ -55,5 +54,4 @@ class NormalizeSyncControllerTest {
         Assertions.assertNotNull(normalizeSyncController.normalizeSync("cxId", "apiKey", Mono.just(request), exchange));
     }
 }
-
 
