@@ -540,11 +540,11 @@ Resources:
             - Name: sViaCompletaSpedizione
               Type: string
 # PN-21002: additional columns to add through Athena (string):
-#            - Name: sCodiceCatastale
+#            - Name: sCodiceCatastaleComune
 #              Type: string
-#            - Name: slave_out_sCodiceCatastale
+#            - Name: slave_out_sCodiceCatastaleComune
 #              Type: string
-#            - Name: master_out_sCodiceCatastale
+#            - Name: master_out_sCodiceCatastaleComune
 #              Type: string
 # CloudFormation requires replacement when IcebergMetadata changes;
 # reusing the same table name may fail with AlreadyExists (409).
