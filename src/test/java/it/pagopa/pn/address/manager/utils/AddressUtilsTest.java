@@ -8,7 +8,10 @@ import it.pagopa.pn.address.manager.constant.DeduplicatesError;
 import it.pagopa.pn.address.manager.constant.ForeignValidationMode;
 import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.entity.PostelResponseCodeRecipient;
+import it.pagopa.pn.address.manager.entity.PostelResponseCodes;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.AddressOut;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.model.CapModel;
 import it.pagopa.pn.address.manager.model.NormalizedAddress;
@@ -19,6 +22,9 @@ import it.pagopa.pn.normalizzatore.webhook.generated.generated.openapi.server.v1
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -28,6 +34,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.PNADDR001_MESSAGE;
 import static it.pagopa.pn.address.manager.constant.BatchStatus.TAKEN_CHARGE;
@@ -513,7 +520,6 @@ class AddressUtilsTest {
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         assertNotNull(addressUtils.normalizeRequestToResult(normalizeItemsRequest));
         assertNotNull(addressUtils.mapToAcceptedResponse(normalizeItemsRequest));
-        NormalizedAddressResponse normalizedAddressResponse = addressUtils.normalizeAddress(analogAddress, "", "");
     }
 
     @Test
@@ -562,7 +568,7 @@ class AddressUtilsTest {
         when(pnAddressManagerConfig.getNormalizer()).thenReturn(normalizer);
         when(normalizer.getPostel()).thenReturn(postel);
         when(postel.getErrorNorm901EvaluationMode()).thenReturn(MANUAL.name());
-        NormalizedAddress normalizedAddress = getNormalizedAddress(42,901, 0);
+        NormalizedAddress normalizedAddress = getNormalizedAddress(42, 901, 0);
         NormalizedAddress normalizedAddress1 = getNormalizedAddress(0, 901, 0);
         AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
         List<NormalizedAddress> normalizedAddresses = new ArrayList<>();
@@ -793,6 +799,7 @@ class AddressUtilsTest {
         verify(csvService).capList();
         verify(csvService).countryMap();
     }
+
     /**
      * Method under test: {@link AddressUtils#validateForeignAddress(AnalogAddress)}
      */
@@ -1268,5 +1275,82 @@ class AddressUtilsTest {
         assertEquals(PNADDR001_MESSAGE, itemResult.getError());
         assertNull(itemResult.getNormalizedAddress());
     }
+
+    @Test
+    void constructPostelResponseCodesFromDeduplicaResponse_shouldReturnNull_whenResponseIsNull() {
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        PostelResponseCodes result = addressUtils.constructPostelResponseCodesFromDeduplicaResponse(null);
+
+        assertNull(result);
+    }
+
+    @Test
+    void constructPostelResponseCodesFromDeduplicaResponse_shouldReturnNull_whenSlaveOutIsNull() {
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+        DeduplicaResponse response = new DeduplicaResponse();
+        response.setSlaveOut(null);
+
+        PostelResponseCodes result = addressUtils.constructPostelResponseCodesFromDeduplicaResponse(response);
+
+        assertNull(result);
+    }
+
+    @Test
+    void constructPostelResponseCodesFromDeduplicaResponse_shouldMapAllFields_whennErroreNormIsNull() {
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        AddressOut slaveOut = new AddressOut();
+        slaveOut.setfPostalizzabile("1");
+        slaveOut.setnRisultatoNorm(10);
+        slaveOut.setnErroreNorm(null);
+
+        DeduplicaResponse response = new DeduplicaResponse();
+        response.setSlaveOut(slaveOut);
+
+        PostelResponseCodes result = addressUtils.constructPostelResponseCodesFromDeduplicaResponse(response);
+
+        assertNotNull(result);
+        assertNotNull(result.getPostelResponseCodeRecipient());
+        assertEquals(1, result.getPostelResponseCodeRecipient().getFPostalizzabile());
+        assertEquals(10, result.getPostelResponseCodeRecipient().getNRisultatoNorm());
+        assertNull(result.getPostelResponseCodeRecipient().getNErroreNorm());
+    }
+
+    private static Stream<Arguments> postalizzabileValuesProvider() {
+        return Stream.of(
+                Arguments.of("1", 1, 10, 20),
+                Arguments.of("", null, 10, 20),
+                Arguments.of(null, null, 10, 20),
+                Arguments.of("1  ", 1, 10, 20),
+                Arguments.of(" 2 ", 2, 10, 20)
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("postalizzabileValuesProvider")
+    void constructPostelResponseCodesFromDeduplicaResponse_shouldMapPostalizzabileSafely(String fPostalizzabile,
+                                                                                         Integer expectedPostalizzabile,
+                                                                                         Integer nRisultatoNorm,
+                                                                                         Integer nErroreNorm) {
+        AddressUtils addressUtils = new AddressUtils(csvService, pnAddressManagerConfig, objectMapper);
+
+        AddressOut slaveOut = new AddressOut();
+        slaveOut.setfPostalizzabile(fPostalizzabile);
+        slaveOut.setnRisultatoNorm(nRisultatoNorm);
+        slaveOut.setnErroreNorm(nErroreNorm);
+
+        DeduplicaResponse response = new DeduplicaResponse();
+        response.setSlaveOut(slaveOut);
+
+        PostelResponseCodes result = addressUtils.constructPostelResponseCodesFromDeduplicaResponse(response);
+
+        assertNotNull(result);
+        assertNotNull(result.getPostelResponseCodeRecipient());
+        assertEquals(expectedPostalizzabile, result.getPostelResponseCodeRecipient().getFPostalizzabile());
+        assertEquals(nRisultatoNorm, result.getPostelResponseCodeRecipient().getNRisultatoNorm());
+        assertEquals(nErroreNorm, result.getPostelResponseCodeRecipient().getNErroreNorm());
+    }
+
 }
 

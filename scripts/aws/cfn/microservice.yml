@@ -531,6 +531,11 @@ Parameters:
     Description: Custom read timeout for postel Client (milliseconds)
     Default: 30000
 
+  PnAddressManagerDeduplicateTtl:
+    Type: String
+    Description: 'Duration for TTL of deduplicate table setting after PN request completion (available temporal unit: seconds, minutes, hours, days)'
+    Default: 262800m
+
   PhysicalAddressForeignCountryValidationCharsValue:
     Type: String
     Description: 'Physical foreign address validation. Allowed Characters'
@@ -727,6 +732,7 @@ Resources:
         ContainerEnvEntry51: !Sub 'PN_CRON_ANALYZER=${PnCronAnalyzer}'
         ContainerEnvEntry52: !Sub 'WIRE_TAP_LOG=${WireTapLogActivation}'
         ContainerEnvEntry53: !Sub 'PN_ADDRESSMANAGER_SQS_TRACINGINPUTQUEUENAME=${PnAddressManagerTracingInputQueueName}'
+        ContainerEnvEntry54: !Sub 'PN_ADDRESSMANAGER_DEDUPLICATE_TTL=${PnAddressManagerDeduplicateTtl}'
         ContainerSecret1: !Sub 'PN_ADDRESSMANAGER_NORMALIZER_POSTELAUTHKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:PostelApiKey:AWSCURRENT:'
         ContainerSecret2: !Sub 'PN_ADDRESSMANAGER_APIKEY=arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:pn-AddressManager-Secrets:SafeStorageApiKey:AWSCURRENT:'
         MicroServiceSecretPrefix: pn-AddressManager-Secrets

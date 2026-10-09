@@ -27,4 +27,6 @@ public class AddressManagerConstant {
     public static final String PNADDR003_MESSAGE = "Invalid Normalized Response - Missed required fields: %s";
 	public static final String RETRY_SUFFIX = ".RETRY_";
 	public static final String CONTEXT_BATCH_ID = "batch_id:";
+	public static final String NORMALIZER_SERVICE = "NORMALIZER";
+	public static final String DEDUPLICATE_SERVICE = "DEDUPLICATE";
 }

@@ -10,6 +10,8 @@ import it.pagopa.pn.address.manager.entity.PostelResponseCodeRecipient;
 import it.pagopa.pn.address.manager.entity.PostelResponseCodes;
 import it.pagopa.pn.address.manager.exception.PnInternalAddressManagerException;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.pn.safe.storage.v1.dto.FileCreationRequestDto;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.AddressOut;
+import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.DeduplicaResponse;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.*;
 import it.pagopa.pn.address.manager.model.*;
 import it.pagopa.pn.address.manager.service.CsvService;
@@ -343,6 +345,24 @@ public class AddressUtils {
         postelResponseCodeRecipient.setFPostalizzabile(normalizedAddress.getFPostalizzabile());
         postelResponseCodeRecipient.setNRisultatoNorm(normalizedAddress.getNRisultatoNorm());
         postelResponseCodeRecipient.setNErroreNorm(normalizedAddress.getNErroreNorm());
+        postelResponseCodes.setPostelResponseCodeRecipient(postelResponseCodeRecipient);
+        return postelResponseCodes;
+    }
+
+    public PostelResponseCodes constructPostelResponseCodesFromDeduplicaResponse(DeduplicaResponse deduplicaResponse) {
+        if (Objects.isNull(deduplicaResponse) || Objects.isNull(deduplicaResponse.getSlaveOut())) {
+            return null;
+        }
+        AddressOut slaveOut = deduplicaResponse.getSlaveOut();
+        PostelResponseCodes postelResponseCodes = new PostelResponseCodes();
+        PostelResponseCodeRecipient postelResponseCodeRecipient = new PostelResponseCodeRecipient();
+        postelResponseCodeRecipient.setFPostalizzabile(
+                StringUtils.isBlank(slaveOut.getfPostalizzabile())
+                        ? null
+                        : Integer.valueOf(slaveOut.getfPostalizzabile().trim())
+        );
+        postelResponseCodeRecipient.setNRisultatoNorm(slaveOut.getnRisultatoNorm());
+        postelResponseCodeRecipient.setNErroreNorm(slaveOut.getnErroreNorm());
         postelResponseCodes.setPostelResponseCodeRecipient(postelResponseCodeRecipient);
         return postelResponseCodes;
     }

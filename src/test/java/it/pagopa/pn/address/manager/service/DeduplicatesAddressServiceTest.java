@@ -1,5 +1,7 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.entity.PnRequest;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.AddressOut;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.DeduplicaRequest;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.DeduplicaResponse;
@@ -10,8 +12,10 @@ import it.pagopa.pn.address.manager.entity.ApiKeyModel;
 import it.pagopa.pn.address.manager.entity.CapModel;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.AnalogAddress;
 import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesRequest;
+import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.DeduplicatesResponse;
 import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
 import it.pagopa.pn.address.manager.middleware.queue.producer.SqsSender;
+import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.repository.CapRepository;
 import it.pagopa.pn.address.manager.repository.CountryRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
@@ -24,7 +28,9 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
-
+import java.time.Duration;
+import java.util.concurrent.atomic.AtomicReference;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.DEDUPLICATE_SERVICE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -50,7 +56,11 @@ class DeduplicatesAddressServiceTest {
     @Mock
     private SqsSender sqsSender;
 
+    @Mock
+    private AddressBatchRequestRepository addressBatchRequestRepository;
+
     private DeduplicatesAddressService service;
+    private AddressUtils addressUtils;
 
     // valori comodi per i test
     private static final String CXID = "cx-123";
@@ -66,11 +76,16 @@ class DeduplicatesAddressServiceTest {
         lenient().when(pnAddressManagerConfig.getForeignValidationPattern()).thenReturn(null);
         lenient().when(pnAddressManagerConfig.getFlagCsv()).thenReturn(false);
         lenient().when(pnAddressManagerConfig.getEnableWhitelisting()).thenReturn(true);
+
+        PnAddressManagerConfig.Deduplicate deduplicate = mock(PnAddressManagerConfig.Deduplicate.class);
+        lenient().when(pnAddressManagerConfig.getDeduplicate()).thenReturn(deduplicate);
+        lenient().when(deduplicate.getTtl()).thenReturn(Duration.ofMinutes(10));
+
         CsvService csv = mock(CsvService.class);
-        AddressUtils addressUtils = new AddressUtils(csv, pnAddressManagerConfig, new ObjectMapper());
+        addressUtils = new AddressUtils(csv, pnAddressManagerConfig, new ObjectMapper());
         AddressConverter addressConverter = new AddressConverter();
         CapAndCountryService capAndCountryService = new CapAndCountryService(capRepo, countryRepo, pnAddressManagerConfig);
-        service = new DeduplicatesAddressService(addressUtils, postelClient, pnAddressManagerConfig, apiKeyUtils, capAndCountryService, addressConverter, sqsSender);
+        service = new DeduplicatesAddressService(addressUtils, postelClient, pnAddressManagerConfig, apiKeyUtils, capAndCountryService, addressConverter, sqsSender, addressBatchRequestRepository);
 
         // apiKey ok di default
         when(apiKeyUtils.checkApiKey(eq(CXID), eq(X_API_KEY))).thenReturn(Mono.just(new ApiKeyModel()));
@@ -120,6 +135,44 @@ class DeduplicatesAddressServiceTest {
         return r;
     }
 
+    private void assertPersistedPnRequest(DeduplicatesRequest request, DeduplicatesResponse response, DeduplicaResponse postelResponse) {
+        ArgumentCaptor<PnRequest> pnRequestCaptor = ArgumentCaptor.forClass(PnRequest.class);
+        verify(addressBatchRequestRepository, times(1)).create(pnRequestCaptor.capture());
+
+        PnRequest saved = pnRequestCaptor.getValue();
+        assertThat(saved.getCorrelationId()).isEqualTo(CORR_ID);
+        assertThat(saved.getClientId()).isEqualTo(CXID);
+        assertThat(saved.getXApiKey()).isEqualTo(X_API_KEY);
+        assertThat(saved.getService()).isEqualTo(DEDUPLICATE_SERVICE);
+        assertThat(saved.getStatus()).isEqualTo(BatchStatus.WORKED.name());
+        assertThat(saved.getAddresses()).isEqualTo(addressUtils.toJson(request));
+        assertThat(saved.getMessage()).isEqualTo(addressUtils.toJson(response));
+        assertThat(saved.getBatchId()).isNull();
+        assertThat(saved.getRetry()).isNull();
+        assertThat(saved.getLastReserved()).isNull();
+        assertThat(saved.getSendStatus()).isNull();
+        assertThat(saved.getAwsMessageId()).isNull();
+
+        if (postelResponse == null) {
+            assertThat(saved.getPostelResponseCodes()).isNull();
+            return;
+        }
+
+        assertThat(saved.getPostelResponseCodes()).hasSize(1);
+        var codes = saved.getPostelResponseCodes().getFirst();
+        assertThat(codes.getId()).isNull();
+        assertThat(codes.getPostelResponseCodeRecipient()).isNotNull();
+
+        AddressOut slaveOut = postelResponse.getSlaveOut();
+        Integer expectedFPostalizzabile = slaveOut.getfPostalizzabile() == null || slaveOut.getfPostalizzabile().isBlank()
+                ? null
+                : Integer.valueOf(slaveOut.getfPostalizzabile().trim());
+
+        assertThat(codes.getPostelResponseCodeRecipient().getFPostalizzabile()).isEqualTo(expectedFPostalizzabile);
+        assertThat(codes.getPostelResponseCodeRecipient().getNRisultatoNorm()).isEqualTo(slaveOut.getnRisultatoNorm());
+        assertThat(codes.getPostelResponseCodeRecipient().getNErroreNorm()).isEqualTo(slaveOut.getnErroreNorm());
+    }
+
 
     @Test
     void deduplicaErrorPNADDR003() {
@@ -135,6 +188,8 @@ class DeduplicatesAddressServiceTest {
         postelResp.setMasterOut(master);
         postelResp.setRisultatoDedu(true);
 
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
@@ -142,6 +197,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
                     assertThat(resp.getError()).isEqualTo("PNADDR003"); // settato da verifyRequiredFields
                     assertThat(resp.getNormalizedAddress()).isNull();
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -184,12 +240,14 @@ class DeduplicatesAddressServiceTest {
         postelResp.setRisultatoDedu(true);
 
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .assertNext(resp -> {
                     assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
                     assertThat(resp.getError()).isEqualTo("PNADDR003");
                     assertThat(resp.getNormalizedAddress()).isNull();
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -233,12 +291,14 @@ class DeduplicatesAddressServiceTest {
         postelResp.setRisultatoDedu(true);
 
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .assertNext(resp -> {
                     assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
                     assertThat(resp.getError()).isEqualTo("PNADDR001");
                     assertThat(resp.getNormalizedAddress()).isNull();
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -283,12 +343,14 @@ class DeduplicatesAddressServiceTest {
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
         when(capRepo.findValidCap(any()))
                 .thenReturn(Mono.error(new PnInternalException("","")));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .assertNext(resp -> {
                     assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
                     assertThat(resp.getError()).isEqualTo("PNADDR002");
                     assertThat(resp.getNormalizedAddress()).isNull();
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -332,12 +394,14 @@ class DeduplicatesAddressServiceTest {
         postelResp.setErrore("DED998");
 
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .assertNext(resp -> {
                     assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
                     assertThat(resp.getError()).isEqualTo("PNADDR999");
                     assertThat(resp.getNormalizedAddress()).isNull();
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -386,6 +450,7 @@ class DeduplicatesAddressServiceTest {
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
         when(capRepo.findValidCap(any()))
                 .thenReturn(Mono.just(capModel));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .assertNext(resp -> {
@@ -393,6 +458,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(resp.getResultDetails()).isEqualTo("RD01");
                     assertThat(resp.getError()).isNull();
                     assertThat(resp.getNormalizedAddress()).isNotNull();
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -439,6 +505,7 @@ class DeduplicatesAddressServiceTest {
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
         when(capRepo.findValidCap(any()))
                 .thenReturn(Mono.just(capModel));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .assertNext(resp -> {
@@ -446,6 +513,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(resp.getResultDetails()).isNull();
                     assertThat(resp.getError()).isNull();
                     assertThat(resp.getNormalizedAddress()).isNotNull();
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -498,6 +566,7 @@ class DeduplicatesAddressServiceTest {
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
         when(capRepo.findValidCap(any()))
                 .thenReturn(Mono.just(capModel));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .assertNext(resp -> {
@@ -505,6 +574,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(resp.getEqualityResult()).isTrue();
                     assertThat(resp.getError()).isEqualTo("PNADDR003");
                     assertThat(resp.getNormalizedAddress()).isNull();
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -534,6 +604,7 @@ class DeduplicatesAddressServiceTest {
         when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
         when(capRepo.findValidCap(any()))
                 .thenReturn(Mono.just(capModel));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
                 .assertNext(resp -> {
@@ -542,6 +613,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(resp.getError()).isNull();
                     assertThat(resp.getNormalizedAddress()).isNotNull();
                     assertThat(resp.getNormalizedAddress().getAddressRow()).isEqualTo("Via Milano 2");
+                    assertPersistedPnRequest(req, resp, postelResp);
                 })
                 .verifyComplete();
 
@@ -649,6 +721,7 @@ class DeduplicatesAddressServiceTest {
     void deduplicaWithoutCallingPostelBothEmptyStrings() {
 
         when(pnAddressManagerConfig.getFlagCsv()).thenReturn(false);
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
         AnalogAddress target = analogIt("", "00100", "", "RM");
@@ -661,6 +734,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(response.getEqualityResult()).isFalse();
                     assertThat(response.getError()).isEqualTo("PNADDR001");
                     assertThat(response.getResultDetails()).isEqualTo("RD04");
+                    assertPersistedPnRequest(request, response, null);
                 })
                 .verifyComplete();
 
@@ -671,6 +745,7 @@ class DeduplicatesAddressServiceTest {
     void deduplicaWithoutCallingPostelBothNull() {
 
         when(pnAddressManagerConfig.getFlagCsv()).thenReturn(false);
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
         AnalogAddress target = analogIt(null, "00100", null, "RM");
@@ -683,6 +758,7 @@ class DeduplicatesAddressServiceTest {
                     assertThat(response.getEqualityResult()).isFalse();
                     assertThat(response.getError()).isEqualTo("PNADDR001");
                     assertThat(response.getResultDetails()).isEqualTo("RD04");
+                    assertPersistedPnRequest(request, response, null);
                 })
                 .verifyComplete();
 
@@ -693,6 +769,7 @@ class DeduplicatesAddressServiceTest {
     void deduplicaWithoutCallingPostelORCondition() {
 
         when(pnAddressManagerConfig.getFlagCsv()).thenReturn(false);
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
 
         AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
         AnalogAddress target = analogIt("Via Roma", "00100", null, "RM");
@@ -705,10 +782,229 @@ class DeduplicatesAddressServiceTest {
                     assertThat(response.getEqualityResult()).isFalse();
                     assertThat(response.getError()).isEqualTo("PNADDR001");
                     assertThat(response.getResultDetails()).isEqualTo("RD04");
+                    assertPersistedPnRequest(request, response, null);
                 })
                 .verifyComplete();
 
         verifyNoInteractions(postelClient);
     }
+
+    @Test
+    void deduplicates_whenTargetHasNoMinimumRequiredFields_shouldPersistCompletePnRequestWithoutPostelResponseCodes() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress target = analogIt("", "00100", "", "RM");
+        DeduplicatesRequest request = makeReq(base, target, CORR_ID);
+
+        AtomicReference<DeduplicatesResponse> returnedResponse = new AtomicReference<>();
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        StepVerifier.create(service.deduplicates(request, CXID, X_API_KEY))
+                .assertNext(response -> {
+                    returnedResponse.set(response);
+                    assertThat(response.getCorrelationId()).isEqualTo(CORR_ID);
+                    assertThat(response.getEqualityResult()).isFalse();
+                    assertThat(response.getError()).isEqualTo("PNADDR001");
+                    assertThat(response.getResultDetails()).isEqualTo("RD04");
+                })
+                .verifyComplete();
+
+        verifyNoInteractions(postelClient);
+        assertPersistedPnRequest(request, returnedResponse.get(), null);
+    }
+
+
+    @Test
+    void deduplicates_whenPostelReturnsResponse_shouldPersistCompletePnRequestWithPostelResponseCodes() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress target = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicatesRequest request = makeReq(base, target, CORR_ID);
+
+        AddressOut slave = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+        slave.setfPostalizzabile("1");
+        slave.setnRisultatoNorm(10);
+        slave.setnErroreNorm(20);
+
+        AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+
+        DeduplicaResponse postelResp = new DeduplicaResponse();
+        postelResp.setSlaveOut(slave);
+        postelResp.setMasterOut(master);
+        postelResp.setRisultatoDedu(true);
+
+        CapModel capModel = new CapModel();
+        capModel.setCap("00100");
+
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(capRepo.findValidCap(any())).thenReturn(Mono.just(capModel));
+
+        AtomicReference<DeduplicatesResponse> returnedResponse = new AtomicReference<>();
+
+        StepVerifier.create(service.deduplicates(request, CXID, X_API_KEY))
+                .assertNext(resp -> {
+                    returnedResponse.set(resp);
+                    assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
+                    assertThat(resp.getEqualityResult()).isTrue();
+                    assertThat(resp.getError()).isNull();
+                    assertThat(resp.getNormalizedAddress()).isNotNull();
+                })
+                .verifyComplete();
+
+        verify(postelClient, times(1)).deduplica(any());
+        assertPersistedPnRequest(request, returnedResponse.get(), postelResp);
+    }
+
+    @Test
+    void deduplicates_whenPostelReturnsResponseAndFPostalizzabileIsEmpty_shouldPersistFPostalizzabileNull() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress tgt = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
+
+        AddressOut slave = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+        slave.setfPostalizzabile("");
+        slave.setnRisultatoNorm(10);
+        slave.setnErroreNorm(20);
+
+        AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+
+        DeduplicaResponse postelResp = new DeduplicaResponse();
+        postelResp.setSlaveOut(slave);
+        postelResp.setMasterOut(master);
+        postelResp.setRisultatoDedu(true);
+
+        CapModel capModel = new CapModel();
+        capModel.setCap("00100");
+
+        PnAddressManagerConfig.Deduplicate deduplicate = mock(PnAddressManagerConfig.Deduplicate.class);
+        when(pnAddressManagerConfig.getDeduplicate()).thenReturn(deduplicate);
+        when(deduplicate.getTtl()).thenReturn(Duration.ofMinutes(10));
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(capRepo.findValidCap(any())).thenReturn(Mono.just(capModel));
+
+        AtomicReference<DeduplicatesResponse> returnedResponse = new AtomicReference<>();
+
+        StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
+                .assertNext(resp -> {
+                    returnedResponse.set(resp);
+                    assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
+                    assertThat(resp.getEqualityResult()).isTrue();
+                    assertThat(resp.getError()).isNull();
+                })
+                .verifyComplete();
+
+        assertPersistedPnRequest(req, returnedResponse.get(), postelResp);
+    }
+
+    @Test
+    void deduplicates_shouldPersistReturnedResponseInMessageField() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress tgt = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicatesRequest req = makeReq(base, tgt, CORR_ID);
+
+        AddressOut slave = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+        slave.setfPostalizzabile("1");
+        AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+
+        DeduplicaResponse postelResp = new DeduplicaResponse();
+        postelResp.setSlaveOut(slave);
+        postelResp.setMasterOut(master);
+        postelResp.setRisultatoDedu(true);
+
+        CapModel capModel = new CapModel();
+        capModel.setCap("00100");
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(capRepo.findValidCap(any())).thenReturn(Mono.just(capModel));
+
+        AtomicReference<DeduplicatesResponse> returnedResponse = new AtomicReference<>();
+
+        StepVerifier.create(service.deduplicates(req, CXID, X_API_KEY))
+                .assertNext(resp -> {
+                    returnedResponse.set(resp);
+                    assertThat(resp.getCorrelationId()).isEqualTo(CORR_ID);
+                })
+                .verifyComplete();
+
+        assertPersistedPnRequest(req, returnedResponse.get(), postelResp);
+    }
+
+    @Test
+    void deduplicates_whenPersistenceFails_shouldPropagateError() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress target = analogIt("", "00100", "", "RM");
+        DeduplicatesRequest request = makeReq(base, target, CORR_ID);
+
+        when(addressBatchRequestRepository.create(any(PnRequest.class)))
+                .thenReturn(Mono.error(new RuntimeException("Persistence failed")));
+
+        StepVerifier.create(service.deduplicates(request, CXID, X_API_KEY))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof RuntimeException &&
+                                throwable.getMessage().equals("Persistence failed"))
+                .verify();
+
+        verifyNoInteractions(postelClient);
+        verify(addressBatchRequestRepository, times(1)).create(any(PnRequest.class));
+    }
+
+    @Test
+    void deduplicates_whenPersistenceFailsAfterPostel_shouldPropagateError() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress target = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicatesRequest request = makeReq(base, target, CORR_ID);
+
+        AddressOut slave = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+        slave.setfPostalizzabile("1");
+        AddressOut master = addressOutIt("Via Roma 1", "00100", "Roma", "RM");
+
+        DeduplicaResponse postelResp = new DeduplicaResponse();
+        postelResp.setSlaveOut(slave);
+        postelResp.setMasterOut(master);
+        postelResp.setRisultatoDedu(true);
+
+        CapModel capModel = new CapModel();
+        capModel.setCap("00100");
+
+        when(postelClient.deduplica(any())).thenReturn(Mono.just(postelResp));
+        when(capRepo.findValidCap(any())).thenReturn(Mono.just(capModel));
+        when(addressBatchRequestRepository.create(any(PnRequest.class)))
+                .thenReturn(Mono.error(new RuntimeException("Persistence failed after postel")));
+
+        StepVerifier.create(service.deduplicates(request, CXID, X_API_KEY))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof RuntimeException &&
+                                throwable.getMessage().equals("Persistence failed after postel"))
+                .verify();
+
+        verify(postelClient, times(1)).deduplica(any());
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any());
+        verify(sqsSender, times(1)).pushDeduplicaResponseEvent(any());
+        verify(addressBatchRequestRepository, times(1)).create(any(PnRequest.class));
+    }
+
+    @Test
+    void deduplicates_whenPostelFails_shouldNotPersistPnRequest_showingCurrentGapVsSpecification() {
+        AnalogAddress base = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        AnalogAddress target = analogIt("Via Roma 1", "00100", "Roma", "RM");
+        DeduplicatesRequest request = makeReq(base, target, CORR_ID);
+
+        when(postelClient.deduplica(any()))
+                .thenReturn(Mono.error(new RuntimeException("Postel API failure")));
+
+        StepVerifier.create(service.deduplicates(request, CXID, X_API_KEY))
+                .expectErrorMatches(throwable ->
+                        throwable instanceof RuntimeException &&
+                                throwable.getMessage().equals("Postel API failure"))
+                .verify();
+
+        verify(sqsSender, times(1)).pushDeduplicaRequestEvent(any());
+        verify(sqsSender, never()).pushDeduplicaResponseEvent(any());
+        verify(addressBatchRequestRepository, never()).create(any(PnRequest.class));
+    }
+
+
 
 }
