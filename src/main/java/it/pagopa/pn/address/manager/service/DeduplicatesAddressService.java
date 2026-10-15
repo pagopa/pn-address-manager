@@ -60,18 +60,18 @@ public class DeduplicatesAddressService {
                         return Mono.just(createDeduplicatesResponseByDeduplicatesRequest(request));
                     } else {
                         log.info(ADDRESS_NORMALIZER_SYNC + "Flag CSV is disabled, calling Postel for request: [{}]", request.getCorrelationId());
-                        return callPostel(request, xApiKey, pnAddressManagerCxId);
+                        return callPostel(request, pnAddressManagerCxId);
                     }
                 });
 
         return MDCUtils.addMDCToContextAndExecute(deduplicatesResponseMono);
     }
 
-    private Mono<DeduplicatesResponse> callPostel(DeduplicatesRequest request, String xApiKey, String pnAddressManagerCxId) {
+    private Mono<DeduplicatesResponse> callPostel(DeduplicatesRequest request, String pnAddressManagerCxId) {
         if (!addressUtils.hasMinimumRequiredFields(request.getTargetAddress())) {
             log.warn("{} Required fields are missing for request: [{}]", ADDRESS_NORMALIZER_SYNC, request.getCorrelationId());
             DeduplicatesResponse response = getDeduplicatesResponse(request);
-            return persistAndReturnDeduplicatesResponse(request, response, null, pnAddressManagerCxId, xApiKey);
+            return persistAndReturnDeduplicatesResponse(request, response, null, pnAddressManagerCxId);
         }
         return Mono.just(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
                 .flatMap(deduplicaRequest -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaRequestEvent(deduplicaRequest))
@@ -87,8 +87,7 @@ public class DeduplicatesAddressService {
                                 request,
                                 response,
                                 addressUtils.constructPostelResponseCodesFromDeduplicaResponse(deduplicaResponse),
-                                pnAddressManagerCxId,
-                                xApiKey
+                                pnAddressManagerCxId
                         )))
                 .doOnError(error -> log.error("Error during deduplica call for request: [{}]", request.getCorrelationId(), error));
     }
@@ -96,11 +95,10 @@ public class DeduplicatesAddressService {
     private Mono<DeduplicatesResponse> persistAndReturnDeduplicatesResponse(DeduplicatesRequest request,
                                                                             DeduplicatesResponse response,
                                                                             PostelResponseCodes postelResponseCodes,
-                                                                            String pnAddressManagerCxId,
-                                                                            String xApiKey) {
+                                                                            String pnAddressManagerCxId) {
         log.info("Persisting deduplicates response for request: [{}]", request.getCorrelationId());
         return addressBatchRequestRepository.create(
-                        createRequestToPersist(request, response, postelResponseCodes, pnAddressManagerCxId, xApiKey))
+                        createRequestToPersist(request, response, postelResponseCodes, pnAddressManagerCxId))
                 .thenReturn(response);
     }
 
@@ -143,8 +141,7 @@ public class DeduplicatesAddressService {
     private PnRequest createRequestToPersist(DeduplicatesRequest request,
                                              DeduplicatesResponse response,
                                              PostelResponseCodes postelResponseCodes,
-                                             String pnAddressManagerCxId,
-                                             String xApiKey) {
+                                             String pnAddressManagerCxId) {
         LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         PnRequest pnRequest = new PnRequest();
         pnRequest.setService(DEDUPLICATE_SERVICE);
@@ -154,7 +151,6 @@ public class DeduplicatesAddressService {
         pnRequest.setClientId(pnAddressManagerCxId);
         pnRequest.setStatus(BatchStatus.WORKED.name());
         pnRequest.setCreatedAt(now);
-        pnRequest.setXApiKey(xApiKey);
         pnRequest.setMessage(addressUtils.toJson(response));
 
         if (Objects.nonNull(postelResponseCodes)) {

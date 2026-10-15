@@ -142,7 +142,6 @@ class DeduplicatesAddressServiceTest {
         PnRequest saved = pnRequestCaptor.getValue();
         assertThat(saved.getCorrelationId()).isEqualTo(CORR_ID);
         assertThat(saved.getClientId()).isEqualTo(CXID);
-        assertThat(saved.getXApiKey()).isEqualTo(X_API_KEY);
         assertThat(saved.getService()).isEqualTo(DEDUPLICATE_SERVICE);
         assertThat(saved.getStatus()).isEqualTo(BatchStatus.WORKED.name());
         assertThat(saved.getAddresses()).isEqualTo(addressUtils.toJson(request));
