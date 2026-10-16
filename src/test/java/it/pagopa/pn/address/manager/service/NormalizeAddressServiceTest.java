@@ -14,6 +14,7 @@ import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -25,8 +26,11 @@ import software.amazon.awssdk.services.sqs.model.SendMessageResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.NORMALIZER_SERVICE;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(SpringExtension.class)
@@ -179,9 +183,24 @@ class NormalizeAddressServiceTest {
         normalizeAddressService = new NormalizeAddressService(eventService, addressUtils, sqsService,addressBatchRequestRepository,apiKeyUtils, pnAddressManagerConfig, normalizzatoreBatchService);
         when(addressUtils.normalizeRequestToResult(any())).thenReturn(new NormalizeItemsResult());
         when(addressUtils.toJson(any())).thenReturn("json");
+        when(addressUtils.hasMinimumRequiredFieldsForAllItems(any())).thenReturn(true);
         when(addressUtils.createNewStartBatchRequest()).thenReturn(new PnRequest());
-        when(addressBatchRequestRepository.create(any())).thenReturn(Mono.just(new PnRequest()));
-        StepVerifier.create(normalizeAddressService.handleRequest(PnNormalizeRequestEvent.Payload.builder().pnAddressManagerCxId("cxId").normalizeItemsRequest(new NormalizeItemsRequest()).build())).expectNextCount(0).verifyComplete();
+        when(addressBatchRequestRepository.create(any())).thenAnswer(invocation -> Mono.just(invocation.getArgument(0)));
+
+        NormalizeItemsRequest request = new NormalizeItemsRequest();
+        request.setCorrelationId("corrId");
+
+        StepVerifier.create(normalizeAddressService.handleRequest(PnNormalizeRequestEvent.Payload.builder()
+                        .pnAddressManagerCxId("cxId")
+                        .normalizeItemsRequest(request)
+                        .build()))
+                .expectNextCount(0)
+                .verifyComplete();
+
+        ArgumentCaptor<PnRequest> pnRequestCaptor = ArgumentCaptor.forClass(PnRequest.class);
+        verify(addressBatchRequestRepository).create(pnRequestCaptor.capture());
+
+        assertThat(pnRequestCaptor.getValue().getService()).isEqualTo(NORMALIZER_SERVICE);
     }
 
     @Test

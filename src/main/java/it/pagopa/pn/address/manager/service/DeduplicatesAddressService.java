@@ -1,5 +1,8 @@
 package it.pagopa.pn.address.manager.service;
 
+import it.pagopa.pn.address.manager.constant.BatchStatus;
+import it.pagopa.pn.address.manager.entity.PnRequest;
+import it.pagopa.pn.address.manager.entity.PostelResponseCodes;
 import it.pagopa.pn.address.manager.generated.openapi.msclient.postel.sync.v1.dto.AddressOut;
 import it.pagopa.pn.address.manager.config.PnAddressManagerConfig;
 import it.pagopa.pn.address.manager.constant.DeduplicatesError;
@@ -11,6 +14,7 @@ import it.pagopa.pn.address.manager.generated.openapi.server.v1.dto.Deduplicates
 import it.pagopa.pn.address.manager.middleware.client.DeduplicaClient;
 import it.pagopa.pn.address.manager.middleware.queue.producer.SqsSender;
 import it.pagopa.pn.address.manager.model.NormalizedAddressResponse;
+import it.pagopa.pn.address.manager.repository.AddressBatchRequestRepository;
 import it.pagopa.pn.address.manager.utils.AddressUtils;
 import it.pagopa.pn.commons.utils.MDCUtils;
 import lombok.CustomLog;
@@ -18,7 +22,14 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Objects;
+
 import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.ADDRESS_NORMALIZER_SYNC;
+import static it.pagopa.pn.address.manager.constant.AddressManagerConstant.DEDUPLICATE_SERVICE;
 import static it.pagopa.pn.address.manager.constant.ProcessStatus.PROCESS_CHECKING_APIKEY;
 
 @Service
@@ -33,6 +44,7 @@ public class DeduplicatesAddressService {
     private final CapAndCountryService capAndCountryService;
     private final AddressConverter addressConverter;
     private final SqsSender sqsSender;
+    private final AddressBatchRequestRepository addressBatchRequestRepository;
 
     public Mono<DeduplicatesResponse> deduplicates(DeduplicatesRequest request, String pnAddressManagerCxId, String xApiKey) {
         MDC.put(MDCUtils.MDC_PN_CTX_REQUEST_ID, request.getCorrelationId());
@@ -48,17 +60,18 @@ public class DeduplicatesAddressService {
                         return Mono.just(createDeduplicatesResponseByDeduplicatesRequest(request));
                     } else {
                         log.info(ADDRESS_NORMALIZER_SYNC + "Flag CSV is disabled, calling Postel for request: [{}]", request.getCorrelationId());
-                        return callPostel(request);
+                        return callPostel(request, pnAddressManagerCxId);
                     }
                 });
 
         return MDCUtils.addMDCToContextAndExecute(deduplicatesResponseMono);
     }
 
-    private Mono<DeduplicatesResponse> callPostel(DeduplicatesRequest request) {
+    private Mono<DeduplicatesResponse> callPostel(DeduplicatesRequest request, String pnAddressManagerCxId) {
         if (!addressUtils.hasMinimumRequiredFields(request.getTargetAddress())) {
             log.warn("{} Required fields are missing for request: [{}]", ADDRESS_NORMALIZER_SYNC, request.getCorrelationId());
-            return Mono.just(getDeduplicatesResponse(request));
+            DeduplicatesResponse response = getDeduplicatesResponse(request);
+            return persistAndReturnDeduplicatesResponse(request, response, null, pnAddressManagerCxId);
         }
         return Mono.just(addressConverter.createDeduplicaRequestFromDeduplicatesRequest(request))
                 .flatMap(deduplicaRequest -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaRequestEvent(deduplicaRequest))
@@ -67,10 +80,26 @@ public class DeduplicatesAddressService {
                 .flatMap(deduplicaResponse -> Mono.fromRunnable(() -> sqsSender.pushDeduplicaResponseEvent(deduplicaResponse))
                         .thenReturn(deduplicaResponse))
                 .flatMap(deduplicaResponse -> Mono.just(addressConverter.createDeduplicatesResponseFromDeduplicaResponse(deduplicaResponse, request.getCorrelationId()))
-                .map(addressUtils::verifyRequiredFields)
-                .flatMap(capAndCountryService::verifyCapAndCountry)
-                .map(deduplicatesResponse -> compareNormalizedAddress(deduplicaResponse.getMasterOut(), deduplicatesResponse)))
+                        .map(addressUtils::verifyRequiredFields)
+                        .flatMap(capAndCountryService::verifyCapAndCountry)
+                        .map(deduplicatesResponse -> compareNormalizedAddress(deduplicaResponse.getMasterOut(), deduplicatesResponse))
+                        .flatMap(response -> persistAndReturnDeduplicatesResponse(
+                                request,
+                                response,
+                                addressUtils.constructPostelResponseCodesFromDeduplicaResponse(deduplicaResponse),
+                                pnAddressManagerCxId
+                        )))
                 .doOnError(error -> log.error("Error during deduplica call for request: [{}]", request.getCorrelationId(), error));
+    }
+
+    private Mono<DeduplicatesResponse> persistAndReturnDeduplicatesResponse(DeduplicatesRequest request,
+                                                                            DeduplicatesResponse response,
+                                                                            PostelResponseCodes postelResponseCodes,
+                                                                            String pnAddressManagerCxId) {
+        log.info("Persisting deduplicates response for request: [{}]", request.getCorrelationId());
+        return addressBatchRequestRepository.create(
+                        createRequestToPersist(request, response, postelResponseCodes, pnAddressManagerCxId))
+                .thenReturn(response);
     }
 
     private DeduplicatesResponse compareNormalizedAddress(AddressOut addressOut, DeduplicatesResponse deduplicatesResponse) {
@@ -108,4 +137,26 @@ public class DeduplicatesAddressService {
         deduplicatesResponse.setNormalizedAddress(normalizeAddressResponse.getNormalizedAddress());
         return deduplicatesResponse;
     }
+
+    private PnRequest createRequestToPersist(DeduplicatesRequest request,
+                                             DeduplicatesResponse response,
+                                             PostelResponseCodes postelResponseCodes,
+                                             String pnAddressManagerCxId) {
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
+        PnRequest pnRequest = new PnRequest();
+        pnRequest.setService(DEDUPLICATE_SERVICE);
+        pnRequest.setCorrelationId(request.getCorrelationId());
+        pnRequest.setAddresses(addressUtils.toJson(request));
+        pnRequest.setTtl(now.plus(pnAddressManagerConfig.getDeduplicate().getTtl()).toEpochSecond(ZoneOffset.UTC));
+        pnRequest.setClientId(pnAddressManagerCxId);
+        pnRequest.setStatus(BatchStatus.WORKED.name());
+        pnRequest.setCreatedAt(now);
+        pnRequest.setMessage(addressUtils.toJson(response));
+
+        if (Objects.nonNull(postelResponseCodes)) {
+            pnRequest.setPostelResponseCodes(List.of(postelResponseCodes));
+        }
+        return pnRequest;
+    }
+
 }

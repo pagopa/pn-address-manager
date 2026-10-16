@@ -136,6 +136,7 @@ public class NormalizeAddressService {
         pnRequest.setAddresses(requestAsString);
         pnRequest.setClientId(pnAddressManagerCxId);
         pnRequest.setCorrelationId(correlationId);
+        pnRequest.setService(NORMALIZER_SERVICE);
         return addressBatchRequestRepository.create(pnRequest);
     }
 

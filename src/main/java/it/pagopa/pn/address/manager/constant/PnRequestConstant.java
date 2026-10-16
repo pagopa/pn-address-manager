@@ -23,6 +23,7 @@ public final class PnRequestConstant {
     public static final String COL_XAPIKEY = "xApiKey";
     public static final String COL_CXID = "cxId";
     public static final String COL_AWS_MESSAGE_ID = "aws-messageId";
+    public static final String COL_SERVICE = "service";
 
     public static final String GSI_BL = "batchId-lastReserved-index";
 

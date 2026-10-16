@@ -38,6 +38,7 @@ public class PnAddressManagerConfig {
     private Integer addressLengthValidation;
     private String foreignValidationPattern;
     private ForeignValidationMode foreignValidationMode;
+    private Deduplicate deduplicate;
 
     @Data
     public static class Normalizer{
@@ -104,5 +105,10 @@ public class PnAddressManagerConfig {
         private String name;
         private String detailType;
         private String source;
+    }
+
+    @Data
+    public static class Deduplicate {
+        private Duration ttl;
     }
 }
